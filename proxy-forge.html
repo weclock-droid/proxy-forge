@@ -231,7 +231,18 @@ button:disabled { opacity: .5; cursor: not-allowed; }
       <label for="gap">Space between cards
         <select id="gap"><option value="0">None (shared cut lines)</option><option value="0.0625">1/16″</option><option value="0.125">1/8″</option></select>
       </label>
-      <label class="inline" style="align-self:end"><input type="checkbox" id="marks" checked> Cut marks</label>
+      <label for="edgeColor">Edge lines (in margins)
+        <select id="edgeColor">
+          <option value="#000000">Black</option><option value="#9a9a9a">Gray</option><option value="#ff00ff">Magenta</option>
+          <option value="#00b7eb">Cyan</option><option value="none">Off</option>
+        </select>
+      </label>
+      <label for="cornerColor">Corner crosshairs (between cards)
+        <select id="cornerColor">
+          <option value="#ff00ff">Magenta</option><option value="#00b7eb">Cyan</option><option value="#39d353">Green</option>
+          <option value="#ff3b30">Red</option><option value="#ffffff">White</option><option value="#000000">Black</option><option value="none">Off</option>
+        </select>
+      </label>
     </div>
     <ol class="thumbs" id="thumbs"></ol>
     <p class="hint" id="sheetEmpty">Make a card above and press <b>Add to print sheet</b>, or add card images you already have (scans, other proxies). Nine cards fit on each page at real card size, 2.5 × 3.5″. Print the PDF at 100% / “Actual size”, not “Fit to page”.</p>
@@ -889,26 +900,39 @@ async function savePdf() {
   if (!window.jspdf) { status.textContent = 'The PDF builder didn’t load. Check your internet connection and reload the page.'; return; }
   const btn = $('savePdf'); btn.disabled = true; status.textContent = 'Building PDF…';
   try {
-    const paper = $('paper').value, gap = +$('gap').value, marks = $('marks').checked;
+    const paper = $('paper').value, gap = +$('gap').value;
+    const edgeColor = $('edgeColor').value, cornerColor = $('cornerColor').value;
+    const rgb = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+    const marks = edgeColor !== 'none' || cornerColor !== 'none';
     const doc = new window.jspdf.jsPDF({ unit: 'in', format: paper, orientation: 'portrait', compress: true });
     const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
     const cw = 2.5, ch = 3.5, mx = (pw - (3 * cw + 2 * gap)) / 2, my = (ph - (3 * ch + 2 * gap)) / 2;
     const xs = [0, 1, 2].map(c => mx + c * (cw + gap)), ys = [0, 1, 2].map(r => my + r * (ch + gap));
-    const drawMarks = () => {
-      doc.setDrawColor(0); doc.setLineWidth(0.008);
-      const ex = [...new Set(xs.flatMap(x => [x, x + cw]).map(v => +v.toFixed(4)))];
-      const ey = [...new Set(ys.flatMap(y => [y, y + ch]).map(v => +v.toFixed(4)))];
+    // Every card edge, de-duplicated (cards with no gap share their cut lines).
+    const ex = [...new Set(xs.flatMap(x => [x, x + cw]).map(v => +v.toFixed(4)))];
+    const ey = [...new Set(ys.flatMap(y => [y, y + ch]).map(v => +v.toFixed(4)))];
+    const drawEdges = () => {
+      if (edgeColor === 'none') return;
+      doc.setDrawColor(...rgb(edgeColor)); doc.setLineWidth(0.008);
       const top = ys[0], bot = ys[2] + ch, left = xs[0], right = xs[2] + cw, pad = 0.04;
       for (const x of ex) { doc.line(x, 0.1, x, top - pad); doc.line(x, bot + pad, x, ph - 0.1); }
       for (const y of ey) { doc.line(0.1, y, left - pad, y); doc.line(right + pad, y, pw - 0.1, y); }
+    };
+    // Small + at every card corner, drawn on top of the cards so they show where to cut between them.
+    const drawCorners = () => {
+      if (cornerColor === 'none') return;
+      const arm = 0.09;
+      doc.setDrawColor(...rgb(cornerColor)); doc.setLineWidth(0.01);
+      for (const x of ex) for (const y of ey) { doc.line(x - arm, y, x + arm, y); doc.line(x, y - arm, x, y + arm); }
     };
     const list = sheet.flatMap(e => Array(e.copies).fill(e));
     const done = new Map();
     for (let i = 0; i < list.length; i++) {
       const e = list[i], k = i % 9;
-      if (k === 0) { if (i) doc.addPage(paper, 'portrait'); if (marks) drawMarks(); }
+      if (k === 0) { if (i) doc.addPage(paper, 'portrait'); drawEdges(); }
       if (!done.has(e.id)) done.set(e.id, cardCanvas(e, RES).toDataURL('image/jpeg', 0.92));
       doc.addImage(done.get(e.id), 'JPEG', xs[k % 3], ys[(k / 3) | 0], cw, ch, e.id, 'NONE');
+      if (k === 8 || i === list.length - 1) drawCorners();
       status.textContent = `Building PDF… ${i + 1} of ${list.length}`;
       await new Promise(r => setTimeout(r, 0));
     }
