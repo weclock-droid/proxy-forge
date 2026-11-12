@@ -1,0 +1,951 @@
+<meta charset="utf-8">
+<title>Proxy Forge</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+SC:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IM+Fell+English+SC&family=Spectral:wght@600;700;800&display=swap">
+<style>
+/* Layout: workbench — scrolling control column on the left, sticky card proof on the right; stacks on phones */
+:root {
+  --bg: #efece6;
+  --panel: #f8f6f2;
+  --ink: #1d1b1a;
+  --muted: #6b6560;
+  --line: #d9d3ca;
+  --accent: #7a1f2b;
+  --accent-ink: #fff;
+  --field: #fff;
+  --mat: #2f4a46;
+  --good: #2f7d4f; --warn: #a86a12; --bad: #b3322f;
+  --f-display: "Spectral", Georgia, serif;
+  --f-ui: "IBM Plex Sans", system-ui, sans-serif;
+  --f-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161415; --panel: #1f1c1d; --ink: #ece7e1; --muted: #a49c95; --line: #36312f;
+    --accent: #c9505f; --accent-ink: #fff; --field: #141213; --mat: #22332f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161415; --panel: #1f1c1d; --ink: #ece7e1; --muted: #a49c95; --line: #36312f;
+  --accent: #c9505f; --accent-ink: #fff; --field: #141213; --mat: #22332f; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size: 14px; }
+.wrap {
+  max-width: 1240px; margin: 0 auto;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: 30px; margin: 0; letter-spacing: .01em; }
+header p { margin: 0; color: var(--muted); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 24px; align-items: start; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } .proof { order: -1; position: static !important; } }
+.controls { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+fieldset { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 14px 16px 16px; margin: 0; display: grid; gap: 12px; min-width: 0; }
+legend { font-family: var(--f-display); font-weight: 700; font-size: 16px; padding: 0 6px; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+label { display: grid; gap: 5px; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .02em; min-width: 0; }
+label.inline { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--ink); font-size: 13px; letter-spacing: 0; }
+input[type=text], textarea, select {
+  font: inherit; font-size: 14px; color: var(--ink); background: var(--field);
+  border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; width: 100%; min-width: 0;
+}
+textarea { resize: vertical; min-height: 92px; line-height: 1.4; font-family: "Crimson Text", Georgia, serif; font-size: 16px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
+.hint { font-size: 12px; color: var(--muted); font-weight: 400; letter-spacing: 0; line-height: 1.45; }
+code { font-family: var(--f-mono); font-size: 11.5px; background: color-mix(in srgb, var(--line) 55%, transparent); padding: 1px 4px; border-radius: 4px; }
+.drop {
+  border: 1.5px dashed var(--line); border-radius: 9px; padding: 14px; display: flex; gap: 12px;
+  align-items: center; flex-wrap: wrap; background: var(--field);
+}
+.drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--field)); }
+button {
+  font: inherit; font-weight: 600; font-size: 13px; border-radius: 7px; padding: 9px 14px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--field); color: var(--ink);
+}
+button:hover { border-color: var(--muted); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+button.primary:hover { filter: brightness(1.08); }
+.proof { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 12px; min-width: 0; }
+.mat { background: var(--mat); border-radius: 12px; padding: 22px; display: grid; place-items: center;
+  background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 24px 24px; }
+canvas#card { width: 100%; max-width: 440px; aspect-ratio: 750 / 1050; height: auto; display: block; cursor: grab; touch-action: none;
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
+canvas#card.dragging { cursor: grabbing; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.status { font-size: 12.5px; color: var(--muted); min-height: 1.4em; }
+.small { font-size: 12px; color: var(--muted); }
+.sheet { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 22px; display: grid; gap: 16px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+.sheet h2 { font-family: var(--f-display); font-weight: 800; font-size: 22px; margin: 0 0 2px; }
+.sheet-opts { display: flex; gap: 16px; flex-wrap: wrap; }
+.sheet-opts > label { min-width: 180px; }
+.thumbs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px 14px; }
+.thumbs:empty { display: none; }
+.thumb { display: grid; gap: 6px; min-width: 0; }
+.thumb .pic { position: relative; aspect-ratio: 5 / 7; border-radius: 6px; overflow: hidden; background: #000; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
+.thumb .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb.editing .pic { outline: 3px solid var(--accent); outline-offset: 2px; }
+.thumb .tag { position: absolute; left: 6px; top: 6px; font-size: 11px; font-weight: 600; background: rgba(0,0,0,.7); color: #fff; padding: 1px 7px; border-radius: 99px; }
+.thumb .ctl { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+.thumb .ctl input { width: 52px; padding: 5px 6px; font: inherit; font-size: 13px; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 6px; }
+.thumb .ctl button { padding: 5px 8px; font-size: 12px; }
+.thumb .ctl .x { margin-left: auto; }
+.thumb .name { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.quality:empty { display: none; }
+.pill { flex: none; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 999px; font-variant-numeric: tabular-nums; color: #fff; }
+.pill.good { background: var(--good); } .pill.ok { background: var(--warn); } .pill.bad { background: var(--bad); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Proxy Forge</h1>
+    <p>Drop in any image, type your card text, save a print-ready PNG.</p>
+  </header>
+
+  <div class="grid">
+    <div class="controls">
+      <fieldset>
+        <legend>Art</legend>
+        <div class="drop" id="drop">
+          <button type="button" class="primary" id="pick">Choose image…</button>
+          <span class="hint">or drag a file here, or paste one with Ctrl+V.<br>Drag the card to move the art; scroll on it to zoom.</span>
+          <input type="file" id="file" accept="image/*" hidden>
+        </div>
+        <div class="row">
+          <label for="zoom">Zoom <input type="range" id="zoom" min="0.3" max="4" step="0.01" value="1"></label>
+          <div class="actions" style="align-self:end"><button type="button" id="resetArt">Recenter art</button></div>
+        </div>
+        <div class="quality" id="quality" aria-live="polite"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Card text</legend>
+        <div class="row">
+          <label for="name">Name <input type="text" id="name"></label>
+          <label for="cost">Mana cost <input type="text" id="cost" placeholder="{2}{B}{B}"></label>
+        </div>
+        <label for="type">Type line <input type="text" id="type"></label>
+        <label for="rules">Rules text
+          <textarea id="rules" rows="5"></textarea>
+          <span class="hint">Symbols: <code>{T}</code> <code>{W}</code> <code>{U}</code> <code>{B}</code> <code>{R}</code> <code>{G}</code> <code>{C}</code> <code>{X}</code> <code>{3}</code> <code>{W/U}</code>. Text in (parentheses) becomes italic reminder text; wrap words in *asterisks* for italics. New line = new paragraph.</span>
+        </label>
+        <label for="flavor">Flavor text <textarea id="flavor" rows="3"></textarea></label>
+        <div class="row">
+          <label for="pt">Power / toughness <input type="text" id="pt" placeholder="2/3"></label>
+          <label for="artist">Artist <input type="text" id="artist"></label>
+        </div>
+        <div class="row">
+          <label for="info">Collector line <input type="text" id="info" placeholder="666 · SLD · EN"></label>
+          <label for="note">Bottom-right note <input type="text" id="note"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Look</legend>
+        <div class="row">
+          <label for="layout">Layout
+            <select id="layout">
+              <option value="fade">Full art · fade</option>
+              <option value="panel">Full art · text panel</option>
+              <option value="framed">Classic frame</option>
+            </select>
+          </label>
+          <label for="border">Border
+            <select id="border">
+              <option value="#0b0b0c">Black</option>
+              <option value="#f3f1ec">White</option>
+              <option value="#a9abae">Silver</option>
+              <option value="#b8964c">Gold</option>
+              <option value="none">Borderless</option>
+            </select>
+          </label>
+          <label for="color">Frame color (classic)
+            <select id="color">
+              <option value="W">White</option><option value="U">Blue</option><option value="B" selected>Black</option>
+              <option value="R">Red</option><option value="G">Green</option><option value="M">Gold / multicolor</option>
+              <option value="A">Artifact</option><option value="L">Land</option><option value="C">Colorless</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label for="titleFont">Title font
+            <select id="titleFont">
+              <option value="Spectral">Spectral</option>
+              <option value="Cinzel">Cinzel</option>
+              <option value="Cormorant SC">Cormorant SC</option>
+              <option value="IM Fell English SC">IM Fell English</option>
+            </select>
+          </label>
+          <label for="shade">Text shading <input type="range" id="shade" min="0" max="1" step="0.01" value="0.78"></label>
+          <label for="size">Rules text size <input type="range" id="size" min="18" max="40" step="1" value="31"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Export</legend>
+        <label class="inline"><input type="checkbox" id="bleed"> Add ⅛″ bleed (square corners, for print shops)</label>
+        <label class="inline"><input type="checkbox" id="round" checked> Round corners (when no bleed)</label>
+        <p class="hint" style="margin:0">Saves a 1500 × 2100 PNG: 2.5″ × 3.5″ at 600 dpi (1650 × 2250 with bleed). Load it into your print tool like any card image.</p>
+      </fieldset>
+    </div>
+
+    <div class="proof">
+      <div class="mat"><canvas id="card" width="1500" height="2100" aria-label="Card preview"></canvas></div>
+      <div class="actions">
+        <button type="button" class="primary" id="addSheet">Add to print sheet</button>
+        <button type="button" id="addNew" hidden>Add as a new card</button>
+        <button type="button" id="save">Save PNG</button>
+        <button type="button" id="clear">New blank card</button>
+        <span class="status" id="status"></span>
+      </div>
+      <p class="small" style="margin:0">If saving is blocked where you're viewing this, right-click the card and choose “Save image as”.</p>
+    </div>
+  </div>
+
+  <section class="sheet" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <div>
+        <h2 id="sheetTitle">Print sheet</h2>
+        <p class="hint" id="sheetCount">No cards yet.</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="pickFinished">Add finished card images…</button>
+        <input type="file" id="finished" accept="image/*" multiple hidden>
+        <button type="button" class="primary" id="savePdf" disabled>Save PDF</button>
+      </div>
+    </div>
+    <div class="sheet-opts">
+      <label for="paper">Paper
+        <select id="paper"><option value="letter">US Letter (8.5 × 11″)</option><option value="a4">A4 (210 × 297 mm)</option></select>
+      </label>
+      <label for="gap">Space between cards
+        <select id="gap"><option value="0">None (shared cut lines)</option><option value="0.0625">1/16″</option><option value="0.125">1/8″</option></select>
+      </label>
+      <label class="inline" style="align-self:end"><input type="checkbox" id="marks" checked> Cut marks</label>
+    </div>
+    <ol class="thumbs" id="thumbs"></ol>
+    <p class="hint" id="sheetEmpty">Make a card above and press <b>Add to print sheet</b>, or add card images you already have (scans, other proxies). Nine cards fit on each page at real card size, 2.5 × 3.5″. Print the PDF at 100% / “Actual size”, not “Fit to page”.</p>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(() => {
+const W = 750, H = 1050, BLEED = 37.5, RES = 2;
+const $ = id => document.getElementById(id);
+const canvas = $('card'), ctx = canvas.getContext('2d');
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round'];
+
+const SAMPLE = {
+  name: 'Nocturne Host', cost: '{2}{B}{B}', type: 'Creature — Vampire Noble',
+  rules: 'Flying, lifelink\nWhenever another Vampire you control enters, each opponent loses 1 life and you gain 1 life.\n{T}, Pay 2 life: Draw a card. (Lifelink means damage this creature deals also causes you to gain that much life.)',
+  flavor: '“Come in, come in. Do wipe your feet. And your throat.”',
+  pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Proxy — not for sale',
+  layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true
+};
+const BLANK = { ...SAMPLE, name: '', cost: '', type: '', rules: '', flavor: '', pt: '', artist: '', info: '', note: '' };
+
+const st = { img: null, zoom: 1, ox: 0, oy: 0, sample: true };
+
+// ---------- state <-> form ----------
+function readForm() {
+  const o = {};
+  for (const k of FIELDS) { const el = $(k); o[k] = el.type === 'checkbox' ? el.checked : el.value; }
+  return o;
+}
+function writeForm(o) {
+  for (const k of FIELDS) { const el = $(k); if (!(k in o)) continue; if (el.type === 'checkbox') el.checked = !!o[k]; else el.value = o[k]; }
+}
+function saveDraft() { try { localStorage.setItem('proxyforge.v1', JSON.stringify(readForm())); } catch (e) {} }
+function loadDraft() { try { const s = localStorage.getItem('proxyforge.v1'); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+
+// ---------- sample art ----------
+function makeSampleArt() {
+  const c = document.createElement('canvas'); c.width = 900; c.height = 1260;
+  const g = c.getContext('2d');
+  let gr = g.createLinearGradient(0, 0, 0, 1260);
+  gr.addColorStop(0, '#2a0b14'); gr.addColorStop(.55, '#531525'); gr.addColorStop(1, '#0c0507');
+  g.fillStyle = gr; g.fillRect(0, 0, 900, 1260);
+  gr = g.createRadialGradient(560, 300, 20, 560, 300, 420);
+  gr.addColorStop(0, 'rgba(255,214,190,.55)'); gr.addColorStop(1, 'rgba(255,214,190,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 900, 1260);
+  g.fillStyle = '#f3dccb'; g.beginPath(); g.arc(560, 300, 92, 0, 7); g.fill();
+  g.fillStyle = '#4d1220'; g.beginPath(); g.arc(598, 280, 86, 0, 7); g.fill();
+  // castle silhouette
+  g.fillStyle = '#0d0508';
+  g.beginPath(); g.moveTo(0, 900);
+  const pts = [[80,880],[80,700],[110,660],[140,700],[140,820],[240,820],[240,600],[270,540],[300,600],[300,760],[420,760],[420,520],[455,440],[490,520],[490,780],[600,780],[600,650],[630,610],[660,650],[660,850],[900,870]];
+  for (const [x, y] of pts) g.lineTo(x, y);
+  g.lineTo(900, 1260); g.lineTo(0, 1260); g.closePath(); g.fill();
+  g.fillStyle = '#e8a35c';
+  for (const [x, y] of [[262,640],[447,560],[465,620],[620,700],[100,740]]) g.fillRect(x, y, 10, 18);
+  // bats
+  g.fillStyle = '#12070a';
+  for (const [x, y, s] of [[300,260,1],[380,210,.7],[200,330,.8],[720,520,.6]]) {
+    g.save(); g.translate(x, y); g.scale(s, s); g.beginPath();
+    g.moveTo(0, 0); g.quadraticCurveTo(-20, -18, -46, -8); g.quadraticCurveTo(-30, -2, -26, 8); g.quadraticCurveTo(-12, 0, 0, 8);
+    g.quadraticCurveTo(12, 0, 26, 8); g.quadraticCurveTo(30, -2, 46, -8); g.quadraticCurveTo(20, -18, 0, 0); g.fill(); g.restore();
+  }
+  const img = new Image(); img.src = c.toDataURL('image/png'); return img;
+}
+
+// ---------- mana symbols ----------
+const SYM_BG = { W: '#fbf6d5', U: '#aad8f4', B: '#cbc2bf', R: '#f6a98e', G: '#9fd2ad', N: '#d2cbc7' };
+function glyph(g, c) { // draws glyph c in a 100x100 box, fill already set
+  g.beginPath();
+  switch (c) {
+    case 'W': {
+      g.arc(50, 50, 19, 0, 7); g.fill();
+      for (let i = 0; i < 8; i++) {
+        const a = i * Math.PI / 4, r1 = 25, r2 = i % 2 ? 40 : 46;
+        g.beginPath();
+        g.moveTo(50 + Math.cos(a - .2) * r1, 50 + Math.sin(a - .2) * r1);
+        g.lineTo(50 + Math.cos(a) * r2, 50 + Math.sin(a) * r2);
+        g.lineTo(50 + Math.cos(a + .2) * r1, 50 + Math.sin(a + .2) * r1); g.fill();
+      }
+      return;
+    }
+    case 'U':
+      g.moveTo(50, 10); g.bezierCurveTo(56, 30, 78, 46, 78, 64); g.arc(50, 64, 28, 0, Math.PI); g.bezierCurveTo(22, 46, 44, 30, 50, 10); g.fill(); return;
+    case 'B': {
+      const bg = g.fillStyle;
+      g.ellipse(50, 42, 29, 27, 0, 0, 7); g.fill();
+      g.beginPath(); g.roundRect(35, 56, 30, 24, 5); g.fill();
+      g.fillStyle = SYM_BG.B;
+      g.beginPath(); g.arc(39, 45, 8, 0, 7); g.arc(61, 45, 8, 0, 7); g.fill();
+      g.beginPath(); g.moveTo(50, 54); g.lineTo(45, 63); g.lineTo(55, 63); g.fill();
+      g.fillRect(43, 70, 3, 10); g.fillRect(54, 70, 3, 10);
+      g.fillStyle = bg; return;
+    }
+    case 'R':
+      g.moveTo(50, 8); g.bezierCurveTo(62, 30, 80, 42, 76, 64); g.bezierCurveTo(73, 82, 62, 90, 50, 90);
+      g.bezierCurveTo(36, 90, 24, 80, 24, 63); g.bezierCurveTo(24, 50, 33, 43, 38, 30);
+      g.bezierCurveTo(42, 42, 45, 48, 52, 50); g.bezierCurveTo(56, 38, 54, 22, 50, 8); g.fill(); return;
+    case 'G':
+      for (const [x, y, r] of [[50, 28, 17], [32, 44, 15], [68, 44, 15], [50, 48, 18]]) { g.moveTo(x + r, y); g.arc(x, y, r, 0, 7); }
+      g.fill(); g.beginPath(); g.moveTo(44, 58); g.lineTo(56, 58); g.lineTo(58, 82); g.lineTo(66, 88); g.lineTo(34, 88); g.lineTo(42, 82); g.fill(); return;
+    case 'T': case 'Q': {
+      g.save(); if (c === 'Q') { g.translate(100, 0); g.scale(-1, 1); }
+      g.lineWidth = 11; g.strokeStyle = g.fillStyle;
+      g.arc(50, 58, 24, Math.PI, Math.PI * 2); g.stroke();
+      g.beginPath(); g.moveTo(26, 56); g.lineTo(26, 80); g.stroke();
+      g.beginPath(); g.moveTo(62, 54); g.lineTo(90, 54); g.lineTo(74, 78); g.fill();
+      g.restore(); return;
+    }
+    case 'C':
+      g.lineWidth = 9; g.strokeStyle = g.fillStyle;
+      g.moveTo(50, 16); g.quadraticCurveTo(54, 46, 84, 50); g.quadraticCurveTo(54, 54, 50, 84);
+      g.quadraticCurveTo(46, 54, 16, 50); g.quadraticCurveTo(46, 46, 50, 16); g.stroke(); return;
+    default: {
+      const s = c.length > 1 ? 50 : 66;
+      g.font = `700 ${s}px Spectral, Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      g.fillText(c, 50, 50 + s * 0.35); g.textAlign = 'left'; return;
+    }
+  }
+}
+function symBg(c) { return SYM_BG[c] || SYM_BG.N; }
+function drawSym(g, code, x, y, d, shadow = true) { // x,y = top-left
+  code = code.toUpperCase().replace(/\s/g, '');
+  const parts = code.split('/');
+  const cx = x + d / 2, cy = y + d / 2, r = d / 2;
+  g.save();
+  if (shadow) { g.fillStyle = 'rgba(0,0,0,.85)'; g.beginPath(); g.arc(cx - d * .05, cy + d * .07, r, 0, 7); g.fill(); }
+  g.beginPath(); g.arc(cx, cy, r, 0, 7); g.clip();
+  if (parts.length === 2 && parts[1] !== 'P') {
+    const [a, b] = parts;
+    g.fillStyle = symBg(a); g.fillRect(x, y, d, d);
+    g.fillStyle = symBg(b); g.beginPath(); g.moveTo(x + d, y); g.lineTo(x + d, y + d); g.lineTo(x, y + d); g.fill();
+    g.fillStyle = '#111';
+    g.save(); g.translate(x + d * .06, y + d * .06); g.scale(d / 100 * .5, d / 100 * .5); glyph(g, a); g.restore();
+    g.save(); g.translate(x + d * .44, y + d * .44); g.scale(d / 100 * .5, d / 100 * .5); glyph(g, b); g.restore();
+  } else {
+    const c = parts[0];
+    g.fillStyle = symBg(c); g.fillRect(x, y, d, d);
+    g.fillStyle = '#111';
+    g.save(); g.translate(x + d * .08, y + d * .08); g.scale(d / 100 * .84, d / 100 * .84); glyph(g, c); g.restore();
+    if (parts[1] === 'P') { g.strokeStyle = '#111'; g.lineWidth = d * .06; g.beginPath(); g.arc(cx, cy, r * .55, 0, 7); g.stroke(); }
+  }
+  g.restore();
+}
+function parseCost(s) { return [...(s || '').matchAll(/\{([^}]+)\}/g)].map(m => m[1]); }
+
+// ---------- rich text ----------
+const BODY = '"Crimson Text", Georgia, serif';
+function bodyFont(size, it, bold) { return `${it ? 'italic ' : ''}${bold ? '600 ' : ''}${size}px ${BODY}`; }
+function parseRich(text, baseItalic) {
+  const paras = [];
+  let depth = 0, manual = false;
+  for (const line of (text || '').split('\n')) {
+    const chunks = [];
+    for (const word of line.split(/ +/)) {
+      if (!word) continue;
+      const segs = []; let buf = '', bufIt = null;
+      const flush = () => { if (buf) segs.push({ t: 'txt', s: buf, it: bufIt }); buf = ''; };
+      for (let i = 0; i < word.length; i++) {
+        const ch = word[i];
+        if (ch === '{') {
+          const j = word.indexOf('}', i);
+          if (j > i) { flush(); segs.push({ t: 'sym', s: word.slice(i + 1, j) }); i = j; continue; }
+        }
+        if (ch === '*') { flush(); manual = !manual; continue; }
+        if (ch === '(') depth++;
+        const it = baseItalic || manual || depth > 0;
+        if (ch === ')') depth = Math.max(0, depth - 1);
+        if (it !== bufIt) flush();
+        bufIt = it; buf += ch;
+      }
+      flush();
+      if (segs.length) chunks.push(segs);
+    }
+    paras.push(chunks);
+  }
+  return paras;
+}
+function measureChunk(g, chunk, size) {
+  let w = 0;
+  for (const s of chunk) {
+    if (s.t === 'sym') w += size * .8 + size * .06;
+    else { g.font = bodyFont(size, s.it); w += g.measureText(s.s).width; }
+  }
+  return w;
+}
+function layoutRich(g, paras, size, maxW) {
+  g.font = bodyFont(size, false); const space = g.measureText(' ').width;
+  const out = [];
+  for (const chunks of paras) {
+    const lines = []; let cur = [], curW = 0;
+    for (const ch of chunks) {
+      const w = measureChunk(g, ch, size);
+      if (cur.length && curW + space + w > maxW) { lines.push(cur); cur = []; curW = 0; }
+      cur.push({ ch, w }); curW += (cur.length > 1 ? space : 0) + w;
+    }
+    if (cur.length) lines.push(cur);
+    out.push(lines);
+  }
+  const lh = size * 1.16, pg = size * .32;
+  let h = 0; out.forEach((p, i) => { h += Math.max(1, p.length) * lh + (i ? pg : 0); });
+  return { paras: out, h, lh, pg, space };
+}
+function drawRich(g, lay, size, x, y, color) { // y = top
+  let cy = y;
+  g.fillStyle = color; g.textBaseline = 'alphabetic';
+  lay.paras.forEach((lines, pi) => {
+    if (pi) cy += lay.pg;
+    if (!lines.length) { cy += lay.lh; return; }
+    for (const line of lines) {
+      const base = cy + size * .88;
+      let cx = x;
+      line.forEach((item, idx) => {
+        if (idx) cx += lay.space;
+        for (const s of item.ch) {
+          if (s.t === 'sym') {
+            const d = size * .8;
+            drawSym(g, s.s, cx + size * .03, base - d * .86, d, true);
+            cx += d + size * .06;
+          } else {
+            g.font = bodyFont(size, s.it); g.fillStyle = color; g.fillText(s.s, cx, base); cx += g.measureText(s.s).width;
+          }
+        }
+      });
+      cy += lay.lh;
+    }
+  });
+  return cy;
+}
+
+// ---------- drawing helpers ----------
+function fitText(g, text, font, maxSize, minSize, maxW) {
+  let s = maxSize;
+  for (; s > minSize; s -= 1) { g.font = font(s); if (g.measureText(text).width <= maxW) break; }
+  g.font = font(s); return s;
+}
+function drawCostRight(g, syms, right, cy, d) {
+  const gap = d * .1; let x = right - syms.length * (d + gap) + gap;
+  const start = x;
+  for (const s of syms) { drawSym(g, s, x, cy - d / 2, d, true); x += d + gap; }
+  return start;
+}
+const FRAMES = {
+  W: ['#e6dfc6', '#f6f1e2'], U: ['#2f73ad', '#dce8f2'], B: ['#3b3533', '#d9d2cf'], R: ['#c0533a', '#f2ddd0'],
+  G: ['#36754a', '#d8e7d6'], M: ['#c8a148', '#f2e7c6'], A: ['#8d989e', '#e3e7e9'], L: ['#8f765b', '#e9dfd1'], C: ['#c4c0b9', '#efede8']
+};
+function lum(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255; }
+
+function drawArt(g, rect, img) {
+  if (!img || !img.naturalWidth) { g.fillStyle = '#222'; g.fillRect(rect.x, rect.y, rect.w, rect.h); return; }
+  const base = Math.max(rect.w / img.naturalWidth, rect.h / img.naturalHeight);
+  const s = base * st.zoom, w = img.naturalWidth * s, h = img.naturalHeight * s;
+  g.drawImage(img, rect.x + (rect.w - w) / 2 + st.ox, rect.y + (rect.h - h) / 2 + st.oy, w, h);
+}
+
+function artRect(o) {
+  if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
+  if (o.border === 'none') return { x: 0, y: 0, w: W, h: H };
+  return { x: 30, y: 30, w: W - 60, h: H - 60 };
+}
+
+// ---------- the card ----------
+function render(g, o, bleed) {
+  const borderCol = o.border === 'none' ? '#0b0b0c' : o.border;
+  const shade = +o.shade, size = +o.size;
+  g.save();
+  g.clearRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2);
+  // outer shape
+  g.save();
+  if (bleed) {
+    g.fillStyle = borderCol; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2);
+  } else {
+    g.beginPath(); g.roundRect(0, 0, W, H, o.round ? 36 : 0); g.clip();
+    g.fillStyle = borderCol; g.fillRect(0, 0, W, H);
+  }
+
+  if (o.layout === 'framed') renderFramed(g, o, size, borderCol);
+  else renderFullArt(g, o, shade, size, bleed);
+  g.restore();
+  g.restore();
+}
+
+function renderFullArt(g, o, shade, size, bleed) {
+  const borderless = o.border === 'none';
+  const ar = artRect(o);
+  g.save();
+  if (borderless) {
+    const r = bleed ? { x: -BLEED, y: -BLEED, w: W + BLEED * 2, h: H + BLEED * 2 } : ar;
+    // keep art framing identical to non-bleed: draw relative to ar, but don't clip to it
+    drawArt(g, ar, st.img);
+    if (bleed) { g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#0b0b0c'; g.fillRect(r.x, r.y, r.w, r.h); g.globalCompositeOperation = 'source-over'; }
+  } else {
+    g.beginPath(); g.roundRect(ar.x, ar.y, ar.w, ar.h, 14); g.clip();
+    drawArt(g, ar, st.img);
+  }
+
+  const L = 48, R = W - 48, innerW = R - L;
+  // ---- title ----
+  const cost = parseCost(o.cost), costD = 38;
+  if (o.layout === 'panel') {
+    g.fillStyle = `rgba(10,9,11,${shade})`; g.beginPath(); g.roundRect(L - 6, 46, innerW + 12, 66, 12); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 2; g.stroke();
+  } else {
+    const gr = g.createLinearGradient(0, 0, 0, 190);
+    gr.addColorStop(0, `rgba(0,0,0,${shade})`); gr.addColorStop(.55, `rgba(0,0,0,${shade * .55})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, 190 + BLEED);
+  }
+  const costLeft = cost.length ? drawCostRight(g, cost, R - 8, 79, costD) : R;
+  if (o.name) {
+    g.fillStyle = '#fff'; g.textBaseline = 'alphabetic';
+    g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 6;
+    fitText(g, o.name, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 40, 18, costLeft - L - 24);
+    g.fillText(o.name, L + 10, 92);
+    g.shadowBlur = 0;
+  }
+
+  // ---- text box ----
+  const padX = 22, boxL = L - 6, boxW = innerW + 12, textW = boxW - padX * 2;
+  const bottom = 975, maxH = 520, minH = 250;
+  const rules = parseRich(o.rules, false), flav = parseRich(o.flavor, true);
+  const typeH = o.type ? 50 : 0;
+  let fs = size, lr, lf, contentH;
+  for (; fs >= 14; fs -= 1) {
+    lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
+    contentH = 22 + typeH + (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 26 : 0) + lf.h : 0) + (o.pt ? 52 : 18);
+    if (contentH <= maxH) break;
+  }
+  const boxH = Math.max(minH, contentH), top = bottom - boxH;
+
+  if (o.layout === 'panel') {
+    g.fillStyle = `rgba(10,9,11,${shade})`; g.beginPath(); g.roundRect(boxL, top, boxW, boxH, 14); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 2; g.stroke();
+  } else {
+    const gr = g.createLinearGradient(0, top - 140, 0, top + 40);
+    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, `rgba(0,0,0,${shade})`);
+    g.fillStyle = gr; g.fillRect(-BLEED, top - 140, W + BLEED * 2, 180);
+    g.fillStyle = `rgba(0,0,0,${shade})`; g.fillRect(-BLEED, top + 39, W + BLEED * 2, H - top + BLEED);
+  }
+
+  let y = top + 18;
+  const tx = boxL + padX;
+  if (o.type) {
+    g.fillStyle = '#fff';
+    fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 31, 16, textW);
+    g.fillText(o.type, tx, y + 31);
+    y += typeH;
+  }
+  g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3;
+  if (o.rules) y = drawRich(g, lr, fs, tx, y, '#f4f1ec');
+  if (o.flavor) {
+    if (o.rules) { y += 10; g.shadowBlur = 0; g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(tx + 4, y, textW - 8, 1.5); y += 16; g.shadowBlur = 3; }
+    y = drawRich(g, lf, fs, tx, y, '#e9e4dc');
+  }
+  if (o.pt) {
+    g.fillStyle = '#fff';
+    g.font = `700 40px "${o.titleFont}", Georgia, serif`; g.textAlign = 'right';
+    g.fillText(o.pt, boxL + boxW - padX + 2, bottom - 16); g.textAlign = 'left';
+  }
+  g.shadowBlur = 0;
+  g.restore();
+  drawFooter(g, o, '#e8e4de', 1005);
+}
+
+function renderFramed(g, o, size, borderCol) {
+  const [frame, box] = FRAMES[o.color] || FRAMES.B;
+  const inner = { x: 30, y: 30, w: W - 60, h: H - 60 };
+  const dark = '#141211';
+  g.fillStyle = frame; g.beginPath(); g.roundRect(inner.x, inner.y, inner.w, inner.h, 14); g.fill();
+  // texture-ish sheen
+  const sh = g.createLinearGradient(0, 30, 0, H - 30);
+  sh.addColorStop(0, 'rgba(255,255,255,.12)'); sh.addColorStop(.5, 'rgba(255,255,255,0)'); sh.addColorStop(1, 'rgba(0,0,0,.15)');
+  g.fillStyle = sh; g.fill();
+
+  const bar = (x, y, w, h) => {
+    g.fillStyle = box; g.beginPath(); g.roundRect(x, y, w, h, 10); g.fill();
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 2.5; g.stroke();
+  };
+  // title
+  bar(46, 46, 658, 62);
+  const cost = parseCost(o.cost);
+  const costLeft = cost.length ? drawCostRight(g, cost, 694, 77, 36) : 694;
+  if (o.name) {
+    g.fillStyle = dark; fitText(g, o.name, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 38, 18, costLeft - 66 - 14);
+    g.fillText(o.name, 64, 90);
+  }
+  // art
+  const ar = artRect(o);
+  g.save(); g.beginPath(); g.rect(ar.x, ar.y, ar.w, ar.h); g.clip(); drawArt(g, ar, st.img); g.restore();
+  g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 3; g.strokeRect(ar.x, ar.y, ar.w, ar.h);
+  // type
+  bar(46, 598, 658, 56);
+  if (o.type) { g.fillStyle = dark; fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 30, 16, 620); g.fillText(o.type, 64, 637); }
+  // text box
+  const tb = { x: 58, y: 662, w: 634, h: 300 };
+  g.fillStyle = box; g.fillRect(tb.x, tb.y, tb.w, tb.h);
+  g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 2; g.strokeRect(tb.x, tb.y, tb.w, tb.h);
+  const padX = 20, textW = tb.w - padX * 2, avail = tb.h - 28 - (o.pt ? 22 : 0);
+  const rules = parseRich(o.rules, false), flav = parseRich(o.flavor, true);
+  let fs = size, lr, lf, h;
+  for (; fs >= 14; fs -= 1) {
+    lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
+    h = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 24 : 0) + lf.h : 0);
+    if (h <= avail) break;
+  }
+  let y = tb.y + 14 + Math.max(0, (avail - h) / 2) * (o.flavor ? 0 : 1);
+  if (!o.rules && !o.flavor) y = tb.y + 14;
+  if (o.rules) y = drawRich(g, lr, fs, tb.x + padX, y, dark);
+  if (o.flavor) {
+    if (o.rules) { y += 10; g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(tb.x + padX + 10, y, textW - 20, 1.5); y += 14; }
+    drawRich(g, lf, fs, tb.x + padX, y, dark);
+  }
+  if (o.pt) {
+    bar(566, 940, 132, 58);
+    g.fillStyle = dark; g.font = `700 38px "${o.titleFont}", Georgia, serif`; g.textAlign = 'center';
+    g.fillText(o.pt, 632, 982); g.textAlign = 'left';
+  }
+  drawFooter(g, o, lum(frame) > .55 ? '#1a1816' : '#f0ece6', 1008, o.pt ? 556 : null);
+}
+
+function drawFooter(g, o, color, y, rightLimit) {
+  g.fillStyle = color; g.textBaseline = 'alphabetic';
+  g.font = `600 15px "IBM Plex Sans", system-ui, sans-serif`;
+  let left = o.info || '';
+  if (o.artist) left += (left ? '   ' : '') + '✎ ' + o.artist;
+  if (left) g.fillText(left, 52, y);
+  if (o.note) {
+    g.font = `400 13px "IBM Plex Sans", system-ui, sans-serif`; g.textAlign = 'right';
+    g.fillText(o.note, W - 52, y); g.textAlign = 'left';
+  }
+}
+
+// ---------- preview & export ----------
+let raf = 0;
+function draw() {
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(() => {
+    const o = readForm();
+    ctx.setTransform(RES, 0, 0, RES, 0, 0);
+    render(ctx, o, false);
+    updateQuality(o);
+  });
+}
+// Card space is 300 units per inch (750 units = 2.5"), so print dpi = 300 / (units per image pixel).
+function updateQuality(o) {
+  const q = $('quality'), img = st.img;
+  if (!img || !img.naturalWidth || st.sample) { q.innerHTML = ''; return; }
+  const r = artRect(o);
+  const dpi = Math.round(300 / (Math.max(r.w / img.naturalWidth, r.h / img.naturalHeight) * st.zoom));
+  const [cls, word] = dpi >= 300 ? ['good', 'Sharp'] : dpi >= 200 ? ['ok', 'Okay'] : ['bad', 'Soft'];
+  const need = `${Math.round(r.w)} × ${Math.round(r.h)}`;
+  const tip = dpi >= 300 ? 'Plenty of detail for printing.'
+    : dpi >= 200 ? `Fine for casual play, slightly soft up close. For crisp prints use at least ${need} px for this layout.`
+    : `This will look blurry when printed. Find a larger version (at least ${need} px for this layout), or zoom out.`;
+  q.innerHTML = `<span class="pill ${cls}">${word} · ${dpi} dpi</span><span>Your image is ${img.naturalWidth} × ${img.naturalHeight} px. ${tip}</span>`;
+}
+async function exportPng() {
+  const o = readForm(), bleed = o.bleed;
+  const c = document.createElement('canvas');
+  c.width = (W + (bleed ? BLEED * 2 : 0)) * RES; c.height = (H + (bleed ? BLEED * 2 : 0)) * RES;
+  const g = c.getContext('2d');
+  g.setTransform(RES, 0, 0, RES, bleed ? BLEED * RES : 0, bleed ? BLEED * RES : 0);
+  render(g, o, bleed);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const filename = ((o.name || 'card').replace(/[^\w\- ]+/g, '').trim() || 'card') + (bleed ? ' (bleed)' : '') + '.png';
+  await saveBlob(blob, filename, $('status'));
+}
+async function saveBlob(blob, filename, status) {
+  let dl = null;
+  try { dl = window.claude?.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+  if (dl) {
+    try { await dl.save({ filename, data: blob }); status.textContent = 'Saved ' + filename; }
+    catch (e) { status.textContent = e && e.code === 'declined' ? 'Save cancelled.' : 'Saving is unavailable here. Open the downloaded copy of this page in your browser instead.'; }
+    return;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  status.textContent = 'Saved ' + filename;
+}
+
+// ---------- image input ----------
+function loadFile(file) {
+  if (!file || !file.type.startsWith('image/')) { $('status').textContent = 'That file isn’t an image. Try a JPG, PNG or WebP.'; return; }
+  const img = new Image();
+  img.onload = () => {
+    st.img = img; st.blob = file; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
+    if (st.sample && $('artist').value === 'Sample art') $('artist').value = '';
+    st.sample = false; $('status').textContent = ''; draw();
+  };
+  img.onerror = () => { $('status').textContent = 'Couldn’t read that image.'; };
+  img.src = URL.createObjectURL(file);
+}
+$('pick').onclick = () => $('file').click();
+$('file').onchange = e => { loadFile(e.target.files[0]); e.target.value = ''; };
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); if (t === 'drop' || !e.relatedTarget) drop.classList.remove('over'); }));
+document.addEventListener('drop', e => { const f = e.dataTransfer?.files?.[0]; if (f) loadFile(f); });
+document.addEventListener('paste', e => {
+  const item = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/'));
+  if (item) { e.preventDefault(); loadFile(item.getAsFile()); }
+});
+
+// pan & zoom on the card
+let drag = null;
+canvas.addEventListener('pointerdown', e => {
+  drag = { x: e.clientX, y: e.clientY, ox: st.ox, oy: st.oy };
+  canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
+});
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const k = W / canvas.getBoundingClientRect().width;
+  st.ox = drag.ox + (e.clientX - drag.x) * k; st.oy = drag.oy + (e.clientY - drag.y) * k; draw();
+});
+const endDrag = () => { drag = null; canvas.classList.remove('dragging'); };
+canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  st.zoom = Math.min(4, Math.max(.3, st.zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06)));
+  $('zoom').value = st.zoom; draw();
+}, { passive: false });
+$('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
+$('resetArt').onclick = () => { st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; draw(); };
+$('save').onclick = exportPng;
+$('clear').onclick = () => {
+  writeForm(BLANK); st.img = null; st.blob = null; st.sample = false; st.editingId = null;
+  st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
+  saveDraft(); updateSheetButtons(); renderSheet(); draw(); $('name').focus();
+};
+
+// ---------- print sheet ----------
+const sheet = [];
+const sheetStatus = () => $('status');
+const idb = (() => {
+  let p;
+  const open = () => p || (p = new Promise((res, rej) => {
+    const r = indexedDB.open('proxyforge', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('cards', { keyPath: 'id' });
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const tx = async (mode, fn) => {
+    const db = await open();
+    return new Promise((res, rej) => {
+      const t = db.transaction('cards', mode), req = fn(t.objectStore('cards'));
+      t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error);
+    });
+  };
+  return { all: () => tx('readonly', s => s.getAll()), put: v => tx('readwrite', s => s.put(v)), del: id => tx('readwrite', s => s.delete(id)) };
+})();
+function persist(e) {
+  const { img, thumb, ...rest } = e;
+  idb.put(rest).catch(() => {});
+}
+const newId = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function cardCanvas(e, res) {
+  const c = document.createElement('canvas'); c.width = Math.round(W * res); c.height = Math.round(H * res);
+  const g = c.getContext('2d'); g.setTransform(res, 0, 0, res, 0, 0);
+  if (e.kind === 'made') {
+    const saved = { img: st.img, zoom: st.zoom, ox: st.ox, oy: st.oy };
+    Object.assign(st, { img: e.img, zoom: e.zoom, ox: e.ox, oy: e.oy });
+    try { render(g, { ...e.form, round: false }, false); } finally { Object.assign(st, saved); }
+  } else {
+    g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+    const s = Math.max(W / e.img.naturalWidth, H / e.img.naturalHeight), w = e.img.naturalWidth * s, h = e.img.naturalHeight * s;
+    g.drawImage(e.img, (W - w) / 2, (H - h) / 2, w, h);
+  }
+  return c;
+}
+function makeThumb(e) { e.thumb = cardCanvas(e, 0.4).toDataURL('image/jpeg', 0.85); }
+
+function updateSheetButtons() {
+  const editing = st.editingId && sheet.some(e => e.id === st.editingId);
+  if (!editing) st.editingId = null;
+  $('addSheet').textContent = editing ? 'Update card on sheet' : 'Add to print sheet';
+  $('addNew').hidden = !editing;
+}
+function addCurrent(asNew) {
+  if (!st.img) { sheetStatus().textContent = 'Add some art first.'; return; }
+  const form = readForm();
+  let e = !asNew && st.editingId ? sheet.find(x => x.id === st.editingId) : null;
+  const updating = !!e;
+  if (e) {
+    Object.assign(e, { form, img: st.img, blob: st.blob || null, zoom: st.zoom, ox: st.ox, oy: st.oy });
+  } else {
+    e = { id: newId(), kind: 'made', form, img: st.img, blob: st.blob || null, zoom: st.zoom, ox: st.ox, oy: st.oy, copies: 1, order: Date.now() };
+    sheet.push(e);
+  }
+  makeThumb(e); persist(e);
+  st.editingId = e.id;
+  sheetStatus().textContent = `${updating ? 'Updated' : 'Added'} “${form.name || 'Untitled'}” on the print sheet.`;
+  updateSheetButtons(); renderSheet();
+}
+function loadImage(src) {
+  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+}
+async function addFinished(files) {
+  let n = 0;
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    try {
+      const img = await loadImage(URL.createObjectURL(f));
+      const e = { id: newId(), kind: 'image', form: { name: f.name.replace(/\.[^.]+$/, '') }, img, blob: f, zoom: 1, ox: 0, oy: 0, copies: 1, order: Date.now() + n };
+      makeThumb(e); sheet.push(e); persist(e); n++;
+    } catch (err) {}
+  }
+  sheetStatus().textContent = n ? `Added ${n} card image${n > 1 ? 's' : ''} to the print sheet.` : 'None of those files could be read as images.';
+  renderSheet();
+}
+function editEntry(id) {
+  const e = sheet.find(x => x.id === id); if (!e || e.kind !== 'made') return;
+  writeForm(e.form);
+  Object.assign(st, { img: e.img, blob: e.blob, zoom: e.zoom, ox: e.ox, oy: e.oy, sample: false, editingId: id });
+  $('zoom').value = e.zoom; saveDraft(); updateSheetButtons(); renderSheet(); draw();
+  sheetStatus().textContent = `Editing “${e.form.name || 'Untitled'}”. Press Update card on sheet when you're done.`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function removeEntry(id) {
+  const i = sheet.findIndex(x => x.id === id); if (i < 0) return;
+  sheet.splice(i, 1); idb.del(id).catch(() => {});
+  if (st.editingId === id) st.editingId = null;
+  updateSheetButtons(); renderSheet();
+}
+function renderSheet() {
+  const list = $('thumbs'); list.textContent = '';
+  const total = sheet.reduce((s, e) => s + e.copies, 0);
+  for (const e of sheet) {
+    const li = document.createElement('li'); li.className = 'thumb' + (e.id === st.editingId ? ' editing' : '');
+    const pic = document.createElement('div'); pic.className = 'pic';
+    const im = document.createElement('img'); im.src = e.thumb; im.alt = e.form.name || 'Card'; pic.append(im);
+    if (e.kind === 'image') { const t = document.createElement('span'); t.className = 'tag'; t.textContent = 'Image'; pic.append(t); }
+    const name = document.createElement('div'); name.className = 'name'; name.textContent = e.form.name || 'Untitled';
+    const ctl = document.createElement('div'); ctl.className = 'ctl';
+    const n = document.createElement('input'); n.type = 'number'; n.min = 1; n.max = 99; n.value = e.copies; n.id = 'copies-' + e.id;
+    n.setAttribute('aria-label', 'Copies of ' + (e.form.name || 'card')); n.title = 'Copies';
+    n.oninput = () => { const v = Math.max(1, Math.min(99, parseInt(n.value) || 1)); e.copies = v; persist(e); updateCount(); };
+    const times = document.createElement('span'); times.className = 'hint'; times.textContent = 'Copies';
+    ctl.append(times, n);
+    if (e.kind === 'made') { const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Edit'; b.onclick = () => editEntry(e.id); ctl.append(b); }
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.textContent = '✕'; x.title = 'Remove from sheet'; x.setAttribute('aria-label', 'Remove ' + (e.form.name || 'card') + ' from sheet'); x.onclick = () => removeEntry(e.id);
+    ctl.append(x);
+    li.append(pic, name, ctl); list.append(li);
+  }
+  $('sheetEmpty').hidden = sheet.length > 0;
+  updateCount();
+}
+function updateCount() {
+  const total = sheet.reduce((s, e) => s + e.copies, 0), pages = Math.ceil(total / 9);
+  $('sheetCount').textContent = total ? `${total} card${total > 1 ? 's' : ''} · ${pages} page${pages > 1 ? 's' : ''} · 9 per page` : 'No cards yet.';
+  $('savePdf').disabled = !total;
+}
+async function savePdf() {
+  const status = sheetStatus();
+  if (!window.jspdf) { status.textContent = 'The PDF builder didn’t load. Check your internet connection and reload the page.'; return; }
+  const btn = $('savePdf'); btn.disabled = true; status.textContent = 'Building PDF…';
+  try {
+    const paper = $('paper').value, gap = +$('gap').value, marks = $('marks').checked;
+    const doc = new window.jspdf.jsPDF({ unit: 'in', format: paper, orientation: 'portrait', compress: true });
+    const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+    const cw = 2.5, ch = 3.5, mx = (pw - (3 * cw + 2 * gap)) / 2, my = (ph - (3 * ch + 2 * gap)) / 2;
+    const xs = [0, 1, 2].map(c => mx + c * (cw + gap)), ys = [0, 1, 2].map(r => my + r * (ch + gap));
+    const drawMarks = () => {
+      doc.setDrawColor(0); doc.setLineWidth(0.008);
+      const ex = [...new Set(xs.flatMap(x => [x, x + cw]).map(v => +v.toFixed(4)))];
+      const ey = [...new Set(ys.flatMap(y => [y, y + ch]).map(v => +v.toFixed(4)))];
+      const top = ys[0], bot = ys[2] + ch, left = xs[0], right = xs[2] + cw, pad = 0.04;
+      for (const x of ex) { doc.line(x, 0.1, x, top - pad); doc.line(x, bot + pad, x, ph - 0.1); }
+      for (const y of ey) { doc.line(0.1, y, left - pad, y); doc.line(right + pad, y, pw - 0.1, y); }
+    };
+    const list = sheet.flatMap(e => Array(e.copies).fill(e));
+    const done = new Map();
+    for (let i = 0; i < list.length; i++) {
+      const e = list[i], k = i % 9;
+      if (k === 0) { if (i) doc.addPage(paper, 'portrait'); if (marks) drawMarks(); }
+      if (!done.has(e.id)) done.set(e.id, cardCanvas(e, RES).toDataURL('image/jpeg', 0.92));
+      doc.addImage(done.get(e.id), 'JPEG', xs[k % 3], ys[(k / 3) | 0], cw, ch, e.id, 'NONE');
+      status.textContent = `Building PDF… ${i + 1} of ${list.length}`;
+      await new Promise(r => setTimeout(r, 0));
+    }
+    const pages = Math.ceil(list.length / 9);
+    await saveBlob(doc.output('blob'), `Proxy sheet (${list.length} cards, ${pages} page${pages > 1 ? 's' : ''}).pdf`, status);
+  } catch (err) {
+    console.error(err); status.textContent = 'Couldn’t build the PDF: ' + (err && err.message || err);
+  } finally { btn.disabled = false; updateCount(); }
+}
+async function restoreSheet() {
+  let rows = [];
+  try { rows = await idb.all() || []; } catch (e) { return; }
+  rows.sort((a, b) => a.order - b.order);
+  for (const r of rows) {
+    try {
+      const img = r.blob ? await loadImage(URL.createObjectURL(r.blob)) : (st.sampleImg.complete ? st.sampleImg : await loadImage(st.sampleImg.src));
+      const e = { ...r, img }; makeThumb(e); sheet.push(e);
+    } catch (err) {}
+  }
+  renderSheet();
+}
+$('addSheet').onclick = () => addCurrent(false);
+$('addNew').onclick = () => addCurrent(true);
+$('pickFinished').onclick = () => $('finished').click();
+$('finished').onchange = e => { addFinished([...e.target.files]); e.target.value = ''; };
+$('savePdf').onclick = savePdf;
+for (const k of FIELDS) $(k).addEventListener('input', () => { draw(); saveDraft(); });
+
+// ---------- boot ----------
+writeForm(loadDraft() || SAMPLE);
+st.img = st.sampleImg = makeSampleArt();
+st.img.onload = draw;
+draw();
+const fams = ['700 20px Spectral', '700 20px Cinzel', '700 20px "Cormorant SC"', '20px "IM Fell English SC"', '20px "Crimson Text"', 'italic 20px "Crimson Text"', '600 20px "IBM Plex Sans"'];
+if (document.fonts) {
+  Promise.all(fams.map(f => document.fonts.load(f).catch(() => {}))).then(() => { draw(); restoreSheet(); });
+  document.fonts.ready.then(draw);
+} else restoreSheet();
+})();
+</script>

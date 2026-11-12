@@ -1,0 +1,5 @@
+# Card art you download is for your own proxies; keep it out of the public repo.
+art/
+.claude/
+*.png
+*.pdf
