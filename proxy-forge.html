@@ -4,7 +4,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bebas+Neue&family=Bungee&family=Caveat:wght@700&family=Cinzel:wght@700&family=Comic+Neue:ital,wght@0,700;1,700&family=Cormorant+SC:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IM+Fell+English+SC&family=Noto+Sans+JP:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Pirata+One&family=Rubik:wght@800&family=Special+Elite&family=Spectral:wght@600;700;800&family=Yellowtail&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bebas+Neue&family=Bungee&family=Caveat:wght@700&family=Cinzel:wght@700&family=Comic+Neue:ital,wght@0,700;1,700&family=Cormorant+SC:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IM+Fell+English+SC&family=Noto+Sans+JP:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Pirata+One&family=Rubik:wght@800&family=Special+Elite&family=Spectral:wght@600;700;800&family=Yellowtail&family=Uncial+Antiqua&family=MedievalSharp&family=Almendra:wght@700&family=Cinzel+Decorative:wght@700&family=Eagle+Lake&family=UnifrakturMaguntia&family=Grenze+Gotisch:wght@700&family=New+Rocker&family=Creepster&family=Nosifer&family=Orbitron:wght@800&family=Audiowide&family=Russo+One&family=Monoton&family=Press+Start+2P&family=VT323&family=Playfair+Display:ital,wght@0,800;1,800&family=Abril+Fatface&family=Righteous&family=Dela+Gothic+One&family=Rock+Salt&family=Shadows+Into+Light&display=swap">
 <style>
 /* Layout: workbench — scrolling control column on the left, sticky card proof on the right; stacks on phones */
 :root {
@@ -120,6 +120,8 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .styles button { padding: 6px; display: grid; gap: 6px; justify-items: center; scroll-snap-align: start; font-size: 12px; }
 .styles canvas { width: 84px; height: 118px; border-radius: 5px; display: block; background: #000; }
 .styles button[aria-pressed=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.fxpal { display: flex; gap: 6px; flex-wrap: wrap; }
+.fxpal button { width: 34px; height: 26px; padding: 0; border-radius: 6px; }
 .notice.intro { border-color: var(--line); background: var(--panel); }
 .notice p { margin: 0; font-size: 13px; line-height: 1.5; }
 .quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
@@ -206,6 +208,28 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <label for="zoom">Zoom <input type="range" id="zoom" min="0.3" max="4" step="0.01" value="1"></label>
           <div class="actions" style="align-self:end"><button type="button" id="resetArt">Recenter art</button></div>
         </div>
+        <div class="row">
+          <label for="artFx">Art filter
+            <select id="artFx">
+              <option value="none">None</option>
+              <option value="bw">Black &amp; white</option>
+              <option value="sepia">Sepia</option>
+              <option value="duotone">Duotone</option>
+              <option value="halftone">Halftone dots</option>
+              <option value="pop">Color halftone (pop art)</option>
+              <option value="posterize">Posterize</option>
+              <option value="grain">Film grain</option>
+            </select>
+          </label>
+          <label for="fxAmt" id="fxAmtWrap" hidden><span id="fxAmtLabel">Strength</span> <input type="range" id="fxAmt" min="0" max="1" step="0.01" value="0.5"></label>
+        </div>
+        <div id="fxColors" hidden>
+          <div class="row">
+            <label for="fxDark" id="fxDarkLabel">Shadows <input type="color" id="fxDark" value="#1d1442"></label>
+            <label for="fxLight" id="fxLightLabel">Highlights <input type="color" id="fxLight" value="#ffcf70"></label>
+          </div>
+          <div class="fxpal" id="fxPal" role="group" aria-label="Color pairs"></div>
+        </div>
         <label class="inline"><input type="checkbox" id="guides" checked> Show art-area guide on the preview (never printed)</label>
         <div class="quality" id="quality" aria-live="polite"></div>
         <p class="credit" id="artCredit" hidden></p>
@@ -255,6 +279,20 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 
       <fieldset>
         <legend>Look</legend>
+        <label for="wear">Wear &amp; aging
+          <select id="wear">
+            <option value="none">None (fresh print)</option>
+            <option value="light">Lightly used</option>
+            <option value="worn">Worn (creases, scuffed edges)</option>
+            <option value="beat">Beat up (tear, folded corner)</option>
+            <option value="wrecked">Falling apart</option>
+          </select>
+        </label>
+        <div class="actions" id="wearMore" hidden>
+          <button type="button" id="wearShuffle">Shuffle damage</button>
+          <span class="hint">Every card wears differently. Shuffle for new tears, creases and chips.</span>
+        </div>
+        <input type="hidden" id="wearSeed" value="0">
         <div class="row">
           <label for="layout">Layout
             <select id="layout">
@@ -283,12 +321,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         </div>
         <div class="row fixedOnly">
           <label for="titleFont">Title font
-            <select id="titleFont">
-              <option value="Spectral">Spectral</option>
-              <option value="Cinzel">Cinzel</option>
-              <option value="Cormorant SC">Cormorant SC</option>
-              <option value="IM Fell English SC">IM Fell English</option>
-            </select>
+            <select id="titleFont"><option value="Spectral">Spectral</option></select>
           </label>
           <label for="shade">Text shading <input type="range" id="shade" min="0" max="1" step="0.01" value="0.78"></label>
           <label for="size">Rules text size <input type="range" id="size" min="18" max="40" step="1" value="31"></label>
@@ -316,6 +349,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
             <select id="preset">
               <option value="clean">Clean full art</option>
               <option value="comic">Comic book cover</option>
+              <option value="pulp">Pulp comic with stickers</option>
+              <option value="paperback">Worn paperback with stickers</option>
               <option value="strips">Torn paper strips</option>
               <option value="poster">Bold poster</option>
               <option value="vertical">Vertical title</option>
@@ -371,7 +406,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -493,7 +528,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed'];
 const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
@@ -502,7 +537,8 @@ const SAMPLE = {
   flavor: '“Come in, come in. Do wipe your feet. And your throat.”',
   pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Proxy — not for sale',
   layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
-  pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true
+  pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true,
+  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0'
 };
 // Original example cards used for the random first-visit card.
 const EXAMPLES = [
@@ -869,9 +905,68 @@ function lum(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 
 
 function drawArt(g, rect, img) {
   if (!img || !img.naturalWidth) { g.fillStyle = '#222'; g.fillRect(rect.x, rect.y, rect.w, rect.h); return; }
+  const src = fxImage(img, curFx);
   const base = Math.max(rect.w / img.naturalWidth, rect.h / img.naturalHeight);
   const s = base * st.zoom, w = img.naturalWidth * s, h = img.naturalHeight * s;
-  g.drawImage(img, rect.x + (rect.w - w) / 2 + st.ox, rect.y + (rect.h - h) / 2 + st.oy, w, h);
+  g.drawImage(src, rect.x + (rect.w - w) / 2 + st.ox, rect.y + (rect.h - h) / 2 + st.oy, w, h);
+}
+
+// ---------- art filters ----------
+// The filtered art is made once per image and setting (at most 1800 px on the long side) and cached.
+let curFx = null;
+const fxCache = new WeakMap();
+const hex = c => [1, 3, 5].map(i => parseInt((c || '#000000').slice(i, i + 2), 16) || 0);
+function fxImage(img, o) {
+  const fx = o && o.artFx; if (!fx || fx === 'none') return img;
+  const amt = Math.max(0, Math.min(1, +o.fxAmt || 0)), key = [fx, o.fxDark, o.fxLight, amt].join('|');
+  let m = fxCache.get(img); if (!m) fxCache.set(img, m = new Map());
+  if (m.has(key)) return m.get(key);
+  const iw = img.naturalWidth, ih = img.naturalHeight, k = Math.min(1, 1800 / Math.max(iw, ih));
+  const w = Math.max(1, Math.round(iw * k)), h = Math.max(1, Math.round(ih * k));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  if (fx === 'halftone' || fx === 'pop') halftone(g, img, w, h, amt, fx === 'pop', hex(o.fxDark), o.fxLight);
+  else {
+    g.drawImage(img, 0, 0, w, h);
+    const id = g.getImageData(0, 0, w, h), d = id.data;
+    const [dr, dg, db] = hex(o.fxDark), [lr, lg, lb] = hex(o.fxLight);
+    const con = 0.7 + amt * 1.6, levels = Math.round(2 + (1 - amt) * 6), step = 255 / (levels - 1), noise = amt * 70;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], gg = d[i + 1], b = d[i + 2];
+      let t = (0.299 * r + 0.587 * gg + 0.114 * b) / 255;
+      if (fx === 'bw' || fx === 'sepia' || fx === 'duotone') t = Math.max(0, Math.min(1, (t - 0.5) * con + 0.5));
+      if (fx === 'bw') { d[i] = d[i + 1] = d[i + 2] = t * 255; }
+      else if (fx === 'sepia') { d[i] = Math.min(255, t * 255 * 1.07 + 20); d[i + 1] = t * 255 * 0.88 + 10; d[i + 2] = t * 255 * 0.66; }
+      else if (fx === 'duotone') { d[i] = dr + (lr - dr) * t; d[i + 1] = dg + (lg - dg) * t; d[i + 2] = db + (lb - db) * t; }
+      else if (fx === 'posterize') { d[i] = Math.round(r / step) * step; d[i + 1] = Math.round(gg / step) * step; d[i + 2] = Math.round(b / step) * step; }
+      else if (fx === 'grain') { const n = (Math.random() - 0.5) * noise; d[i] = r + n; d[i + 1] = gg + n; d[i + 2] = b + n; }
+    }
+    g.putImageData(id, 0, 0);
+  }
+  if (m.size > 6) m.delete(m.keys().next().value);
+  m.set(key, c); return c;
+}
+// Dots on a 45° screen; darker areas get bigger dots. `amt` is the dot size.
+function halftone(g, img, w, h, amt, color, ink, paper) {
+  const cols = Math.round(38 + (1 - amt) * 110), cell = w / cols, rows = Math.ceil(h / cell);
+  const sc = document.createElement('canvas'); sc.width = cols; sc.height = rows;
+  const sg = sc.getContext('2d', { willReadFrequently: true }); sg.drawImage(img, 0, 0, cols, rows);
+  const d = sg.getImageData(0, 0, cols, rows).data;
+  g.fillStyle = color ? '#fbf6ea' : paper; g.fillRect(0, 0, w, h);
+  if (!color) g.fillStyle = `rgb(${ink.join(',')})`;
+  const cos = Math.SQRT1_2, reach = Math.hypot(w, h);
+  if (!color) g.beginPath();
+  for (let v = -reach; v < reach; v += cell) for (let u = -reach; u < reach; u += cell) {
+    const x = w / 2 + (u - v) * cos, y = h / 2 + (u + v) * cos;
+    if (x < -cell || y < -cell || x > w + cell || y > h + cell) continue;
+    const ix = Math.min(cols - 1, Math.max(0, Math.floor(x / cell))), iy = Math.min(rows - 1, Math.max(0, Math.floor(y / cell))), i = (iy * cols + ix) * 4;
+    const lum = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
+    const r = cell * 0.72 * Math.sqrt(color ? Math.max(0.12, 1 - lum * 0.8) : 1 - lum);
+    if (r < 0.3) continue;
+    if (color) { const s = 1.25; g.fillStyle = `rgb(${Math.min(255, d[i] * s)},${Math.min(255, d[i + 1] * s)},${Math.min(255, d[i + 2] * s)})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+    else { g.moveTo(x + r, y); g.arc(x, y, r, 0, 7); }
+  }
+  if (!color) g.fill();
 }
 
 function artRect(o) {
@@ -896,12 +991,233 @@ function render(g, o, bleed) {
   }
 
   curPip = { kind: o.pipStyle || 'classic', color: o.pipColor || '#ffffff' };
+  curFx = o;
   if (o.layout === 'framed') renderFramed(g, o, size, borderCol);
   else if (o.layout === 'custom') renderCustom(g, o, bleed);
   else renderFullArt(g, o, shade, size, bleed);
+  drawWear(g, o);
   g.restore();
   g.restore();
 }
+
+// ---------- wear & aging ----------
+// A worn paperback: yellowed paper, grime along the edges, rubbed-off ink, cracked spine and creases,
+// chipped and torn edges, folded corners, crinkled laminate and old sticker residue.
+// The marks are seeded by the card's name (and the Shuffle damage button), so the preview, PNG and print sheet match.
+// They're drawn once per size into an offscreen canvas and reused.
+function rng(seed) {
+  return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+const WEAR = { light: 1, worn: 2, beat: 3, wrecked: 4 };
+const wearCache = new Map();
+let grainTile = null;
+function drawWear(g, o) {
+  const lv = WEAR[o.wear]; if (!lv) return;
+  let seed = 2166136261; for (const ch of (o.name || 'card') + o.wear + (o.wearSeed || 0)) seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619);
+  const t = g.getTransform(), sc = Math.min(3, Math.hypot(t.a, t.b) || 1);
+  g.save();
+  // yellowed paper, darker edges and grime
+  g.globalCompositeOperation = 'multiply';
+  g.fillStyle = `rgba(236, 214, 170, ${0.1 * lv})`; g.fillRect(0, 0, W, H);
+  const vg = g.createRadialGradient(W / 2, H / 2, H * 0.28, W / 2, H / 2, H * 0.8);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(70,45,18,${0.13 * lv})`);
+  g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  for (const [x0, y0, x1, y1, rx, ry, rw, rh] of [[0, 0, 0, 46, 0, 0, W, 46], [0, H, 0, H - 46, 0, H - 46, W, 46], [0, 0, 46, 0, 0, 0, 46, H], [W, 0, W - 46, 0, W - 46, 0, 46, H]]) {
+    const eg = g.createLinearGradient(x0, y0, x1, y1);
+    eg.addColorStop(0, `rgba(90,60,25,${0.1 * lv})`); eg.addColorStop(1, 'rgba(90,60,25,0)');
+    g.fillStyle = eg; g.fillRect(rx, ry, rw, rh);
+  }
+  g.globalCompositeOperation = 'source-over';
+  const key = [seed, lv, Math.round(sc * 100)].join('|');
+  let c = wearCache.get(key);
+  if (!c) {
+    c = document.createElement('canvas'); c.width = Math.ceil(W * sc); c.height = Math.ceil(H * sc);
+    const mg = c.getContext('2d'); mg.setTransform(sc, 0, 0, sc, 0, 0); wearMarks(mg, rng(seed), lv);
+    if (wearCache.size > 10) wearCache.delete(wearCache.keys().next().value);
+    wearCache.set(key, c);
+  }
+  g.drawImage(c, 0, 0, W, H);
+  g.restore();
+}
+const PAPER = '#e6d8b8', PAPER_DEEP = '#cdbb93';
+function wearMarks(g, R, lv) {
+  const light = a => `rgba(247, 240, 224, ${a})`, dark = a => `rgba(22, 14, 6, ${a})`;
+  const n = (...v) => v[lv - 1];
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  // paper grain
+  if (!grainTile) {
+    const c = document.createElement('canvas'); c.width = c.height = 192;
+    const cg = c.getContext('2d'), id = cg.createImageData(192, 192), r2 = rng(99);
+    for (let i = 0; i < id.data.length; i += 4) { const v = r2() < .5 ? 0 : 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = r2() < .35 ? 26 : 0; }
+    cg.putImageData(id, 0, 0); grainTile = c;
+  }
+  g.globalAlpha = Math.min(1, 0.35 * lv); g.fillStyle = g.createPattern(grainTile, 'repeat'); g.fillRect(0, 0, W, H); g.globalAlpha = 1;
+
+  // rubbed-off ink: patches of short light strokes, mostly near the edges, all rubbed one way
+  for (let p = 0; p < n(1, 4, 8, 13); p++) {
+    let x = R() * W, y = R() * H;
+    if (R() < .75) { const e = Math.floor(R() * 4), d = R() * 110; if (e === 0) y = d; else if (e === 1) x = W - d; else if (e === 2) y = H - d; else x = d; }
+    const rad = 22 + R() * (25 + lv * 22), dir = R() * Math.PI;
+    for (let i = 0; i < 50 + lv * 35; i++) {
+      const a = R() * Math.PI * 2, d = Math.pow(R(), .7) * rad, px = x + Math.cos(a) * d, py = y + Math.sin(a) * d;
+      const len = 2 + R() * (6 + lv * 3), ang = dir + (R() - .5) * .5;
+      g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.cos(ang) * len, py + Math.sin(ang) * len);
+      g.strokeStyle = light((.06 + R() * .3) * (1 - d / rad) * (.6 + lv * .15)); g.lineWidth = .5 + R() * (1 + lv * .4); g.stroke();
+    }
+  }
+  // fine scratches
+  for (let i = 0; i < lv * 35; i++) {
+    const x = R() * W, y = R() * H, len = 8 + R() * 60, ang = R() * Math.PI;
+    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(ang + .2) * len / 2, y + Math.sin(ang + .2) * len / 2, x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+    g.strokeStyle = light(.1 + R() * .22); g.lineWidth = .4 + R() * .8; g.stroke();
+  }
+
+  // cracked ink: a wandering white line that sometimes branches
+  const crack = (x, y, ang, len, w, a, wob, depth = 0) => {
+    const kids = [];
+    g.beginPath(); g.moveTo(x, y);
+    for (let d = 0; d < len;) {
+      const st = 3 + R() * 6; ang += (R() - .5) * wob; x += Math.cos(ang) * st; y += Math.sin(ang) * st; d += st; g.lineTo(x, y);
+      if (depth < 2 && R() < .06) kids.push([x, y, ang + (R() < .5 ? 1 : -1) * (.5 + R() * .9), (len - d) * (.25 + R() * .4)]);
+    }
+    g.strokeStyle = light(a); g.lineWidth = w; g.stroke();
+    for (const [kx, ky, ka, kl] of kids) crack(kx, ky, ka, kl, w * .6, a * .85, wob, depth + 1);
+  };
+  // spine: a fold line near the left edge with cracks running along it
+  if (lv >= 2) {
+    const x0 = 20 + R() * 16;
+    for (const [dx, col, wd] of [[0, light(.35), 2.4], [2.2, dark(.25), 1.4]]) {
+      g.beginPath(); g.moveTo(x0 + dx, 0);
+      for (let y = 0; y <= H; y += 30) g.lineTo(x0 + dx + (R() - .5) * 2.5, y);
+      g.strokeStyle = col; g.lineWidth = wd; g.stroke();
+    }
+    for (let i = 0; i < n(0, 5, 10, 16); i++) {
+      const down = R() < .5;
+      crack(x0 + (R() - .5) * 26, R() * H, (down ? 1 : -1) * Math.PI / 2 + (R() - .5) * .3, 40 + R() * (80 + lv * 60), .8 + R() * 1.2, .5 + R() * .35, .22);
+    }
+  }
+  // creases: a fold line, and on worn cards cracked ink along it
+  for (let i = 0; i < n(1, 2, 3, 5); i++) {
+    const side = R() < .5, a = [side ? 0 : R() * W, side ? R() * H : 0], b = [side ? W : R() * W, side ? R() * H : H];
+    const m = [(a[0] + b[0]) / 2 + (R() - .5) * 140, (a[1] + b[1]) / 2 + (R() - .5) * 140];
+    const at = s => [(1 - s) * (1 - s) * a[0] + 2 * (1 - s) * s * m[0] + s * s * b[0], (1 - s) * (1 - s) * a[1] + 2 * (1 - s) * s * m[1] + s * s * b[1]];
+    for (const [dx, col, wd] of [[0, light(.16 + .05 * lv), 1.5], [1.5, dark(.14 + .04 * lv), 1]]) {
+      g.beginPath(); g.moveTo(a[0] + dx, a[1] + dx); g.quadraticCurveTo(m[0] + dx, m[1] + dx, b[0] + dx, b[1] + dx);
+      g.strokeStyle = col; g.lineWidth = wd; g.stroke();
+    }
+    if (lv >= 2) {
+      const s0 = R() * .5, s1 = Math.min(1, s0 + .2 + R() * (.15 * lv));
+      g.beginPath();
+      for (let s = s0; s <= s1; s += .006) { const [x, y] = at(s); g.lineTo(x + (R() - .5) * 2.4, y + (R() - .5) * 2.4); }
+      g.strokeStyle = light(.45 + .1 * lv); g.lineWidth = 1 + R() * .8; g.stroke();
+      for (let k = 0; k < lv * 3; k++) {
+        const s = s0 + R() * (s1 - s0), [x, y] = at(s), [x2, y2] = at(Math.min(1, s + .01));
+        crack(x, y, Math.atan2(y2 - y, x2 - x) + (R() < .5 ? 1 : -1) * (1 + R() * .5), 8 + R() * 30, .7, .55, .6, 1);
+      }
+    }
+  }
+
+  // torn-paper helpers: exposed paper with white fibers and a shadow on the cover side
+  const fibers = (pts, a) => {
+    g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y));
+    g.strokeStyle = light(a); g.lineWidth = 1.3; g.stroke();
+    for (let i = 0; i < pts.length; i += 2) {
+      const [x, y] = pts[i], ang = R() * Math.PI * 2, l = 1 + R() * 3.5;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(ang) * l, y + Math.sin(ang) * l); g.strokeStyle = light(a * .8); g.lineWidth = .6; g.stroke();
+    }
+  };
+  const fillPoly = (pts, fill) => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fillStyle = fill; g.fill(); };
+  // chipped edges: bites out of the cover showing the paper underneath
+  const chip = (x, y, nx, ny, len, depth) => {
+    const tx = -ny, ty = nx, k = Math.max(4, Math.round(len / 4)), inner = [];
+    for (let i = 0; i <= k; i++) {
+      const t = i / k - .5, d = depth * Math.pow(Math.sin(Math.PI * (i / k)), .8) * (.55 + R() * .7);
+      inner.push([x + tx * t * len + nx * d, y + ty * t * len + ny * d]);
+    }
+    const out = [[x + tx * (-.5 * len) - nx * 3, y + ty * (-.5 * len) - ny * 3], ...inner, [x + tx * (.5 * len) - nx * 3, y + ty * (.5 * len) - ny * 3]];
+    g.save(); g.translate(nx * 1.4, ny * 1.4); fillPoly(out, dark(.3)); g.restore();
+    fillPoly(out, PAPER); fibers(inner, .85);
+  };
+  for (let i = 0; i < n(3, 12, 22, 34); i++) {
+    const e = Math.floor(R() * 4), t = .04 + R() * .92, len = 6 + R() * (10 + lv * 12), depth = 2 + R() * (3 + lv * 4);
+    if (e === 0) chip(t * W, 0, 0, 1, len, depth); else if (e === 1) chip(W, t * H, -1, 0, len, depth);
+    else if (e === 2) chip(t * W, H, 0, -1, len, depth); else chip(0, t * H, 1, 0, len, depth);
+  }
+  // whitened edges where the ink rubbed through
+  const speck = (x, y, r, a) => { g.beginPath(); g.ellipse(x, y, r, r * (.4 + R() * .8), R() * Math.PI, 0, 7); g.fillStyle = light(a); g.fill(); };
+  for (let i = 0; i < lv * 230; i++) {
+    const e = Math.floor(R() * 4), t = R(), d = Math.pow(R(), 2.6) * (6 + lv * 8);
+    const x = e === 0 ? t * W : e === 1 ? W - d : e === 2 ? t * W : d, y = e === 0 ? d : e === 1 ? t * H : e === 2 ? H - d : t * H;
+    speck(x, y, .4 + R() * (.8 + lv * .5), .25 + R() * .5);
+  }
+  // corners: rounded off and frayed, paper showing
+  for (const [cx, cy, sx, sy] of [[0, 0, 1, 1], [W, 0, -1, 1], [W, H, -1, -1], [0, H, 1, -1]]) {
+    if (lv === 1 && R() < .6) continue;
+    const r = 8 + R() * (6 + lv * 10), pts = [[cx - sx * 3, cy + sy * r * 1.2]];
+    for (let i = 0; i <= 10; i++) { const a = (i / 10) * Math.PI / 2, rr = r * (.6 + R() * .6); pts.push([cx + sx * (r - Math.cos(a) * rr) * (1 - i / 10) + sx * Math.sin(a) * rr * .2, cy + sy * (r - Math.sin(a) * rr)]); }
+    pts.push([cx + sx * r * 1.2, cy - sy * 3]);
+    fillPoly(pts, PAPER); fibers(pts.slice(1, -1), .8);
+    for (let i = 0; i < lv * 30; i++) { const a = R() * Math.PI / 2, d = r + Math.pow(R(), 1.5) * r * 1.6; speck(cx + sx * Math.cos(a) * d, cy + sy * Math.sin(a) * d, .6 + R() * 2, .3 + R() * .45); }
+  }
+  // a folded-over corner
+  if (lv >= 3 && R() < (lv === 4 ? 1 : .55)) {
+    const [cx, cy, sx, sy] = pick2(R, [[0, 0, 1, 1], [W, 0, -1, 1], [W, H, -1, -1], [0, H, 1, -1]]), f = 45 + R() * 55;
+    const A = [cx + sx * f, cy], B = [cx, cy + sy * f], F = [cx + sx * f, cy + sy * f];
+    fillPoly([A, [cx, cy], B], PAPER_DEEP);
+    g.save(); g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 8; g.shadowOffsetX = sx * 2; g.shadowOffsetY = sy * 2;
+    const fg = g.createLinearGradient(A[0], A[1], F[0], F[1]); fg.addColorStop(0, '#f2e7cc'); fg.addColorStop(1, PAPER_DEEP);
+    fillPoly([A, B, F], fg); g.restore();
+    g.beginPath(); g.moveTo(...A); g.lineTo(...B); g.strokeStyle = light(.7); g.lineWidth = 1.2; g.stroke();
+  }
+  // tears: a jagged split from an edge, paper showing through, the flap lifting a little
+  for (let i = 0; i < n(0, 0, 1, 2); i++) {
+    const e = Math.floor(R() * 4), t = .15 + R() * .7;
+    let [x, y] = e === 0 ? [t * W, 0] : e === 1 ? [W, t * H] : e === 2 ? [t * W, H] : [0, t * H];
+    let ang = [Math.PI / 2, Math.PI, -Math.PI / 2, 0][e] + (R() - .5) * 1.1;
+    const len = 110 + R() * (120 + lv * 70), maxGap = 3 + lv * 1.6 + R() * 3, L = [], Rt = [];
+    for (let d = 0; d <= len; d += 5 + R() * 6) {
+      ang += (R() - .5) * .45; x += Math.cos(ang) * 8; y += Math.sin(ang) * 8;
+      const gap = maxGap * Math.pow(1 - d / len, .8), nx = -Math.sin(ang), ny = Math.cos(ang);
+      L.push([x - nx * gap / 2 + (R() - .5) * 1.6, y - ny * gap / 2 + (R() - .5) * 1.6]);
+      Rt.push([x + nx * gap / 2 + (R() - .5) * 1.6, y + ny * gap / 2 + (R() - .5) * 1.6]);
+    }
+    g.save(); g.translate(1.6, 1.6); fillPoly([...L, ...Rt.slice().reverse()], dark(.35)); g.restore();
+    fillPoly([...L, ...Rt.slice().reverse()], PAPER);
+    fibers(L, .85); fibers(Rt, .85);
+    g.beginPath(); L.forEach(([px, py], k) => k ? g.lineTo(px - 2, py - 2) : g.moveTo(px - 2, py - 2)); g.strokeStyle = light(.22); g.lineWidth = 3; g.stroke();
+  }
+  // crinkled laminate: thin glossy wrinkles in one area
+  if (lv >= 3) {
+    const cx = 120 + R() * (W - 240), cy = H * .45 + R() * H * .45, rad = 70 + R() * 90;
+    for (let i = 0; i < 10 + lv * 5; i++) {
+      const a = R() * Math.PI * 2, d = R() * rad, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d, l = 15 + R() * 50, ang = R() * Math.PI;
+      g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(ang + .5) * l * .5, y + Math.sin(ang + .5) * l * .5, x + Math.cos(ang) * l, y + Math.sin(ang) * l);
+      g.strokeStyle = light(.12 + R() * .25); g.lineWidth = .7 + R() * 1.6; g.stroke();
+    }
+  }
+  // the remains of an old price sticker
+  if (lv >= 3 && R() < .6) {
+    const x = W - 230 + R() * 60, y = 60 + R() * 90, w = 130 + R() * 30, h = 62 + R() * 14, rot = (R() - .5) * .14;
+    g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(rot); g.translate(-w / 2, -h / 2);
+    const torn = [[0, 0], [w * (.55 + R() * .3), 0]];
+    for (let k = 1; k <= 8; k++) torn.push([w * (.5 + R() * .45) - k * 2, (h * k) / 8]);
+    torn.push([0, h]);
+    g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 3; g.shadowOffsetY = 1; fillPoly(torn, '#ece3cd'); g.restore();
+    g.globalCompositeOperation = 'multiply'; fillPoly(torn, 'rgba(190,160,110,.35)'); g.globalCompositeOperation = 'source-over';
+    for (let r = 0; r < 4; r++) for (let cx = 8; cx < w * .5; cx += 6 + R() * 10) { g.fillStyle = dark(.3 + R() * .2); g.fillRect(cx, 10 + r * 13, 3 + R() * 6, 4); } // faded print
+    fibers(torn.slice(1, -1), .7);
+    // residue where the rest of it was peeled off
+    for (let i = 0; i < 40; i++) speck(w * (.55 + R() * .4), R() * h, .8 + R() * 2.5, .25 + R() * .35);
+    g.restore();
+  }
+  // a faint ring stain
+  if (lv >= 3) {
+    const x = 120 + R() * (W - 240), y = 180 + R() * (H - 360), r = 60 + R() * 40;
+    g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = 'rgba(150, 105, 45, .05)'; g.fill();
+    g.beginPath(); g.arc(x, y, r, R() * 2, R() * 2 + 5.4); g.strokeStyle = 'rgba(120, 80, 30, .16)'; g.lineWidth = 5; g.stroke();
+  }
+}
+const pick2 = (R, a) => a[Math.floor(R() * a.length)];
 
 function renderFullArt(g, o, shade, size, bleed) {
   const borderless = o.border === 'none';
@@ -932,7 +1248,7 @@ function renderFullArt(g, o, shade, size, bleed) {
   if (o.name) {
     g.fillStyle = '#fff'; g.textBaseline = 'alphabetic';
     g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 6;
-    fitText(g, o.name, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 40, 18, costLeft - L - 24);
+    fitText(g, o.name, s => titleFont(o, s), 40, 18, costLeft - L - 24);
     g.fillText(o.name, L + 10, 92);
     g.shadowBlur = 0;
   }
@@ -965,7 +1281,7 @@ function renderFullArt(g, o, shade, size, bleed) {
   if (o.type) {
     const rw = drawRarity(g, o, boxL + boxW - padX, y + 21, 34);
     g.fillStyle = '#fff';
-    fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 31, 16, textW - (rw ? rw + 12 : 0));
+    fitText(g, o.type, s => titleFont(o, s), 31, 16, textW - (rw ? rw + 12 : 0));
     g.fillText(o.type, tx, y + 31);
     y += typeH;
   }
@@ -977,7 +1293,7 @@ function renderFullArt(g, o, shade, size, bleed) {
   }
   if (o.pt) {
     g.fillStyle = '#fff';
-    g.font = `700 40px "${o.titleFont}", Georgia, serif`; g.textAlign = 'right';
+    g.font = titleFont(o, 40); g.textAlign = 'right';
     g.fillText(o.pt, boxL + boxW - padX + 2, bottom - 16); g.textAlign = 'left';
   }
   g.shadowBlur = 0;
@@ -1004,7 +1320,7 @@ function renderFramed(g, o, size, borderCol) {
   const cost = parseCost(o.cost);
   const costLeft = cost.length ? drawCostRight(g, cost, 694, 77, 36) : 694;
   if (o.name) {
-    g.fillStyle = dark; fitText(g, o.name, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 38, 18, costLeft - 66 - 14);
+    g.fillStyle = dark; fitText(g, o.name, s => titleFont(o, s), 38, 18, costLeft - 66 - 14);
     g.fillText(o.name, 64, 90);
   }
   // art
@@ -1015,7 +1331,7 @@ function renderFramed(g, o, size, borderCol) {
   bar(46, 598, 658, 56);
   if (o.type) {
     const rw = drawRarity(g, o, 694, 626, 34);
-    g.fillStyle = dark; fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 30, 16, 620 - (rw ? rw + 12 : 0)); g.fillText(o.type, 64, 637);
+    g.fillStyle = dark; fitText(g, o.type, s => titleFont(o, s), 30, 16, 620 - (rw ? rw + 12 : 0)); g.fillText(o.type, 64, 637);
   }
   // text box
   const tb = { x: 58, y: 662, w: 634, h: 300 };
@@ -1038,7 +1354,7 @@ function renderFramed(g, o, size, borderCol) {
   }
   if (o.pt) {
     bar(566, 940, 132, 58);
-    g.fillStyle = dark; g.font = `700 38px "${o.titleFont}", Georgia, serif`; g.textAlign = 'center';
+    g.fillStyle = dark; g.font = titleFont(o, 38); g.textAlign = 'center';
     g.fillText(o.pt, 632, 982); g.textAlign = 'left';
   }
   drawFooter(g, o, lum(frame) > .55 ? '#1a1816' : '#f0ece6', 1008, o.pt ? 556 : null);
@@ -1058,26 +1374,48 @@ function drawFooter(g, o, color, y, rightLimit) {
 
 // ---------- custom layout ----------
 const FONTS = {
-  spectral: { label: 'Spectral (classic serif)', f: '"Spectral", Georgia, serif', wt: 700 },
-  cinzel: { label: 'Cinzel (engraved caps)', f: '"Cinzel", Georgia, serif', wt: 700 },
-  cormorant: { label: 'Cormorant SC', f: '"Cormorant SC", Georgia, serif', wt: 700 },
-  fell: { label: 'IM Fell (old print)', f: '"IM Fell English SC", Georgia, serif', wt: 400 },
-  crimson: { label: 'Crimson Text (rules text)', f: '"Crimson Text", Georgia, serif', wt: 400 },
-  plex: { label: 'IBM Plex Sans', f: '"IBM Plex Sans", system-ui, sans-serif', wt: 600 },
-  rubik: { label: 'Rubik Heavy', f: '"Rubik", system-ui, sans-serif', wt: 800 },
-  anton: { label: 'Anton (tall poster)', f: '"Anton", Impact, sans-serif', wt: 400 },
-  bebas: { label: 'Bebas Neue (poster caps)', f: '"Bebas Neue", Impact, sans-serif', wt: 400 },
-  oswald: { label: 'Oswald (condensed)', f: '"Oswald", "Arial Narrow", sans-serif', wt: 600 },
-  bungee: { label: 'Bungee (signage)', f: '"Bungee", Impact, sans-serif', wt: 400 },
-  bangers: { label: 'Bangers (comic title)', f: '"Bangers", Impact, sans-serif', wt: 400 },
-  comic: { label: 'Comic Neue (comic lettering)', f: '"Comic Neue", "Comic Sans MS", sans-serif', wt: 700 },
-  pirata: { label: 'Pirata One (blackletter)', f: '"Pirata One", serif', wt: 400 },
-  typewriter: { label: 'Special Elite (typewriter)', f: '"Special Elite", "Courier New", monospace', wt: 400 },
-  marker: { label: 'Permanent Marker', f: '"Permanent Marker", cursive', wt: 400 },
-  caveat: { label: 'Caveat (handwriting)', f: '"Caveat", cursive', wt: 700 },
-  pacifico: { label: 'Pacifico (retro script)', f: '"Pacifico", cursive', wt: 400 },
-  signature: { label: 'Yellowtail (signature)', f: '"Yellowtail", cursive', wt: 400 },
-  notojp: { label: 'Noto Sans JP (Japanese)', f: '"Noto Sans JP", system-ui, sans-serif', wt: 700 },
+  spectral: { label: 'Spectral (classic serif)', f: '"Spectral", Georgia, serif', wt: 700, g: 'Classic' },
+  cinzel: { label: 'Cinzel (engraved caps)', f: '"Cinzel", Georgia, serif', wt: 700, g: 'Classic' },
+  cormorant: { label: 'Cormorant SC', f: '"Cormorant SC", Georgia, serif', wt: 700, g: 'Classic' },
+  fell: { label: 'IM Fell (old print)', f: '"IM Fell English SC", Georgia, serif', wt: 400, g: 'Classic' },
+  crimson: { label: 'Crimson Text (rules text)', f: '"Crimson Text", Georgia, serif', wt: 400, g: 'Classic' },
+  plex: { label: 'IBM Plex Sans', f: '"IBM Plex Sans", system-ui, sans-serif', wt: 600, g: 'Display' },
+  rubik: { label: 'Rubik Heavy', f: '"Rubik", system-ui, sans-serif', wt: 800, g: 'Display' },
+  anton: { label: 'Anton (tall poster)', f: '"Anton", Impact, sans-serif', wt: 400, g: 'Display' },
+  bebas: { label: 'Bebas Neue (poster caps)', f: '"Bebas Neue", Impact, sans-serif', wt: 400, g: 'Display' },
+  oswald: { label: 'Oswald (condensed)', f: '"Oswald", "Arial Narrow", sans-serif', wt: 600, g: 'Display' },
+  bungee: { label: 'Bungee (signage)', f: '"Bungee", Impact, sans-serif', wt: 400, g: 'Display' },
+  bangers: { label: 'Bangers (comic title)', f: '"Bangers", Impact, sans-serif', wt: 400, g: 'Comic' },
+  comic: { label: 'Comic Neue (comic lettering)', f: '"Comic Neue", "Comic Sans MS", sans-serif', wt: 700, g: 'Comic' },
+  pirata: { label: 'Pirata One (blackletter)', f: '"Pirata One", serif', wt: 400, g: 'Fantasy' },
+  typewriter: { label: 'Special Elite (typewriter)', f: '"Special Elite", "Courier New", monospace', wt: 400, g: 'Sci-fi & retro' },
+  marker: { label: 'Permanent Marker', f: '"Permanent Marker", cursive', wt: 400, g: 'Handwritten' },
+  caveat: { label: 'Caveat (handwriting)', f: '"Caveat", cursive', wt: 700, g: 'Handwritten' },
+  pacifico: { label: 'Pacifico (retro script)', f: '"Pacifico", cursive', wt: 400, g: 'Handwritten' },
+  signature: { label: 'Yellowtail (signature)', f: '"Yellowtail", cursive', wt: 400, g: 'Handwritten' },
+  uncial: { label: 'Uncial Antiqua (Celtic)', f: '"Uncial Antiqua", Georgia, serif', wt: 400, g: 'Fantasy' },
+  medieval: { label: 'MedievalSharp', f: '"MedievalSharp", Georgia, serif', wt: 400, g: 'Fantasy' },
+  almendra: { label: 'Almendra (storybook)', f: '"Almendra", Georgia, serif', wt: 700, g: 'Fantasy' },
+  cinzeldeco: { label: 'Cinzel Decorative', f: '"Cinzel Decorative", Georgia, serif', wt: 700, g: 'Fantasy' },
+  eagle: { label: 'Eagle Lake (calligraphy)', f: '"Eagle Lake", Georgia, serif', wt: 400, g: 'Fantasy' },
+  fraktur: { label: 'UnifrakturMaguntia (Gothic)', f: '"UnifrakturMaguntia", Georgia, serif', wt: 400, g: 'Fantasy' },
+  grenze: { label: 'Grenze Gotisch', f: '"Grenze Gotisch", Georgia, serif', wt: 700, g: 'Fantasy' },
+  rocker: { label: 'New Rocker (metal)', f: '"New Rocker", Georgia, serif', wt: 400, g: 'Fantasy' },
+  creepster: { label: 'Creepster (horror)', f: '"Creepster", Georgia, serif', wt: 400, g: 'Horror' },
+  nosifer: { label: 'Nosifer (dripping)', f: '"Nosifer", Georgia, serif', wt: 400, g: 'Horror' },
+  orbitron: { label: 'Orbitron (sci-fi)', f: '"Orbitron", Georgia, serif', wt: 800, g: 'Sci-fi & retro' },
+  audiowide: { label: 'Audiowide', f: '"Audiowide", Georgia, serif', wt: 400, g: 'Sci-fi & retro' },
+  russo: { label: 'Russo One', f: '"Russo One", Georgia, serif', wt: 400, g: 'Sci-fi & retro' },
+  monoton: { label: 'Monoton (neon lines)', f: '"Monoton", Georgia, serif', wt: 400, g: 'Sci-fi & retro' },
+  pixel: { label: 'Press Start 2P (pixel)', f: '"Press Start 2P", Georgia, serif', wt: 400, g: 'Sci-fi & retro' },
+  terminal: { label: 'VT323 (terminal)', f: '"VT323", Georgia, serif', wt: 400, g: 'Sci-fi & retro' },
+  playfair: { label: 'Playfair Display (fashion)', f: '"Playfair Display", Georgia, serif', wt: 800, g: 'Display' },
+  abril: { label: 'Abril Fatface', f: '"Abril Fatface", Georgia, serif', wt: 400, g: 'Display' },
+  righteous: { label: 'Righteous (70s)', f: '"Righteous", Georgia, serif', wt: 400, g: 'Display' },
+  dela: { label: 'Dela Gothic One (bold JP)', f: '"Dela Gothic One", Georgia, serif', wt: 400, g: 'Display' },
+  rocksalt: { label: 'Rock Salt (scrawl)', f: '"Rock Salt", Georgia, serif', wt: 400, g: 'Handwritten' },
+  shadows: { label: 'Shadows Into Light (pen)', f: '"Shadows Into Light", Georgia, serif', wt: 400, g: 'Handwritten' },
+  notojp: { label: 'Noto Sans JP (Japanese)', f: '"Noto Sans JP", system-ui, sans-serif', wt: 700, g: 'Display' },
 };
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
@@ -1092,6 +1430,22 @@ const LDEF = {
 };
 // Starting designs, in card units (750 × 1050). Later layers draw on top.
 const PRESETS = {
+  paperback: () => [
+    { src: 'custom', text: ' ', x: 30, y: 30, w: 690, h: 72, size: 20, bg: 'box', bgColor: '#141414', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'name', x: 30, y: 100, w: 690, h: 150, size: 108, font: 'anton', upper: true, color: '#ece6da', align: 'center', fit: true, lh: .9, bg: 'box', bgColor: '#141414', bgOp: 1, pad: 22, rad: 0, effect: 'outline', effColor: '#111111' },
+    { src: 'rulesflavor', x: 30, y: 790, w: 690, h: 196, size: 30, font: 'oswald', color: '#ece6da', align: 'center', bg: 'box', bgColor: '#141414', bgOp: 1, pad: 24, rad: 0, effect: 'none', pip: 'glyph', pipColor: '#ece6da' },
+    { src: 'type', x: 104, y: 44, w: 190, size: 20, font: 'plex', color: '#151515', bg: 'barcode', bgColor: '#efe9dc', bgOp: 1, pad: 8, rad: 3, rot: -1.5, fit: true, effect: 'none' },
+    { src: 'cost', x: 300, y: 42, w: 130, size: 26, align: 'center', bg: 'sticker', bgColor: '#efe9dc', bgOp: 1, pad: 8, rad: 3, rot: -1.5, pip: 'outline', pipColor: '#151515', effect: 'none' },
+    { src: 'pt', x: 606, y: 712, w: 100, size: 36, font: 'oswald', color: '#151515', align: 'center', bg: 'sticker', bgColor: '#efe9dc', bgOp: 1, pad: 10, rad: 6, rot: 3, effect: 'none' },
+    { src: 'credit', x: 40, y: 992, w: 670, size: 14, font: 'plex', color: '#b9b2a6', align: 'center', effect: 'none' },
+  ],
+  pulp: () => {
+    const L = PRESETS.comic(), i = L.findIndex(l => l.src === 'cost'), [cost] = L.splice(i, 1);
+    Object.assign(cost, { x: 520, y: 210, w: 170, bg: 'price', bgColor: '#f6c64a', rot: 5, rad: 2, pad: 10, bdW: 0 });
+    Object.assign(L.find(l => l.src === 'pt'), { bg: 'sticker', bdW: 0 });
+    L.push(cost, { src: 'custom', text: 'PROXY\nCOMICS', x: 44, y: 44, w: 170, size: 30, font: 'bungee', color: '#151515', align: 'center', lh: 1, bg: 'sticker', bgColor: '#f4f1e8', bgOp: 1, pad: 10, rad: 2, effect: 'none' });
+    return L;
+  },
   clean: () => [
     { src: 'name', x: 50, y: 50, w: 420, size: 42, fit: true },
     { src: 'cost', x: 430, y: 56, w: 272, size: 38, align: 'right' },
@@ -1158,6 +1512,13 @@ function layerText(L, o) {
 // Web fonts load on first use; the preview redraws when they arrive. Exports wait for them.
 const fontTried = new Set();
 function fontSpec(fam) { return `${fam.wt} 40px ${fam.f}`; }
+// Title font for the fade, panel and classic layouts. The setting stores the family name.
+const famEntry = name => Object.values(FONTS).find(f => f.f.startsWith('"' + name + '"'));
+function titleFont(o, px) {
+  const fam = famEntry(o.titleFont);
+  if (fam) { ensureFont(fam, o.name + o.type); return `${fam.wt} ${px}px ${fam.f}`; }
+  return `700 ${px}px "${o.titleFont}", Georgia, serif`;
+}
 function ensureFont(fam, text) {
   if (!document.fonts) return;
   const spec = fontSpec(fam), sample = (text || 'A').slice(0, 160);
@@ -1168,7 +1529,12 @@ function ensureFont(fam, text) {
   document.fonts.load(spec, sample).then(() => draw(), () => {});
 }
 async function fontsReadyFor(o) {
-  if (!document.fonts || !o || o.layout !== 'custom') return;
+  if (!document.fonts || !o) return;
+  if (o.layout !== 'custom') {
+    const fam = famEntry(o.titleFont);
+    if (fam) await document.fonts.load(fontSpec(fam), (o.name || '') + (o.type || '') || 'A').catch(() => {});
+    return;
+  }
   await Promise.all((o.layers || []).map(L => {
     const fam = FONTS[L.font]; if (!fam) return null;
     const t = (layerText(L, o) || 'A').slice(0, 200), spec = fontSpec(fam);
@@ -1285,7 +1651,7 @@ function drawLayer(g, L, o) {
     });
   } else if (L.bg === 'box' || L.bg === 'strips') {
     g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); fillStroke();
-  }
+  } else if (L.bg === 'sticker' || L.bg === 'barcode' || L.bg === 'price') drawSticker(g, L, bx, by, bw, bh, size);
   if (L.effect === 'shadow') {
     const k = +L.effSize || 1;
     g.shadowColor = hexA(L.effColor, .85); g.shadowBlur = size * .14 * k; g.shadowOffsetY = size * .04 * k;
@@ -1294,6 +1660,36 @@ function drawLayer(g, L, o) {
   g.restore();
   curFam = prev.fam; curLH = prev.lh; curPip = prev.pip;
   return { id: L.id, x: bx, y: by, w: bw, h: bh, cx, cy, rot, resizeW: kind === 'rich', resizeH: kind !== 'cost' };
+}
+// A paper sticker behind a layer: drop shadow and sheen; the barcode kind adds a barcode on its left,
+// the price kind a crossed-out "SALE PRICE" band on top.
+function drawSticker(g, L, bx, by, bw, bh, size) {
+  const bc = L.bg === 'barcode' ? Math.min(bh * 1.4, 170) : 0, head = L.bg === 'price' ? Math.max(16, size * .62) : 0;
+  const x = bx - bc, y = by - head, w = bw + bc, h = bh + head, r = Math.min(+L.rad || 0, w / 2, h / 2);
+  g.save();
+  g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 8; g.shadowOffsetX = 1.5; g.shadowOffsetY = 3.5;
+  g.beginPath(); g.roundRect(x, y, w, h, r); g.fillStyle = hexA(L.bgColor, Math.max(.6, +L.bgOp)); g.fill();
+  g.restore();
+  g.save(); g.beginPath(); g.roundRect(x, y, w, h, r); g.clip();
+  const gr = g.createLinearGradient(x, y, x + w * .35, y + h);
+  gr.addColorStop(0, 'rgba(255,255,255,.3)'); gr.addColorStop(.5, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(60,40,10,.1)');
+  g.fillStyle = gr; g.fillRect(x, y, w, h);
+  if (bc) {
+    g.fillStyle = '#161616';
+    const bars = [1, 2, 1, 3, 1, 1, 2, 4, 1, 2, 3, 1, 1, 2], gaps = [2, 1, 3, 1, 2, 2, 1];
+    let cx = x + 9, k = 0; const top = y + h * .16, hh = h * .68;
+    while (cx < x + bc - 8) { const lw = bars[k % bars.length] * 1.05; g.fillRect(cx, top, lw, hh); cx += lw + gaps[k % gaps.length] * 1.1; k++; }
+  }
+  if (head) {
+    const red = 'rgba(176, 34, 24, .92)';
+    g.font = `700 ${head * .6}px "IBM Plex Sans", system-ui, sans-serif`; g.fillStyle = red; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('SALE PRICE', x + w / 2, y + head * .56);
+    g.strokeStyle = red; g.lineWidth = 1.8;
+    g.beginPath(); g.moveTo(x + w * .14, y + head * .78); g.lineTo(x + w * .86, y + head * .3); g.stroke();
+    g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 6, y + head - 1, w - 12, 1.4);
+  }
+  g.restore();
+  if (+L.bdW > 0) { g.beginPath(); g.roundRect(x, y, w, h, r); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
 }
 function renderCustom(g, o, bleed) {
   const ar = artRect(o);
@@ -1587,8 +1983,20 @@ const LPROPS = {
 const optionsHtml = map => Object.entries(map).map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
 $('L-src').innerHTML = optionsHtml(SRC_LABEL);
 $('newSrc').innerHTML = optionsHtml(SRC_LABEL);
-$('L-font').innerHTML = optionsHtml(Object.fromEntries(Object.entries(FONTS).map(([k, f]) => [k, f.label])));
+const FONT_GROUPS = ['Classic', 'Fantasy', 'Horror', 'Display', 'Comic', 'Sci-fi & retro', 'Handwritten'];
+function fontOptions(sel, valueOf) { // fills a <select> with every font, grouped
+  sel.textContent = '';
+  for (const grp of FONT_GROUPS) {
+    const og = document.createElement('optgroup'); og.label = grp;
+    for (const [k, f] of Object.entries(FONTS)) if (f.g === grp) { const o = document.createElement('option'); o.value = valueOf(k, f); o.textContent = f.label; og.append(o); }
+    if (og.children.length) sel.append(og);
+  }
+}
+const famOf = f => f.f.match(/"([^"]+)"/)[1];
+fontOptions($('L-font'), k => k);
+fontOptions($('titleFont'), (k, f) => famOf(f));
 function updateLook() {
+  if (typeof updateFxUI === 'function') try { updateFxUI(); } catch (e) {}
   const custom = $('layout').value === 'custom';
   $('customSet').hidden = !custom;
   document.querySelectorAll('.fixedOnly').forEach(el => { el.hidden = custom; });
@@ -1630,6 +2038,10 @@ for (const [k, t] of Object.entries(LPROPS)) {
     const L = layerById(st.sel); if (!L) return;
     L[k] = t === 'b' ? e.target.checked : t === 'n' ? +e.target.value : e.target.value;
     if (k === 'src' && L.src === 'custom' && !L.text) L.text = 'Your text';
+    if (k === 'bg' && /sticker|barcode|price/.test(L.bg) && (L.bgColor === '#000000' || +L.bgOp < .6)) {
+      Object.assign(L, { bgColor: L.bg === 'price' ? '#f6c64a' : '#efe9dc', bgOp: 1, color: '#151515', effect: 'none', rad: Math.min(+L.rad || 0, 6) });
+      syncEditor();
+    }
     if (k === 'src' || k === 'text') { renderLayerList(); syncEditor(); }
     draw(); saveDraft();
   });
@@ -1873,8 +2285,10 @@ function randomLook() {
   return {
     layout: lk[0],
     border: lk[0] === 'custom' && Math.random() < .5 ? 'none' : pick(['#0b0b0c', '#0b0b0c', '#0b0b0c', '#f3f1ec', '#a9abae', '#b8964c', 'none']),
-    titleFont: pick(['Spectral', 'Cinzel', 'Cormorant SC', 'IM Fell English SC']),
+    titleFont: Math.random() < .6 ? pick(['Spectral', 'Cinzel', 'Cormorant SC', 'IM Fell English SC']) : famOf(pick(Object.values(FONTS).filter(f => f.g !== 'Handwritten' || Math.random() < .3))),
+    ...(Math.random() < .35 ? (() => { const [a, b] = pick(FX_PAIRS); return { artFx: pick(['duotone', 'duotone', 'halftone', 'pop', 'bw', 'posterize', 'grain']), fxDark: a, fxLight: b, fxAmt: String(Math.round((0.3 + Math.random() * 0.4) * 100) / 100) }; })() : { artFx: 'none' }),
     shade: String(Math.round((0.6 + Math.random() * 0.3) * 100) / 100),
+    wear: Math.random() < .3 ? pick(['light', 'worn', 'worn', 'beat', 'wrecked']) : 'none', wearSeed: String(Math.floor(Math.random() * 1e6)),
     pipStyle: bold ? pick(['outline', 'solid', 'glyph']) : pick(['classic', 'classic', 'flat', 'outline', 'solid', 'glyph']),
     pipColor: pick(['#ffffff', '#ffffff', '#111111', '#f2c14e', '#ff5d8f', '#4cc9f0', '#90e39a']),
   };
@@ -2224,6 +2638,29 @@ async function remix(parts, firstVisit = false) {
   }
 }
 
+// ---------- art filter controls ----------
+const FX_PAIRS = [['#1d1442', '#ffcf70', 'Midnight gold'], ['#2b0a0a', '#ff6b4a', 'Ember'], ['#0b2545', '#8ee3ef', 'Deep sea'], ['#1a1f16', '#c6ff4a', 'Toxic'],
+  ['#111111', '#f1ead8', 'Newsprint'], ['#3a0ca3', '#ff8fd8', 'Vapor'], ['#3b1f0e', '#f4d6a0', 'Parchment'], ['#0d3b2e', '#f6f1d1', 'Verdigris']];
+for (const [a, b, name] of FX_PAIRS) {
+  const btn = document.createElement('button'); btn.type = 'button'; btn.title = name; btn.setAttribute('aria-label', name);
+  btn.style.background = `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+  btn.onclick = () => { $('fxDark').value = a; $('fxLight').value = b; st.edits++; saveDraft(); draw(); };
+  $('fxPal').append(btn);
+}
+function updateFxUI() {
+  const fx = $('artFx').value;
+  $('wearMore').hidden = $('wear').value === 'none';
+  $('fxAmtWrap').hidden = fx === 'none';
+  $('fxAmtLabel').textContent = { halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
+  $('fxColors').hidden = !(fx === 'duotone' || fx === 'halftone');
+  $('fxDarkLabel').firstChild.textContent = fx === 'halftone' ? 'Ink ' : 'Shadows ';
+  $('fxLightLabel').firstChild.textContent = fx === 'halftone' ? 'Paper ' : 'Highlights ';
+}
+$('artFx').addEventListener('input', updateFxUI);
+$('wear').addEventListener('input', updateFxUI);
+$('wearShuffle').onclick = () => { $('wearSeed').value = String(Math.floor(Math.random() * 1e6)); st.edits++; saveDraft(); draw(); };
+updateFxUI();
+
 // ---------- one-click styles ----------
 // Each style sets the look fields (and a custom-layout design where it uses one); text, art and frame color stay.
 const STYLES = [
@@ -2233,6 +2670,11 @@ const STYLES = [
   { id: 'fullart', name: 'Full art', f: { layout: 'fade', border: '#0b0b0c', titleFont: 'Spectral', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'borderless', name: 'Borderless', f: { layout: 'fade', border: 'none', titleFont: 'Cormorant SC', shade: '0.85', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'showcase', name: 'Showcase', f: { layout: 'panel', border: '#a9abae', titleFont: 'Cinzel', shade: '0.8', pipStyle: 'flat', pipColor: '#ffffff' } },
+  { id: 'noir', name: 'Noir', f: { layout: 'fade', border: '#0b0b0c', titleFont: 'Playfair Display', shade: '0.85', pipStyle: 'glyph', pipColor: '#ffffff', artFx: 'bw', fxAmt: '0.7' } },
+  { id: 'popart', name: 'Pop art', preset: 'comic', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'outline', pipColor: '#ffffff', artFx: 'pop', fxAmt: '0.45' } },
+  { id: 'riso', name: 'Risograph', f: { layout: 'panel', border: '#f3f1ec', titleFont: 'Righteous', shade: '0.8', pipStyle: 'solid', pipColor: '#ff6b4a', artFx: 'duotone', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.55' } },
+  { id: 'paperback', name: 'Worn paperback', preset: 'paperback', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'glyph', pipColor: '#ece6da', wear: 'worn' } },
+  { id: 'pulp', name: 'Pulp comic', preset: 'pulp', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#ffffff', wear: 'worn' } },
   { id: 'minimal', name: 'Minimal', preset: 'clean', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#ffffff' } },
   { id: 'comic', name: 'Comic', preset: 'comic', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#ffffff' } },
   { id: 'poster', name: 'Poster', preset: 'poster', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'solid', pipColor: '#f2c14e' } },
@@ -2252,7 +2694,7 @@ function buildStyles() {
   }
 }
 function applyStyle(sty) {
-  writeForm(sty.f);
+  writeForm({ artFx: 'none', wear: 'none', ...sty.f });
   if (sty.preset) { applyPreset(sty.preset, true); updateLook(); }
   activeStyle = sty.id; markStyle();
   $('randomNote').hidden = true;
@@ -2266,11 +2708,11 @@ function refreshStyles() {
   clearTimeout(styleTimer);
   styleTimer = setTimeout(() => {
     const o = readForm();
-    if (!styleFontsAsked) { styleFontsAsked = true; Promise.all(STYLES.map(sty => fontsReadyFor({ ...o, ...sty.f, layers: styleLayers(sty) }))).then(refreshStyles); }
+    if (!styleFontsAsked) { styleFontsAsked = true; Promise.all(STYLES.map(sty => fontsReadyFor({ ...o, ...sty.f, layers: sty.preset ? styleLayers(sty) : o.layers }))).then(refreshStyles); }
     STYLES.forEach((sty, i) => {
       const c = $('styles').children[i]?.querySelector('canvas'); if (!c) return;
       const g = c.getContext('2d'); g.setTransform(0.24, 0, 0, 0.24, 0, 0);
-      try { render(g, { ...o, ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
+      try { render(g, { ...o, artFx: 'none', wear: 'none', ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
     });
   }, styleFontsAsked ? 600 : 0);
 }
