@@ -116,6 +116,10 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .remix .lock[aria-pressed=true] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--field)); }
 .credit { margin: 0; font-size: 12px; line-height: 1.45; color: var(--muted); }
 .credit a { color: inherit; }
+.styles { display: grid; grid-auto-flow: column; grid-auto-columns: 98px; gap: 10px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; }
+.styles button { padding: 6px; display: grid; gap: 6px; justify-items: center; scroll-snap-align: start; font-size: 12px; }
+.styles canvas { width: 84px; height: 118px; border-radius: 5px; display: block; background: #000; }
+.styles button[aria-pressed=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .notice.intro { border-color: var(--line); background: var(--panel); }
 .notice p { margin: 0; font-size: 13px; line-height: 1.5; }
 .quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
@@ -184,6 +188,12 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <button type="button" id="useDefault">Use the default card</button>
         </div>
       </div>
+      <fieldset>
+        <legend>Style</legend>
+        <div class="styles" id="styles" role="group" aria-label="One-click styles"></div>
+        <span class="hint">One click changes the whole look and keeps your text and art. Fine-tune it under <b>Look</b>.</span>
+      </fieldset>
+
       <fieldset>
         <legend>Art</legend>
         <div class="drop" id="drop">
@@ -1315,6 +1325,7 @@ function draw() {
     drawGuides(ctx, o);
     drawSelection(ctx, o);
     updateQuality(o);
+    refreshStyles();
   });
 }
 // Preview-only: outline and resize handles on the selected custom layer, and a center line when snapped.
@@ -2212,6 +2223,59 @@ async function remix(parts, firstVisit = false) {
     remixing = false; btns.forEach(b => b.disabled = false);
   }
 }
+
+// ---------- one-click styles ----------
+// Each style sets the look fields (and a custom-layout design where it uses one); text, art and frame color stay.
+const STYLES = [
+  { id: 'classic', name: 'Classic', f: { layout: 'framed', border: '#0b0b0c', titleFont: 'Spectral', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'retro', name: 'Old school', f: { layout: 'framed', border: '#f3f1ec', titleFont: 'IM Fell English SC', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'gilded', name: 'Gilded', f: { layout: 'framed', border: '#b8964c', titleFont: 'Cinzel', shade: '0.78', pipStyle: 'flat', pipColor: '#ffffff' } },
+  { id: 'fullart', name: 'Full art', f: { layout: 'fade', border: '#0b0b0c', titleFont: 'Spectral', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'borderless', name: 'Borderless', f: { layout: 'fade', border: 'none', titleFont: 'Cormorant SC', shade: '0.85', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'showcase', name: 'Showcase', f: { layout: 'panel', border: '#a9abae', titleFont: 'Cinzel', shade: '0.8', pipStyle: 'flat', pipColor: '#ffffff' } },
+  { id: 'minimal', name: 'Minimal', preset: 'clean', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#ffffff' } },
+  { id: 'comic', name: 'Comic', preset: 'comic', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#ffffff' } },
+  { id: 'poster', name: 'Poster', preset: 'poster', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'solid', pipColor: '#f2c14e' } },
+  { id: 'strips', name: 'Torn strips', preset: 'strips', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#111111' } },
+  { id: 'manga', name: 'Vertical', preset: 'vertical', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#ffffff' } },
+  { id: 'zine', name: 'Handwritten', preset: 'scrawl', f: { layout: 'custom', border: '#f3f1ec', pipStyle: 'outline', pipColor: '#111111' } },
+];
+const styleLayers = sty => sty.preset ? PRESETS[sty.preset]().map((l, i) => ({ ...LDEF, ...l, id: 'p' + i })) : [];
+let activeStyle = null;
+function buildStyles() {
+  const box = $('styles');
+  for (const sty of STYLES) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.style = sty.id; b.setAttribute('aria-pressed', 'false');
+    const c = document.createElement('canvas'); c.width = Math.round(W * 0.24); c.height = Math.round(H * 0.24); c.setAttribute('aria-hidden', 'true');
+    const t = document.createElement('span'); t.textContent = sty.name;
+    b.append(c, t); b.onclick = () => applyStyle(sty); box.append(b);
+  }
+}
+function applyStyle(sty) {
+  writeForm(sty.f);
+  if (sty.preset) { applyPreset(sty.preset, true); updateLook(); }
+  activeStyle = sty.id; markStyle();
+  $('randomNote').hidden = true;
+  $('status').textContent = `${sty.name} style. Your text and art are unchanged.`;
+  renderLayerList(); saveDraft(); draw();
+}
+function markStyle() { for (const b of $('styles').children) b.setAttribute('aria-pressed', b.dataset.style === activeStyle); }
+let styleTimer = 0, styleFontsAsked = false;
+// Previews show the card you're editing in each style. They redraw shortly after the card changes.
+function refreshStyles() {
+  clearTimeout(styleTimer);
+  styleTimer = setTimeout(() => {
+    const o = readForm();
+    if (!styleFontsAsked) { styleFontsAsked = true; Promise.all(STYLES.map(sty => fontsReadyFor({ ...o, ...sty.f, layers: styleLayers(sty) }))).then(refreshStyles); }
+    STYLES.forEach((sty, i) => {
+      const c = $('styles').children[i]?.querySelector('canvas'); if (!c) return;
+      const g = c.getContext('2d'); g.setTransform(0.24, 0, 0, 0.24, 0, 0);
+      try { render(g, { ...o, ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
+    });
+  }, styleFontsAsked ? 600 : 0);
+}
+buildStyles();
+for (const k of FIELDS) $(k).addEventListener('input', () => { if (activeStyle) { activeStyle = null; markStyle(); } });
 
 // ---------- symbols panel ----------
 const SLOTS = [['SET', 'Set symbol (all rarities)'], ['SET:C', 'Common only'], ['SET:U', 'Uncommon only'], ['SET:R', 'Rare only'], ['SET:M', 'Mythic only']];
