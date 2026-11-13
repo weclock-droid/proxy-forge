@@ -4,7 +4,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+SC:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IM+Fell+English+SC&family=Spectral:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bebas+Neue&family=Bungee&family=Caveat:wght@700&family=Cinzel:wght@700&family=Comic+Neue:ital,wght@0,700;1,700&family=Cormorant+SC:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IM+Fell+English+SC&family=Noto+Sans+JP:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Pirata+One&family=Rubik:wght@800&family=Special+Elite&family=Spectral:wght@600;700;800&family=Yellowtail&display=swap">
 <style>
 /* Layout: workbench — scrolling control column on the left, sticky card proof on the right; stacks on phones */
 :root {
@@ -103,11 +103,31 @@ canvas#card.dragging { cursor: grabbing; }
 .thumb .name { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 button:disabled { opacity: .5; cursor: not-allowed; }
 .notice { border: 1px solid var(--warn); background: color-mix(in srgb, var(--warn) 10%, var(--field)); border-radius: 9px; padding: 12px 14px; display: grid; gap: 10px; }
+.notice.intro { border-color: var(--line); background: var(--panel); }
 .notice p { margin: 0; font-size: 13px; line-height: 1.5; }
 .quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
 .quality:empty { display: none; }
 .pill { flex: none; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 999px; font-variant-numeric: tabular-nums; color: #fff; }
 .pill.good { background: var(--good); } .pill.ok { background: var(--warn); } .pill.bad { background: var(--bad); }
+/* Custom layout: layer chips and the layer editor */
+input[type=color] { width: 100%; height: 38px; padding: 3px; border: 1px solid var(--line); border-radius: 7px; background: var(--field); cursor: pointer; }
+.layers { display: flex; flex-wrap: wrap; gap: 6px; }
+.layers button { padding: 6px 10px; font-weight: 500; font-size: 12.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layers button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--field)); font-weight: 600; }
+.layer-ed { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+.layer-ed h3 { margin: 0; font-family: var(--f-display); font-size: 14px; font-weight: 700; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+/* Symbols panel */
+h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-weight: 700; }
+.symlist, .slots { display: flex; flex-wrap: wrap; gap: 8px; }
+.symlist:empty { display: none; }
+.sym { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--field); border-radius: 8px; padding: 5px 6px 5px 8px; }
+.sym img, .slot img { width: 30px; height: 30px; object-fit: contain; background: repeating-conic-gradient(#8884 0 25%, transparent 0 50%) 0 0 / 10px 10px; border-radius: 4px; }
+.sym code { font-size: 12.5px; }
+.sym button, .slot button { padding: 4px 8px; font-size: 12px; }
+.slot { display: grid; grid-template-columns: 30px 1fr; gap: 4px 8px; align-items: center; border: 1px solid var(--line); background: var(--field); border-radius: 8px; padding: 8px; flex: 1 1 150px; }
+.slot .t { font-size: 12px; font-weight: 600; color: var(--muted); }
+.slot .b { grid-column: 1 / -1; display: flex; gap: 6px; }
 /* Touch screens: swap mouse hints for touch hints, bigger tap targets, 16px fields so iOS doesn't zoom on focus */
 .touch { display: none; }
 @media (pointer: coarse) {
@@ -144,6 +164,13 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 
   <div class="grid">
     <div class="controls">
+      <div class="notice intro" id="randomNote" role="status" hidden>
+        <p>You're looking at a <b>random example</b> card and layout. Change anything you like, shuffle for another, or start from the default card.</p>
+        <div class="actions">
+          <button type="button" class="primary" id="shuffle">Shuffle again</button>
+          <button type="button" id="useDefault">Use the default card</button>
+        </div>
+      </div>
       <fieldset>
         <legend>Art</legend>
         <div class="drop" id="drop">
@@ -176,7 +203,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
         <label for="type">Type line <input type="text" id="type"></label>
         <label for="rules">Rules text
           <textarea id="rules" rows="5"></textarea>
-          <span class="hint">Symbols: <code>{T}</code> <code>{W}</code> <code>{U}</code> <code>{B}</code> <code>{R}</code> <code>{G}</code> <code>{C}</code> <code>{X}</code> <code>{3}</code> <code>{W/U}</code>. Text in (parentheses) becomes italic reminder text; wrap words in *asterisks* for italics. New line = new paragraph.</span>
+          <span class="hint">Symbols: <code>{T}</code> <code>{W}</code> <code>{U}</code> <code>{B}</code> <code>{R}</code> <code>{G}</code> <code>{C}</code> <code>{X}</code> <code>{3}</code> <code>{W/U}</code>, plus any symbols you add under <b>Symbols</b>. Text in (parentheses) becomes italic reminder text; wrap words in *asterisks* for italics. New line = new paragraph.</span>
         </label>
         <label for="flavor">Flavor text <textarea id="flavor" rows="3"></textarea></label>
         <div class="row">
@@ -197,6 +224,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
               <option value="fade">Full art · fade</option>
               <option value="panel">Full art · text panel</option>
               <option value="framed">Classic frame</option>
+              <option value="custom">Custom (place text anywhere)</option>
             </select>
           </label>
           <label for="border">Border
@@ -208,7 +236,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
               <option value="none">Borderless</option>
             </select>
           </label>
-          <label for="color">Frame color (classic)
+          <label for="color" class="fixedOnly">Frame color (classic)
             <select id="color">
               <option value="W">White</option><option value="U">Blue</option><option value="B" selected>Black</option>
               <option value="R">Red</option><option value="G">Green</option><option value="M">Gold / multicolor</option>
@@ -216,7 +244,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
             </select>
           </label>
         </div>
-        <div class="row">
+        <div class="row fixedOnly">
           <label for="titleFont">Title font
             <select id="titleFont">
               <option value="Spectral">Spectral</option>
@@ -228,6 +256,121 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           <label for="shade">Text shading <input type="range" id="shade" min="0" max="1" step="0.01" value="0.78"></label>
           <label for="size">Rules text size <input type="range" id="size" min="18" max="40" step="1" value="31"></label>
         </div>
+        <div class="row">
+          <label for="pipStyle">Mana symbols
+            <select id="pipStyle">
+              <option value="classic">Classic colored</option>
+              <option value="flat">Flat colored</option>
+              <option value="outline">Outline</option>
+              <option value="solid">Solid color</option>
+              <option value="glyph">Symbol only</option>
+            </select>
+          </label>
+          <label for="pipColor">Symbol color <input type="color" id="pipColor" value="#ffffff"></label>
+        </div>
+        <span class="hint" style="margin-top:-6px">Symbol color is used by the outline, solid and symbol-only styles.</span>
+      </fieldset>
+
+      <fieldset id="customSet" hidden>
+        <legend>Custom layout</legend>
+        <p class="hint" style="margin:0">Each piece of text is a layer. <b>Drag a layer</b> on the card to move it, drag its blue handles to resize the box, and scroll or pinch on it to change the text size. Dragging anywhere else moves the art.</p>
+        <div class="row">
+          <label for="preset">Start from a design
+            <select id="preset">
+              <option value="clean">Clean full art</option>
+              <option value="comic">Comic book cover</option>
+              <option value="strips">Torn paper strips</option>
+              <option value="poster">Bold poster</option>
+              <option value="vertical">Vertical title</option>
+              <option value="scrawl">Handwritten</option>
+            </select>
+          </label>
+          <div class="actions" style="align-self:end"><button type="button" id="applyPreset">Use this design</button></div>
+        </div>
+        <span class="hint" style="margin-top:-6px">Using a design replaces your layers. Your card text stays.</span>
+        <div class="layers" id="layerList" aria-label="Layers, bottom to top"></div>
+        <div class="actions">
+          <select id="newSrc" aria-label="What the new layer shows" style="width:auto;flex:1 1 160px"></select>
+          <button type="button" id="addLayer">Add layer</button>
+        </div>
+        <div class="layer-ed" id="layerEd" hidden>
+          <div class="actions">
+            <button type="button" id="dupLayer">Duplicate</button>
+            <button type="button" id="upLayer" title="Bring forward">Forward</button>
+            <button type="button" id="downLayer" title="Send backward">Backward</button>
+            <button type="button" id="centerLayer">Center</button>
+            <button type="button" id="delLayer">Delete</button>
+          </div>
+          <div class="row">
+            <label>Shows <select id="L-src"></select></label>
+            <label>Font <select id="L-font"></select></label>
+          </div>
+          <label id="L-textWrap">Text <textarea id="L-text" rows="2" style="min-height:56px"></textarea></label>
+          <div class="row">
+            <label>Text size <input type="range" id="L-size" min="6" max="200" step="1"></label>
+            <label>Text color <input type="color" id="L-color"></label>
+            <label>Align <select id="L-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></label>
+          </div>
+          <div class="row">
+            <label>Box width <input type="range" id="L-w" min="40" max="750" step="1"></label>
+            <label>Box height (0 = fit text) <input type="range" id="L-h" min="0" max="1050" step="1"></label>
+            <label>Rotate <input type="range" id="L-rot" min="-180" max="180" step="1"></label>
+          </div>
+          <div class="row">
+            <label>Letter spacing <input type="range" id="L-ls" min="-6" max="30" step="0.5"></label>
+            <label>Line spacing <input type="range" id="L-lh" min="0.7" max="2.2" step="0.01"></label>
+          </div>
+          <div class="checks">
+            <label class="inline"><input type="checkbox" id="L-upper"> ALL CAPS</label>
+            <label class="inline"><input type="checkbox" id="L-vert"> Stack vertically</label>
+            <label class="inline"><input type="checkbox" id="L-fit"> Keep on one line</label>
+            <label class="inline"><input type="checkbox" id="L-italic"> Italic</label>
+          </div>
+          <h3>Text effect</h3>
+          <div class="row">
+            <label>Effect <select id="L-effect"><option value="none">None</option><option value="shadow">Shadow</option><option value="outline">Outline</option><option value="extrude">3D block</option></select></label>
+            <label>Effect color <input type="color" id="L-effColor"></label>
+            <label>Strength <input type="range" id="L-effSize" min="0.3" max="3" step="0.1"></label>
+          </div>
+          <h3>Background</h3>
+          <div class="row">
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option></select></label>
+            <label>Color <input type="color" id="L-bgColor"></label>
+            <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
+          </div>
+          <div class="row">
+            <label>Padding <input type="range" id="L-pad" min="0" max="60" step="1"></label>
+            <label>Rounded corners <input type="range" id="L-rad" min="0" max="120" step="1"></label>
+            <label>Border width <input type="range" id="L-bdW" min="0" max="16" step="0.5"></label>
+            <label>Border color <input type="color" id="L-bdColor"></label>
+          </div>
+          <h3>Mana symbols in this layer</h3>
+          <div class="row">
+            <label>Style <select id="L-pip"><option value="inherit">Same as card</option><option value="classic">Classic colored</option><option value="flat">Flat colored</option><option value="outline">Outline</option><option value="solid">Solid color</option><option value="glyph">Symbol only</option></select></label>
+            <label>Symbol color <input type="color" id="L-pipColor"></label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Symbols</legend>
+        <h3 class="sub">Your own mana symbols</h3>
+        <p class="hint" style="margin:0">Upload an image for any symbol code. Use an existing code like <code>B</code>, <code>2</code> or <code>T</code> to replace the built-in drawing, or a new one like <code>HEART</code> and type <code>{HEART}</code> in your text. Transparent PNGs or SVGs look best. Your symbols are saved in this browser and used on every card.</p>
+        <div class="actions">
+          <input type="text" id="symCode" placeholder="Code, e.g. B or HEART" aria-label="Symbol code" style="width:auto;flex:1 1 150px">
+          <button type="button" id="symAdd">Choose image…</button>
+          <input type="file" id="symFile" accept="image/*" hidden>
+        </div>
+        <div class="symlist" id="symList"></div>
+        <h3 class="sub">Set symbol and rarity</h3>
+        <div class="row">
+          <label for="rarity">Rarity
+            <select id="rarity"><option value="">None (no set symbol)</option><option value="C">Common</option><option value="U">Uncommon</option><option value="R">Rare</option><option value="M">Mythic rare</option></select>
+          </label>
+        </div>
+        <label class="inline"><input type="checkbox" id="setTint" checked> Color my set symbol by rarity (black, silver, gold, orange)</label>
+        <div class="slots" id="setSlots"></div>
+        <span class="hint">The set symbol shows at the right end of the type line. In a custom layout, add a “Set symbol (rarity)” layer to place it anywhere.</span>
       </fieldset>
 
       <fieldset>
@@ -294,27 +437,45 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint'];
+const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
   name: 'Nocturne Host', cost: '{2}{B}{B}', type: 'Creature — Vampire Noble',
   rules: 'Flying, lifelink\nWhenever another Vampire you control enters, each opponent loses 1 life and you gain 1 life.\n{T}, Pay 2 life: Draw a card. (Lifelink means damage this creature deals also causes you to gain that much life.)',
   flavor: '“Come in, come in. Do wipe your feet. And your throat.”',
   pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Proxy — not for sale',
-  layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true
+  layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
+  pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true
 };
+// Original example cards used for the random first-visit card.
+const EXAMPLES = [
+  { name: SAMPLE.name, cost: SAMPLE.cost, type: SAMPLE.type, rules: SAMPLE.rules, flavor: SAMPLE.flavor, pt: SAMPLE.pt },
+  { name: 'Gutter Alchemist', cost: '{1}{U}{R}', type: 'Creature — Goblin Wizard', rules: 'Whenever you cast an instant or sorcery spell, Gutter Alchemist deals 1 damage to any target.\n{T}: Draw a card, then discard a card.', flavor: '“Most of my experiments only explode once.”', pt: '2/2' },
+  { name: 'Ashen Courier', cost: '{W}', type: 'Creature — Human Scout', rules: 'Flying\nWhen Ashen Courier enters, you gain 2 life.', flavor: 'Every letter it carries smells faintly of smoke.', pt: '1/1' },
+  { name: 'Thornwake Colossus', cost: '{4}{G}{G}', type: 'Creature — Elemental Giant', rules: 'Reach, trample\nWhenever another creature you control dies, put a +1/+1 counter on Thornwake Colossus.', flavor: 'The forest remembers every footstep.', pt: '6/6' },
+  { name: 'Ledger of Lost Names', cost: '{2}{B}', type: 'Artifact', rules: '{T}, Pay 1 life: Look at the top two cards of your library. Put one into your hand and the other into your graveyard.', flavor: 'Some debts are paid in memories.', pt: '' },
+  { name: 'Static Hymn', cost: '{X}{U}', type: 'Instant', rules: 'Counter target spell with mana value X or less. (A spell’s mana value is the total amount of mana in its cost.)', flavor: 'For a moment, the whole world held its breath.', pt: '' },
+];
 const BLANK = { ...SAMPLE, name: '', cost: '', type: '', rules: '', flavor: '', pt: '', artist: '', info: '', note: '' };
 
-const st = { img: null, zoom: 1, ox: 0, oy: 0, sample: true };
+const st = { img: null, zoom: 1, ox: 0, oy: 0, sample: true, layers: [], sel: null, layerBounds: [] };
 
 // ---------- state <-> form ----------
+// Custom-layout layers live in st.layers and travel with the form (drafts, print-sheet cards).
 function readForm() {
   const o = {};
   for (const k of FIELDS) { const el = $(k); o[k] = el.type === 'checkbox' ? el.checked : el.value; }
+  o.layers = st.layers.map(l => ({ ...l }));
   return o;
 }
 function writeForm(o) {
   for (const k of FIELDS) { const el = $(k); if (!(k in o)) continue; if (el.type === 'checkbox') el.checked = !!o[k]; else el.value = o[k]; }
+  if (Array.isArray(o.layers)) {
+    st.layers = o.layers.map(l => ({ ...LDEF, ...l }));
+    if (!st.layers.some(l => l.id === st.sel)) st.sel = st.layers.length ? st.layers[st.layers.length - 1].id : null;
+  }
+  updateLook();
 }
 function saveDraft() { try { localStorage.setItem('proxyforge.v1', JSON.stringify(readForm())); } catch (e) {} }
 function loadDraft() { try { const s = localStorage.getItem('proxyforge.v1'); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
@@ -367,15 +528,14 @@ function glyph(g, c) { // draws glyph c in a 100x100 box, fill already set
     }
     case 'U':
       g.moveTo(50, 10); g.bezierCurveTo(56, 30, 78, 46, 78, 64); g.arc(50, 64, 28, 0, Math.PI); g.bezierCurveTo(22, 46, 44, 30, 50, 10); g.fill(); return;
-    case 'B': {
-      const bg = g.fillStyle;
+    case 'B': { // skull; eyes, nose and teeth are cut out so any background shows through
       g.ellipse(50, 42, 29, 27, 0, 0, 7); g.fill();
       g.beginPath(); g.roundRect(35, 56, 30, 24, 5); g.fill();
-      g.fillStyle = SYM_BG.B;
+      g.save(); g.globalCompositeOperation = 'destination-out';
       g.beginPath(); g.arc(39, 45, 8, 0, 7); g.arc(61, 45, 8, 0, 7); g.fill();
       g.beginPath(); g.moveTo(50, 54); g.lineTo(45, 63); g.lineTo(55, 63); g.fill();
       g.fillRect(43, 70, 3, 10); g.fillRect(54, 70, 3, 10);
-      g.fillStyle = bg; return;
+      g.restore(); return;
     }
     case 'R':
       g.moveTo(50, 8); g.bezierCurveTo(62, 30, 80, 42, 76, 64); g.bezierCurveTo(73, 82, 62, 90, 50, 90);
@@ -404,34 +564,146 @@ function glyph(g, c) { // draws glyph c in a 100x100 box, fill already set
   }
 }
 function symBg(c) { return SYM_BG[c] || SYM_BG.N; }
+// Glyphs are drawn once per color and pixel size onto a small canvas, so cut-outs stay transparent.
+const glyphCache = new Map();
+function glyphImg(c, color, px) {
+  px = Math.max(16, Math.min(512, Math.ceil(px)));
+  const key = c + '|' + color + '|' + px;
+  let cv = glyphCache.get(key); if (cv) return cv;
+  if (glyphCache.size > 400) glyphCache.clear();
+  cv = document.createElement('canvas'); cv.width = cv.height = px;
+  const g = cv.getContext('2d'); g.scale(px / 100, px / 100); g.fillStyle = color; glyph(g, c);
+  glyphCache.set(key, cv); return cv;
+}
+// Pip look: classic (colored with drop shadow), flat (colored), outline, solid (one color), glyph (symbol only).
+let curPip = { kind: 'classic', color: '#ffffff' };
 function drawSym(g, code, x, y, d, shadow = true) { // x,y = top-left
   code = code.toUpperCase().replace(/\s/g, '');
-  const parts = code.split('/');
+  const own = symLib.get(code);
+  if (own && own.img.naturalWidth) { // the user's own image replaces the drawn symbol, fitted inside the circle's square
+    const iw = own.img.naturalWidth, ih = own.img.naturalHeight, k = d / Math.max(iw, ih);
+    g.drawImage(own.img, x + (d - iw * k) / 2, y + (d - ih * k) / 2, iw * k, ih * k);
+    return;
+  }
+  const parts = code.split('/'), hybrid = parts.length === 2 && parts[1] !== 'P';
   const cx = x + d / 2, cy = y + d / 2, r = d / 2;
+  const { kind, color } = curPip, filled = kind === 'classic' || kind === 'flat';
+  const ink = filled ? '#111' : kind === 'solid' ? (lum(color) > .55 ? '#111' : '#fff') : color;
+  const t = g.getTransform(), scale = Math.hypot(t.a, t.b) || 1;
+  const put = (c, gx, gy, gs) => g.drawImage(glyphImg(c, ink, gs * scale), gx, gy, gs, gs);
   g.save();
-  if (shadow) { g.fillStyle = 'rgba(0,0,0,.85)'; g.beginPath(); g.arc(cx - d * .05, cy + d * .07, r, 0, 7); g.fill(); }
-  g.beginPath(); g.arc(cx, cy, r, 0, 7); g.clip();
-  if (parts.length === 2 && parts[1] !== 'P') {
-    const [a, b] = parts;
-    g.fillStyle = symBg(a); g.fillRect(x, y, d, d);
-    g.fillStyle = symBg(b); g.beginPath(); g.moveTo(x + d, y); g.lineTo(x + d, y + d); g.lineTo(x, y + d); g.fill();
-    g.fillStyle = '#111';
-    g.save(); g.translate(x + d * .06, y + d * .06); g.scale(d / 100 * .5, d / 100 * .5); glyph(g, a); g.restore();
-    g.save(); g.translate(x + d * .44, y + d * .44); g.scale(d / 100 * .5, d / 100 * .5); glyph(g, b); g.restore();
+  if (kind === 'classic' && shadow) { g.fillStyle = 'rgba(0,0,0,.85)'; g.beginPath(); g.arc(cx - d * .05, cy + d * .07, r, 0, 7); g.fill(); }
+  if (filled || kind === 'solid') {
+    g.save(); g.beginPath(); g.arc(cx, cy, r, 0, 7); g.clip();
+    if (filled && hybrid) {
+      g.fillStyle = symBg(parts[0]); g.fillRect(x, y, d, d);
+      g.fillStyle = symBg(parts[1]); g.beginPath(); g.moveTo(x + d, y); g.lineTo(x + d, y + d); g.lineTo(x, y + d); g.fill();
+    } else { g.fillStyle = filled ? symBg(parts[0]) : color; g.fillRect(x, y, d, d); }
+    g.restore();
+  }
+  if (kind === 'outline') { g.strokeStyle = color; g.lineWidth = d * .07; g.beginPath(); g.arc(cx, cy, r - d * .035, 0, 7); g.stroke(); }
+  if (hybrid) {
+    const hs = d * (kind === 'outline' ? .42 : .5);
+    put(parts[0], x + d * .08, y + d * .08, hs); put(parts[1], x + d * .92 - hs, y + d * .92 - hs, hs);
+    if (!filled) { g.strokeStyle = ink; g.lineWidth = d * .05; g.beginPath(); g.moveTo(cx + r * .62, cy - r * .62); g.lineTo(cx - r * .62, cy + r * .62); g.stroke(); }
   } else {
-    const c = parts[0];
-    g.fillStyle = symBg(c); g.fillRect(x, y, d, d);
-    g.fillStyle = '#111';
-    g.save(); g.translate(x + d * .08, y + d * .08); g.scale(d / 100 * .84, d / 100 * .84); glyph(g, c); g.restore();
-    if (parts[1] === 'P') { g.strokeStyle = '#111'; g.lineWidth = d * .06; g.beginPath(); g.arc(cx, cy, r * .55, 0, 7); g.stroke(); }
+    const inset = kind === 'glyph' ? 0 : kind === 'outline' ? .15 : .08;
+    put(parts[0], x + d * inset, y + d * inset, d * (1 - 2 * inset));
+    if (parts[1] === 'P') { g.strokeStyle = ink; g.lineWidth = d * .06; g.beginPath(); g.arc(cx, cy, r * .55, 0, 7); g.stroke(); }
   }
   g.restore();
 }
 function parseCost(s) { return [...(s || '').matchAll(/\{([^}]+)\}/g)].map(m => m[1]); }
 
+// ---------- the user's own symbols ----------
+// symLib maps a code (B, 2, HEART, …) to { src, img }. Set symbols use SET (all rarities) and SET:C/U/R/M.
+// Images are shrunk to 256 px and kept in this browser's localStorage, shared by every card.
+const symLib = new Map();
+let symVersion = 0;
+function loadSymbols() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('proxyforge.symbols') || '{}') || {}; } catch (e) {}
+  for (const [code, src] of Object.entries(saved)) putSymbol(code, src, false);
+}
+function putSymbol(code, src, save = true) {
+  const img = new Image();
+  img.onload = () => { symVersion++; draw(); };
+  img.src = src;
+  symLib.set(code, { src, img }); symVersion++;
+  return save ? saveSymbols() : true;
+}
+function saveSymbols() {
+  try { localStorage.setItem('proxyforge.symbols', JSON.stringify(Object.fromEntries([...symLib].map(([k, v]) => [k, v.src])))); return true; }
+  catch (e) { return false; }
+}
+function shrinkImage(file, max = 256) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth || max, h = img.naturalHeight || max;
+      const k = Math.min(1, max / Math.max(w, h)); w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(img.src); res(c.toDataURL('image/png'));
+    };
+    img.onerror = rej; img.src = URL.createObjectURL(file);
+  });
+}
+// Rarity colors follow the usual card convention: common black, uncommon silver, rare gold, mythic orange-red.
+const RARITY = {
+  C: { name: 'Common', stops: ['#141414', '#3d3d3d', '#141414'], edge: '#e8e8e8' },
+  U: { name: 'Uncommon', stops: ['#5b707e', '#e2eaef', '#5b707e'], edge: '#111111' },
+  R: { name: 'Rare', stops: ['#82611a', '#f3da86', '#82611a'], edge: '#111111' },
+  M: { name: 'Mythic', stops: ['#ad2e0b', '#fba23b', '#ad2e0b'], edge: '#111111' },
+};
+function builtinSetShape() { // a simple faceted gem, used until the user uploads a set symbol
+  const c = document.createElement('canvas'); c.width = 180; c.height = 160;
+  const g = c.getContext('2d'); g.fillStyle = '#000';
+  g.beginPath(); g.moveTo(40, 12); g.lineTo(140, 12); g.lineTo(172, 54); g.lineTo(90, 150); g.lineTo(8, 54); g.closePath(); g.fill();
+  g.globalCompositeOperation = 'destination-out'; g.lineWidth = 7; g.lineJoin = 'round';
+  g.beginPath(); g.moveTo(14, 54); g.lineTo(166, 54); g.moveTo(62, 14); g.lineTo(52, 54); g.lineTo(90, 144); g.lineTo(128, 54); g.lineTo(118, 14); g.stroke();
+  return c;
+}
+const rarityCache = new Map();
+function rarityImage(r, tint) {
+  if (!RARITY[r]) return null;
+  const own = symLib.get('SET:' + r);
+  if (own && own.img.naturalWidth) return own.img;
+  const base = symLib.get('SET'), src = base && base.img.naturalWidth ? base.img : null;
+  if (src && !tint) return src;
+  const key = r + '|' + (src ? symVersion : 'builtin');
+  if (rarityCache.has(key)) return rarityCache.get(key);
+  const shape = src || builtinSetShape();
+  const sw = shape.naturalWidth || shape.width, sh = shape.naturalHeight || shape.height;
+  const k = 200 / Math.max(sw, sh), w = Math.round(sw * k), h = Math.round(sh * k), m = 10;
+  const layer = (color, grad) => { // the symbol's silhouette filled with a color or gradient
+    const c = document.createElement('canvas'); c.width = w + m * 2; c.height = h + m * 2;
+    const g = c.getContext('2d'); g.drawImage(shape, m, m, w, h); g.globalCompositeOperation = 'source-in';
+    if (grad) { const gr = g.createLinearGradient(0, 0, c.width, c.height); grad.forEach((st, i) => gr.addColorStop(i / (grad.length - 1), st)); g.fillStyle = gr; }
+    else g.fillStyle = color;
+    g.fillRect(0, 0, c.width, c.height); return c;
+  };
+  const edge = layer(RARITY[r].edge), fill = layer(null, RARITY[r].stops);
+  const out = document.createElement('canvas'); out.width = w + m * 2; out.height = h + m * 2;
+  const g = out.getContext('2d');
+  for (let a = 0; a < 16; a++) g.drawImage(edge, Math.cos(a * Math.PI / 8) * 7, Math.sin(a * Math.PI / 8) * 7);
+  g.drawImage(fill, 0, 0);
+  if (rarityCache.size > 40) rarityCache.clear();
+  rarityCache.set(key, out); return out;
+}
+// Draws the set symbol right-aligned at `right`, centered on cy, `h` tall. Returns its width (0 if none).
+function drawRarity(g, o, right, cy, h) {
+  const img = rarityImage(o.rarity, o.setTint); if (!img) return 0;
+  const w = h * (img.naturalWidth || img.width) / (img.naturalHeight || img.height);
+  g.drawImage(img, right - w, cy - h / 2, w, h); return w;
+}
+loadSymbols();
+
 // ---------- rich text ----------
 const BODY = '"Crimson Text", Georgia, serif';
-function bodyFont(size, it, bold) { return `${it ? 'italic ' : ''}${bold ? '600 ' : ''}${size}px ${BODY}`; }
+// Rich text uses curFam / curLH; custom layers swap them in while they draw.
+let curFam = { f: BODY, wt: 400 }, curLH = 1.16;
+function bodyFont(size, it, bold) { return `${it ? 'italic ' : ''}${bold ? 600 : curFam.wt} ${size}px ${curFam.f}`; }
 function parseRich(text, baseItalic) {
   const paras = [];
   let depth = 0, manual = false;
@@ -482,19 +754,25 @@ function layoutRich(g, paras, size, maxW) {
     if (cur.length) lines.push(cur);
     out.push(lines);
   }
-  const lh = size * 1.16, pg = size * .32;
+  const lh = size * curLH, pg = size * .32;
   let h = 0; out.forEach((p, i) => { h += Math.max(1, p.length) * lh + (i ? pg : 0); });
   return { paras: out, h, lh, pg, space };
 }
-function drawRich(g, lay, size, x, y, color) { // y = top
+const lineW = (line, lay) => line.reduce((s, it, i) => s + it.w + (i ? lay.space : 0), 0);
+// opt: align/w (align lines inside width w), paint(text,x,y) for effects, boxes (collects line rects), dry (measure only)
+function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
+  const { align = 'left', w = 0, paint = null, boxes = null, dry = false } = opt;
   let cy = y;
   g.fillStyle = color; g.textBaseline = 'alphabetic';
   lay.paras.forEach((lines, pi) => {
     if (pi) cy += lay.pg;
     if (!lines.length) { cy += lay.lh; return; }
     for (const line of lines) {
-      const base = cy + size * .88;
-      let cx = x;
+      const base = cy + size * .88, lw = lineW(line, lay);
+      const off = align === 'center' ? (w - lw) / 2 : align === 'right' ? w - lw : 0;
+      if (boxes) boxes.push({ x: x + off, y: cy, w: lw, h: lay.lh });
+      if (dry) { cy += lay.lh; continue; }
+      let cx = x + off;
       line.forEach((item, idx) => {
         if (idx) cx += lay.space;
         for (const s of item.ch) {
@@ -503,7 +781,9 @@ function drawRich(g, lay, size, x, y, color) { // y = top
             drawSym(g, s.s, cx + size * .03, base - d * .86, d, true);
             cx += d + size * .06;
           } else {
-            g.font = bodyFont(size, s.it); g.fillStyle = color; g.fillText(s.s, cx, base); cx += g.measureText(s.s).width;
+            g.font = bodyFont(size, s.it); g.fillStyle = color;
+            if (paint) paint(s.s, cx, base); else g.fillText(s.s, cx, base);
+            cx += g.measureText(s.s).width;
           }
         }
       });
@@ -559,7 +839,9 @@ function render(g, o, bleed) {
     g.fillStyle = borderCol; g.fillRect(0, 0, W, H);
   }
 
+  curPip = { kind: o.pipStyle || 'classic', color: o.pipColor || '#ffffff' };
   if (o.layout === 'framed') renderFramed(g, o, size, borderCol);
+  else if (o.layout === 'custom') renderCustom(g, o, bleed);
   else renderFullArt(g, o, shade, size, bleed);
   g.restore();
   g.restore();
@@ -625,8 +907,9 @@ function renderFullArt(g, o, shade, size, bleed) {
   let y = top + 18;
   const tx = boxL + padX;
   if (o.type) {
+    const rw = drawRarity(g, o, boxL + boxW - padX, y + 21, 34);
     g.fillStyle = '#fff';
-    fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 31, 16, textW);
+    fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 31, 16, textW - (rw ? rw + 12 : 0));
     g.fillText(o.type, tx, y + 31);
     y += typeH;
   }
@@ -674,7 +957,10 @@ function renderFramed(g, o, size, borderCol) {
   g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 3; g.strokeRect(ar.x, ar.y, ar.w, ar.h);
   // type
   bar(46, 598, 658, 56);
-  if (o.type) { g.fillStyle = dark; fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 30, 16, 620); g.fillText(o.type, 64, 637); }
+  if (o.type) {
+    const rw = drawRarity(g, o, 694, 626, 34);
+    g.fillStyle = dark; fitText(g, o.type, s => `700 ${s}px "${o.titleFont}", Georgia, serif`, 30, 16, 620 - (rw ? rw + 12 : 0)); g.fillText(o.type, 64, 637);
+  }
   // text box
   const tb = { x: 58, y: 662, w: 634, h: 300 };
   g.fillStyle = box; g.fillRect(tb.x, tb.y, tb.w, tb.h);
@@ -714,6 +1000,264 @@ function drawFooter(g, o, color, y, rightLimit) {
   }
 }
 
+// ---------- custom layout ----------
+const FONTS = {
+  spectral: { label: 'Spectral (classic serif)', f: '"Spectral", Georgia, serif', wt: 700 },
+  cinzel: { label: 'Cinzel (engraved caps)', f: '"Cinzel", Georgia, serif', wt: 700 },
+  cormorant: { label: 'Cormorant SC', f: '"Cormorant SC", Georgia, serif', wt: 700 },
+  fell: { label: 'IM Fell (old print)', f: '"IM Fell English SC", Georgia, serif', wt: 400 },
+  crimson: { label: 'Crimson Text (rules text)', f: '"Crimson Text", Georgia, serif', wt: 400 },
+  plex: { label: 'IBM Plex Sans', f: '"IBM Plex Sans", system-ui, sans-serif', wt: 600 },
+  rubik: { label: 'Rubik Heavy', f: '"Rubik", system-ui, sans-serif', wt: 800 },
+  anton: { label: 'Anton (tall poster)', f: '"Anton", Impact, sans-serif', wt: 400 },
+  bebas: { label: 'Bebas Neue (poster caps)', f: '"Bebas Neue", Impact, sans-serif', wt: 400 },
+  oswald: { label: 'Oswald (condensed)', f: '"Oswald", "Arial Narrow", sans-serif', wt: 600 },
+  bungee: { label: 'Bungee (signage)', f: '"Bungee", Impact, sans-serif', wt: 400 },
+  bangers: { label: 'Bangers (comic title)', f: '"Bangers", Impact, sans-serif', wt: 400 },
+  comic: { label: 'Comic Neue (comic lettering)', f: '"Comic Neue", "Comic Sans MS", sans-serif', wt: 700 },
+  pirata: { label: 'Pirata One (blackletter)', f: '"Pirata One", serif', wt: 400 },
+  typewriter: { label: 'Special Elite (typewriter)', f: '"Special Elite", "Courier New", monospace', wt: 400 },
+  marker: { label: 'Permanent Marker', f: '"Permanent Marker", cursive', wt: 400 },
+  caveat: { label: 'Caveat (handwriting)', f: '"Caveat", cursive', wt: 700 },
+  pacifico: { label: 'Pacifico (retro script)', f: '"Pacifico", cursive', wt: 400 },
+  signature: { label: 'Yellowtail (signature)', f: '"Yellowtail", cursive', wt: 400 },
+  notojp: { label: 'Noto Sans JP (Japanese)', f: '"Noto Sans JP", system-ui, sans-serif', wt: 700 },
+};
+const SRC_LABEL = {
+  name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
+  rulesflavor: 'Rules + flavor', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
+};
+const LDEF = {
+  src: 'custom', text: '', x: 60, y: 60, w: 630, h: 0, rot: 0, font: 'spectral', size: 40, color: '#ffffff', align: 'left',
+  ls: 0, lh: 1.15, upper: false, vert: false, fit: false, italic: false,
+  effect: 'shadow', effColor: '#000000', effSize: 1,
+  bg: 'none', bgColor: '#000000', bgOp: 0.75, pad: 12, rad: 10, bdW: 0, bdColor: '#ffffff',
+  pip: 'inherit', pipColor: '#ffffff'
+};
+// Starting designs, in card units (750 × 1050). Later layers draw on top.
+const PRESETS = {
+  clean: () => [
+    { src: 'name', x: 50, y: 50, w: 420, size: 42, fit: true },
+    { src: 'cost', x: 430, y: 56, w: 272, size: 38, align: 'right' },
+    { src: 'type', x: 44, y: 646, w: 662, size: 30, fit: true, bg: 'box', bgOp: .78, pad: 14, rad: 12, effect: 'none' },
+    { src: 'rarity', x: 600, y: 660, w: 92, size: 34, align: 'right', effect: 'none' },
+    { src: 'rulesflavor', x: 44, y: 716, w: 662, h: 236, size: 28, font: 'crimson', bg: 'box', bgOp: .78, pad: 18, rad: 12, effect: 'none' },
+    { src: 'pt', x: 560, y: 905, w: 130, size: 38, align: 'right', effect: 'none' },
+    { src: 'credit', x: 50, y: 978, w: 650, size: 15, font: 'plex', color: '#e8e4de', effect: 'none' },
+  ],
+  comic: () => [
+    { src: 'custom', text: 'HORROR!  SUSPENSE!', x: 250, y: 50, w: 450, size: 42, font: 'bangers', color: '#f2c230', align: 'right', ls: 2, effect: 'none' },
+    { src: 'cost', x: 56, y: 52, w: 160, size: 34, align: 'center', bg: 'box', bgColor: '#f2c230', bgOp: 1, pad: 8, rad: 3, rot: -4, pip: 'outline', pipColor: '#111111', effect: 'none' },
+    { src: 'name', x: 50, y: 120, w: 650, size: 104, font: 'bangers', upper: true, color: '#f4f1e8', align: 'center', lh: .92, rot: -3, effect: 'extrude', effColor: '#2f63b8' },
+    { src: 'type', x: 60, y: 716, w: 630, size: 30, font: 'bangers', upper: true, color: '#1a1a1a', ls: 1, fit: true, bg: 'box', bgColor: '#f2c230', bgOp: 1, pad: 8, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'rulesflavor', x: 60, y: 768, w: 630, h: 176, size: 26, font: 'comic', upper: true, color: '#111111', bg: 'box', bgColor: '#bfe3f2', bgOp: 1, pad: 14, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none', pip: 'outline', pipColor: '#111111' },
+    { src: 'pt', x: 630, y: 924, w: 96, size: 38, font: 'bangers', color: '#1a1a1a', align: 'center', bg: 'box', bgColor: '#f08a2c', bgOp: 1, pad: 18, rad: 60, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'credit', x: 60, y: 980, w: 560, size: 15, font: 'plex', color: '#f2c230', align: 'center', ls: 1.5, upper: true, effect: 'none' },
+  ],
+  strips: () => [
+    { src: 'name', x: 42, y: 44, w: 80, h: 900, size: 60, font: 'pirata', color: '#efe6d2', vert: true, lh: .86, bg: 'box', bgColor: '#b0281e', bgOp: 1, pad: 12, rad: 0, effect: 'none' },
+    { src: 'cost', x: 470, y: 50, w: 236, size: 38, align: 'right', pip: 'solid', pipColor: '#efe6d2', effect: 'none' },
+    { src: 'type', x: 150, y: 56, w: 300, size: 28, font: 'pirata', color: '#efe6d2', bg: 'strips', bgColor: '#b0281e', bgOp: 1, pad: 10, rad: 0, effect: 'none' },
+    { src: 'rulesflavor', x: 150, y: 590, w: 540, h: 320, size: 40, font: 'pirata', color: '#efe6d2', align: 'right', lh: 1.5, rot: -2, bg: 'strips', bgColor: '#b0281e', bgOp: .95, pad: 12, rad: 0, effect: 'none', pip: 'solid', pipColor: '#efe6d2' },
+    { src: 'pt', x: 560, y: 905, w: 140, size: 52, font: 'pirata', color: '#efe6d2', align: 'right', bg: 'strips', bgColor: '#b0281e', bgOp: 1, pad: 12, rad: 0, effect: 'none' },
+    { src: 'credit', x: 150, y: 980, w: 400, size: 15, font: 'plex', color: '#efe6d2', effect: 'shadow' },
+  ],
+  poster: () => [
+    { src: 'cost', x: 646, y: 52, w: 60, size: 46, vert: true, ls: 8, pip: 'outline', pipColor: '#ffffff', effect: 'none' },
+    { src: 'rulesflavor', x: 440, y: 150, w: 210, h: 330, size: 22, font: 'oswald', upper: true, color: '#ffffff', align: 'center', effect: 'shadow' },
+    { src: 'name', x: 36, y: 560, w: 678, size: 118, font: 'anton', upper: true, color: '#b04acb', align: 'center', lh: .9, effect: 'extrude', effColor: '#ffffff' },
+    { src: 'type', x: 40, y: 806, w: 500, size: 40, font: 'bebas', color: '#ffffff', ls: 2, fit: true, effect: 'shadow' },
+    { src: 'pt', x: 560, y: 880, w: 150, size: 64, font: 'anton', color: '#ffffff', align: 'center', bg: 'box', bgOp: 0, pad: 8, rad: 4, bdW: 3, bdColor: '#ffffff', effect: 'outline', effColor: '#b04acb' },
+    { src: 'credit', x: 50, y: 980, w: 500, size: 15, font: 'plex', color: '#ffffff', upper: true, effect: 'none' },
+  ],
+  vertical: () => [
+    { src: 'name', x: 56, y: 60, w: 110, size: 46, font: 'notojp', color: '#ffffff', vert: true, lh: 1.05, bg: 'box', bgColor: '#1d2a1d', bgOp: .95, pad: 22, rad: 28, bdW: 6, bdColor: '#2e6b3a', effect: 'none' },
+    { src: 'cost', x: 450, y: 62, w: 250, size: 38, align: 'right' },
+    { src: 'type', x: 40, y: 736, w: 380, size: 30, font: 'notojp', color: '#1a1a1a', fit: true, bg: 'box', bgColor: '#d9d9d6', bgOp: .96, pad: 12, rad: 26, bdW: 3, bdColor: '#222222', effect: 'none' },
+    { src: 'rulesflavor', x: 52, y: 804, w: 646, h: 150, size: 26, font: 'notojp', color: '#1a1a1a', bg: 'box', bgColor: '#ecebe6', bgOp: .9, pad: 18, rad: 0, bdW: 4, bdColor: '#2e6b3a', effect: 'none' },
+    { src: 'pt', x: 600, y: 905, w: 100, size: 36, font: 'notojp', color: '#ffffff', align: 'right' },
+    { src: 'credit', x: 50, y: 978, w: 650, size: 16, font: 'plex', color: '#ffffff', effect: 'none' },
+  ],
+  scrawl: () => [
+    { src: 'name', x: 30, y: 36, w: 690, size: 74, font: 'pacifico', color: '#3fb6ff', align: 'center', fit: true, effect: 'outline', effColor: '#0b1a33' },
+    { src: 'type', x: 480, y: 160, w: 230, size: 34, font: 'marker', color: '#ffffff', align: 'center', effect: 'shadow' },
+    { src: 'cost', x: 40, y: 170, w: 220, size: 40, pip: 'glyph', pipColor: '#ffffff', effect: 'shadow' },
+    { src: 'rules', x: 30, y: 300, w: 250, size: 32, font: 'caveat', color: '#ffffff', effect: 'shadow' },
+    { src: 'flavor', x: 470, y: 520, w: 250, size: 30, font: 'caveat', color: '#ffffff', effect: 'shadow' },
+    { src: 'pt', x: 590, y: 880, w: 120, size: 60, font: 'marker', color: '#ffffff', align: 'center', effect: 'shadow' },
+    { src: 'credit', x: 40, y: 978, w: 600, size: 16, font: 'caveat', color: '#ffffff', effect: 'shadow' },
+  ],
+};
+const newLid = () => 'l' + Math.random().toString(36).slice(2, 9);
+const hexA = (hex, a) => { const n = parseInt((hex || '#000000').slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; };
+const upper = s => s.replace(/\{[^}]*\}|[^{]+/g, m => m[0] === '{' ? m : m.toUpperCase());
+function layerText(L, o) {
+  switch (L.src) {
+    case 'rulesflavor': return [o.rules, o.flavor].filter(Boolean).join('\n');
+    case 'credit': return [o.info, o.artist && '✎ ' + o.artist].filter(Boolean).join('   ');
+    case 'custom': return L.text || '';
+    default: return o[L.src] || '';
+  }
+}
+// Web fonts load on first use; the preview redraws when they arrive. Exports wait for them.
+const fontTried = new Set();
+function fontSpec(fam) { return `${fam.wt} 40px ${fam.f}`; }
+function ensureFont(fam, text) {
+  if (!document.fonts) return;
+  const spec = fontSpec(fam), sample = (text || 'A').slice(0, 160);
+  if (document.fonts.check(spec, sample)) return;
+  const key = spec + '|' + sample;
+  if (fontTried.has(key)) return;
+  fontTried.add(key);
+  document.fonts.load(spec, sample).then(() => draw(), () => {});
+}
+async function fontsReadyFor(o) {
+  if (!document.fonts || !o || o.layout !== 'custom') return;
+  await Promise.all((o.layers || []).map(L => {
+    const fam = FONTS[L.font]; if (!fam) return null;
+    const t = (layerText(L, o) || 'A').slice(0, 200), spec = fontSpec(fam);
+    return Promise.all([document.fonts.load(spec, t), document.fonts.load('italic ' + spec, t)]).catch(() => {});
+  }));
+}
+function makePaint(g, L, size) {
+  const k = +L.effSize || 1, ec = L.effColor, col = L.color;
+  if (L.effect === 'outline') return (t, x, y) => {
+    g.save(); g.lineJoin = 'round'; g.miterLimit = 2; g.strokeStyle = ec; g.lineWidth = size * .14 * k;
+    g.strokeText(t, x, y); g.restore(); g.fillStyle = col; g.fillText(t, x, y);
+  };
+  if (L.effect === 'extrude') return (t, x, y) => {
+    const n = Math.max(2, Math.round(size * .07 * k));
+    g.fillStyle = ec; for (let i = n; i >= 1; i--) g.fillText(t, x + i * .7, y + i);
+    g.fillStyle = col; g.fillText(t, x, y);
+  };
+  return (t, x, y) => { g.fillStyle = col; g.fillText(t, x, y); };
+}
+// Draws one layer and returns its box (for selecting and dragging), or null when it has no text.
+function drawLayer(g, L, o) {
+  let text = layerText(L, o);
+  if (!text || !String(text).trim()) return null;
+  const fam = FONTS[L.font] || FONTS.spectral;
+  ensureFont(fam, text);
+  const pad = +L.pad || 0, rot = +L.rot || 0;
+  let size = Math.max(4, +L.size || 30);
+  const prev = { fam: curFam, lh: curLH, pip: curPip };
+  curFam = fam; curLH = +L.lh || 1.15;
+  if (L.pip && L.pip !== 'inherit') curPip = { kind: L.pip, color: L.pipColor || '#ffffff' };
+  g.save();
+  if ('letterSpacing' in g) g.letterSpacing = (+L.ls || 0) + 'px';
+  const alignOff = (room, used) => L.align === 'center' ? (room - used) / 2 : L.align === 'right' ? room - used : 0;
+  let bw, bh, paintAll, kind, lay = null, avail = 0;
+  if (L.src === 'rarity') {
+    kind = 'cost';
+    const img = rarityImage(o.rarity, o.setTint);
+    if (!img) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; return null; }
+    const ih = size, iw = ih * img.width / img.height;
+    bw = Math.max(+L.w, iw + 2 * pad); bh = ih + 2 * pad;
+    paintAll = (bx, by) => g.drawImage(img, bx + pad + alignOff(bw - 2 * pad, iw), by + pad, iw, ih);
+  } else if (L.src === 'cost') {
+    kind = 'cost';
+    const syms = parseCost(text);
+    if (!syms.length) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; return null; }
+    const d = size, gap = d * .1 + (+L.ls || 0), len = syms.length * d + Math.max(0, syms.length - 1) * gap;
+    bw = L.vert ? d + 2 * pad : +L.w; bh = (L.vert ? len : d) + 2 * pad;
+    paintAll = (bx, by) => {
+      let px = bx + pad + (L.vert ? 0 : alignOff(bw - 2 * pad, len)), py = by + pad;
+      for (const s of syms) { drawSym(g, s, px, py, d, true); if (L.vert) py += d + gap; else px += d + gap; }
+    };
+  } else if (L.vert) {
+    kind = 'vert';
+    if (L.upper) text = upper(text);
+    const toks = text.match(/\{[^}]+\}|\n|[\s\S]/gu) || [];
+    const measure = sz => {
+      g.font = bodyFont(sz, !!L.italic);
+      let cw = sz * .6, ln = 0;
+      for (const t of toks) {
+        if (t.length === 1 && t.trim()) cw = Math.max(cw, g.measureText(t).width);
+        ln += /^\s$/.test(t) ? sz * curLH * .5 : sz * curLH;
+      }
+      return { cw, ln };
+    };
+    let m = measure(size);
+    if (+L.h > 0) while (m.ln + 2 * pad > +L.h && size > 6) { size = Math.max(6, size - Math.max(1, size * .04)); m = measure(size); }
+    const fx = makePaint(g, L, size), step = size * curLH, colW = m.cw;
+    bw = colW + 2 * pad; bh = (+L.h > 0 ? +L.h - 2 * pad : m.ln) + 2 * pad;
+    paintAll = (bx, by) => {
+      let y = by + pad; const cx = bx + bw / 2;
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      for (const t of toks) {
+        if (/^\s$/.test(t)) { y += step * .5; continue; }
+        if (t[0] === '{' && t.length > 2) { const d = size * .85; drawSym(g, t.slice(1, -1), cx - d / 2, y + (step - d) / 2, d, true); }
+        else if (/[ー―—–\-~〜…ｰ]/.test(t)) { g.font = bodyFont(size, !!L.italic); g.save(); g.translate(cx, y + step / 2); g.rotate(Math.PI / 2); fx(t, 0, 0); g.restore(); }
+        else { g.font = bodyFont(size, !!L.italic); fx(t, cx, y + step / 2); }
+        y += step;
+      }
+      g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+    };
+  } else {
+    kind = 'rich';
+    const up = s => L.upper ? upper(s || '') : (s || '');
+    const paras = L.src === 'rulesflavor'
+      ? [...(o.rules ? parseRich(up(o.rules), !!L.italic) : []), ...(o.flavor ? parseRich(up(o.flavor), true) : [])]
+      : parseRich(up(text), L.src === 'flavor' || !!L.italic);
+    avail = Math.max(10, +L.w - 2 * pad);
+    const fixedH = +L.h > 0 ? Math.max(4, +L.h - 2 * pad) : 0;
+    for (;;) {
+      lay = layoutRich(g, paras, size, avail);
+      const over = lay.paras.some(p => p.some(line => lineW(line, lay) > avail + .5));
+      const wraps = L.fit && lay.paras.some(p => p.length > 1);
+      const tall = fixedH && lay.h > fixedH;
+      if ((over || wraps || tall) && size > 6) size = Math.max(6, size - Math.max(1, size * .04)); else break;
+    }
+    bw = +L.w; bh = fixedH ? +L.h : lay.h + 2 * pad;
+    const fx = makePaint(g, L, size);
+    paintAll = (bx, by) => drawRich(g, lay, size, bx + pad, by + pad, L.color, { align: L.align, w: avail, paint: fx });
+  }
+  const bx = +L.x, by = +L.y, cx = bx + bw / 2, cy = by + bh / 2;
+  g.translate(cx, cy); g.rotate(rot * Math.PI / 180); g.translate(-cx, -cy);
+  // background
+  const fillStroke = () => {
+    if (+L.bgOp > 0) { g.fillStyle = hexA(L.bgColor, +L.bgOp); g.fill(); }
+    if (+L.bdW > 0) { g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
+  };
+  if (L.bg === 'strips' && kind === 'rich') {
+    const boxes = [];
+    drawRich(g, lay, size, bx + pad, by + pad, L.color, { align: L.align, w: avail, boxes, dry: true });
+    boxes.forEach((b, i) => {
+      const sw = b.w + 2 * pad, sh = size * 1.08 + pad * .9, sx = b.x - pad, sy = b.y + size * .02 - pad * .45;
+      g.save(); g.translate(sx + sw / 2, sy + sh / 2); g.rotate((i % 2 ? .6 : -.5) * Math.PI / 180);
+      g.beginPath(); g.roundRect(-sw / 2, -sh / 2, sw, sh, Math.min(+L.rad || 0, sh / 2)); fillStroke(); g.restore();
+    });
+  } else if (L.bg === 'box' || L.bg === 'strips') {
+    g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); fillStroke();
+  }
+  if (L.effect === 'shadow') {
+    const k = +L.effSize || 1;
+    g.shadowColor = hexA(L.effColor, .85); g.shadowBlur = size * .14 * k; g.shadowOffsetY = size * .04 * k;
+  }
+  paintAll(bx, by);
+  g.restore();
+  curFam = prev.fam; curLH = prev.lh; curPip = prev.pip;
+  return { id: L.id, x: bx, y: by, w: bw, h: bh, cx, cy, rot, resizeW: kind === 'rich', resizeH: kind !== 'cost' };
+}
+function renderCustom(g, o, bleed) {
+  const ar = artRect(o);
+  g.save();
+  if (o.border === 'none') {
+    drawArt(g, ar, st.img);
+    if (bleed) { g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#0b0b0c'; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2); }
+  } else {
+    g.beginPath(); g.roundRect(ar.x, ar.y, ar.w, ar.h, 14); g.clip();
+    drawArt(g, ar, st.img);
+  }
+  g.restore();
+  const rec = g === ctx;
+  if (rec) st.layerBounds = [];
+  for (const L of o.layers || []) {
+    const b = drawLayer(g, { ...LDEF, ...L }, o);
+    if (b && rec) st.layerBounds.push(b);
+  }
+}
+
 // ---------- preview & export ----------
 let raf = 0;
 function draw() {
@@ -723,8 +1267,29 @@ function draw() {
     ctx.setTransform(RES, 0, 0, RES, 0, 0);
     render(ctx, o, false);
     drawGuides(ctx, o);
+    drawSelection(ctx, o);
     updateQuality(o);
   });
+}
+// Preview-only: outline and resize handles on the selected custom layer, and a center line when snapped.
+function drawSelection(g, o) {
+  if (o.layout !== 'custom') return;
+  g.save();
+  if (st.snapped) {
+    g.setLineDash([8, 6]); g.lineWidth = 2; g.strokeStyle = '#ff3bd4';
+    g.beginPath(); g.moveTo(W / 2, 0); g.lineTo(W / 2, H); g.stroke(); g.setLineDash([]);
+  }
+  const b = st.layerBounds.find(x => x.id === st.sel);
+  if (b) {
+    g.translate(b.cx, b.cy); g.rotate(b.rot * Math.PI / 180);
+    const hw = b.w / 2 + 4, hh = b.h / 2 + 4;
+    g.setLineDash([8, 6]); g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeRect(-hw, -hh, hw * 2, hh * 2);
+    g.lineWidth = 2; g.strokeStyle = '#33e0ff'; g.strokeRect(-hw, -hh, hw * 2, hh * 2); g.setLineDash([]);
+    g.fillStyle = '#33e0ff'; g.strokeStyle = '#000'; g.lineWidth = 2.5;
+    if (b.resizeW) { g.beginPath(); g.arc(b.w / 2, 0, 10, 0, 7); g.fill(); g.stroke(); }
+    if (b.resizeH) { g.beginPath(); g.rect(-10, b.h / 2 - 10, 20, 20); g.fill(); g.stroke(); }
+  }
+  g.restore();
 }
 // Preview-only overlay: a dashed outline of where the art shows, and, while dragging,
 // a faint view of the parts of the image hidden under the border and frame.
@@ -732,7 +1297,7 @@ function drawGuides(g, o) {
   if (!$('guides').checked) return;
   const r = artRect(o);
   g.save();
-  if (drag && st.img) {
+  if (drag && !drag.layer && st.img) {
     g.beginPath(); g.rect(0, 0, W, H); g.rect(r.x, r.y, r.w, r.h); g.clip('evenodd');
     g.globalAlpha = 0.4; drawArt(g, r, st.img); g.globalAlpha = 1;
   }
@@ -767,6 +1332,7 @@ async function exportPng() {
   c.width = (W + (bleed ? BLEED * 2 : 0)) * RES; c.height = (H + (bleed ? BLEED * 2 : 0)) * RES;
   const g = c.getContext('2d');
   g.setTransform(RES, 0, 0, RES, bleed ? BLEED * RES : 0, bleed ? BLEED * RES : 0);
+  await fontsReadyFor(o);
   render(g, o, bleed);
   const blob = await new Promise(r => c.toBlob(r, 'image/png'));
   const filename = ((o.name || 'card').replace(/[^\w\- ]+/g, '').trim() || 'card') + (bleed ? ' (bleed)' : '') + '.png';
@@ -848,26 +1414,80 @@ document.addEventListener('paste', e => {
 
 // pan & zoom on the card
 // One pointer drags the art; two pointers (fingers) pinch to zoom and move together.
-let drag = null;
+// In the custom layout, a pointer that starts on a layer moves, resizes or (pinch/scroll) scales that layer instead.
+let drag = null, hit = null;
 const pts = new Map();
 const pinchState = () => {
   const [a, b] = [...pts.values()];
   return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
 };
+const layerById = id => st.layers.find(l => l.id === id);
+const boundOf = id => st.layerBounds.find(b => b.id === id);
+const unitsPerPx = () => W / canvas.getBoundingClientRect().width;
+function cardPoint(e) { const r = canvas.getBoundingClientRect(), k = W / r.width; return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k }; }
+function toLocal(p, b) {
+  const a = -b.rot * Math.PI / 180, dx = p.x - b.cx, dy = p.y - b.cy;
+  return { x: dx * Math.cos(a) - dy * Math.sin(a), y: dx * Math.sin(a) + dy * Math.cos(a) };
+}
+function hitLayer(p) {
+  if ($('layout').value !== 'custom') return null;
+  const tol = 14 * unitsPerPx(), B = st.layerBounds;
+  const sb = boundOf(st.sel);
+  if (sb) {
+    const l = toLocal(p, sb);
+    if (sb.resizeW && Math.hypot(l.x - sb.w / 2, l.y) < tol) return { id: sb.id, mode: 'w' };
+    if (sb.resizeH && Math.hypot(l.x, l.y - sb.h / 2) < tol) return { id: sb.id, mode: 'h' };
+  }
+  for (let i = B.length - 1; i >= 0; i--) {
+    const b = B[i], l = toLocal(p, b);
+    if (Math.abs(l.x) <= b.w / 2 + 6 && Math.abs(l.y) <= b.h / 2 + 6) return { id: b.id, mode: 'move' };
+  }
+  return null;
+}
 const startGesture = () => {
-  if (pts.size >= 2) { const p = pinchState(); drag = { ...p, pinch: true, zoom: st.zoom, ox: st.ox, oy: st.oy }; }
-  else if (pts.size === 1) { const [p] = pts.values(); drag = { x: p.x, y: p.y, ox: st.ox, oy: st.oy }; }
-  else drag = null;
+  const L = hit && layerById(hit.id);
+  if (pts.size >= 2) {
+    const p = pinchState();
+    if (L) { hit.mode = 'move'; drag = { ...p, pinch: true, layer: L.id, size0: +L.size }; }
+    else drag = { ...p, pinch: true, zoom: st.zoom, ox: st.ox, oy: st.oy };
+  } else if (pts.size === 1) {
+    const [p] = pts.values();
+    if (L) {
+      const b = boundOf(L.id);
+      drag = { x: p.x, y: p.y, layer: L.id, mode: hit.mode, lx: +L.x, ly: +L.y, lw: +L.w, lh: +L.h || (b ? b.h : 100), rot: +L.rot || 0, cxOff: b ? b.cx - L.x : L.w / 2 };
+    } else drag = { x: p.x, y: p.y, ox: st.ox, oy: st.oy };
+  } else drag = null;
 };
 canvas.addEventListener('pointerdown', e => {
   pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pts.size === 1) { hit = hitLayer(cardPoint(e)); if (hit && hit.id !== st.sel) selectLayer(hit.id); }
   canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
   startGesture();
 });
 canvas.addEventListener('pointermove', e => {
-  if (!drag || !pts.has(e.pointerId)) return;
+  if (!drag) { // hover cursor for mouse users
+    const h = e.pointerType === 'mouse' ? hitLayer(cardPoint(e)) : null;
+    canvas.style.cursor = !h ? '' : h.mode === 'w' ? 'ew-resize' : h.mode === 'h' ? 'ns-resize' : 'move';
+    return;
+  }
+  if (!pts.has(e.pointerId)) return;
   pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
   const k = W / canvas.getBoundingClientRect().width;
+  if (drag.layer) {
+    const L = layerById(drag.layer); if (!L) return;
+    if (drag.pinch && pts.size >= 2) {
+      L.size = Math.round(Math.min(300, Math.max(6, drag.size0 * pinchState().d / drag.d)));
+    } else {
+      const dx = (e.clientX - drag.x) * k, dy = (e.clientY - drag.y) * k, a = drag.rot * Math.PI / 180;
+      if (drag.mode === 'move') {
+        L.x = Math.round(drag.lx + dx); L.y = Math.round(drag.ly + dy);
+        st.snapped = Math.abs(L.x + drag.cxOff - W / 2) < 8;
+        if (st.snapped) L.x = Math.round(W / 2 - drag.cxOff);
+      } else if (drag.mode === 'w') L.w = Math.max(40, Math.round(drag.lw + dx * Math.cos(a) + dy * Math.sin(a)));
+      else L.h = Math.max(30, Math.round(drag.lh - dx * Math.sin(a) + dy * Math.cos(a)));
+    }
+    syncEditor(); draw(); return;
+  }
   if (drag.pinch && pts.size >= 2) {
     const p = pinchState();
     st.zoom = Math.min(4, Math.max(.3, drag.zoom * p.d / drag.d));
@@ -880,6 +1500,7 @@ canvas.addEventListener('pointermove', e => {
 });
 const endDrag = e => {
   pts.delete(e.pointerId);
+  if (!pts.size) { if (drag && drag.layer) saveDraft(); hit = null; st.snapped = false; }
   startGesture(); // lifting one finger of a pinch carries on as a drag
   if (!drag) canvas.classList.remove('dragging');
   draw();
@@ -887,6 +1508,12 @@ const endDrag = e => {
 canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
+  const h = hitLayer(cardPoint(e)), L = h && layerById(h.id);
+  if (L) {
+    L.size = Math.round(Math.min(300, Math.max(6, L.size * (e.deltaY < 0 ? 1.06 : 1 / 1.06))));
+    if (L.id !== st.sel) selectLayer(L.id); else syncEditor();
+    draw(); saveDraft(); return;
+  }
   st.zoom = Math.min(4, Math.max(.3, st.zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06)));
   $('zoom').value = st.zoom; draw();
 }, { passive: false });
@@ -894,8 +1521,94 @@ $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
 $('guides').onchange = draw;
 $('resetArt').onclick = () => { st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; draw(); };
 $('save').onclick = exportPng;
-$('clear').onclick = () => {
-  writeForm(BLANK); st.img = null; st.blob = null; st.sample = false; st.editingId = null;
+// ---------- custom layout editor ----------
+const LPROPS = {
+  src: 's', text: 's', font: 's', size: 'n', color: 's', align: 's', w: 'n', h: 'n', rot: 'n', ls: 'n', lh: 'n',
+  upper: 'b', vert: 'b', fit: 'b', italic: 'b', effect: 's', effColor: 's', effSize: 'n',
+  bg: 's', bgColor: 's', bgOp: 'n', pad: 'n', rad: 'n', bdW: 'n', bdColor: 's', pip: 's', pipColor: 's'
+};
+const optionsHtml = map => Object.entries(map).map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+$('L-src').innerHTML = optionsHtml(SRC_LABEL);
+$('newSrc').innerHTML = optionsHtml(SRC_LABEL);
+$('L-font').innerHTML = optionsHtml(Object.fromEntries(Object.entries(FONTS).map(([k, f]) => [k, f.label])));
+function updateLook() {
+  const custom = $('layout').value === 'custom';
+  $('customSet').hidden = !custom;
+  document.querySelectorAll('.fixedOnly').forEach(el => { el.hidden = custom; });
+  if (custom && !st.layers.length) applyPreset('clean', true);
+  renderLayerList(); syncEditor();
+}
+function renderLayerList() {
+  const box = $('layerList'); box.textContent = '';
+  const o = { ...readFormText() };
+  for (const L of st.layers) {
+    const b = document.createElement('button'); b.type = 'button';
+    const t = layerText(L, o);
+    b.textContent = L.src === 'custom' ? `“${(L.text || '').slice(0, 22) || 'empty'}”` : SRC_LABEL[L.src] + (t ? '' : ' (empty)');
+    b.setAttribute('aria-pressed', L.id === st.sel ? 'true' : 'false');
+    b.onclick = () => selectLayer(L.id);
+    box.append(b);
+  }
+}
+function readFormText() { const o = { rarity: $('rarity').value }; for (const k of TEXT_KEYS) o[k] = $(k).value; return o; }
+function syncEditor() {
+  const L = layerById(st.sel);
+  $('layerEd').hidden = !L || $('layout').value !== 'custom';
+  if (!L) return;
+  for (const [k, t] of Object.entries(LPROPS)) {
+    const el = $('L-' + k); if (document.activeElement === el && t !== 'b') continue;
+    if (t === 'b') el.checked = !!L[k]; else el.value = L[k];
+  }
+  $('L-textWrap').hidden = L.src !== 'custom';
+}
+function selectLayer(id) { st.sel = id; renderLayerList(); syncEditor(); draw(); }
+function layersChanged() { renderLayerList(); syncEditor(); draw(); saveDraft(); }
+function applyPreset(name, quiet) {
+  st.layers = (PRESETS[name] || PRESETS.clean)().map(l => ({ ...LDEF, ...l, id: newLid() }));
+  st.sel = st.layers.find(l => l.src === 'name')?.id || st.layers[0].id;
+  if (!quiet) layersChanged();
+}
+for (const [k, t] of Object.entries(LPROPS)) {
+  $('L-' + k).addEventListener('input', e => {
+    const L = layerById(st.sel); if (!L) return;
+    L[k] = t === 'b' ? e.target.checked : t === 'n' ? +e.target.value : e.target.value;
+    if (k === 'src' && L.src === 'custom' && !L.text) L.text = 'Your text';
+    if (k === 'src' || k === 'text') { renderLayerList(); syncEditor(); }
+    draw(); saveDraft();
+  });
+}
+$('applyPreset').onclick = () => applyPreset($('preset').value);
+$('addLayer').onclick = () => {
+  const src = $('newSrc').value;
+  const L = { ...LDEF, id: newLid(), src, x: 100, y: 420, w: 550, size: src === 'cost' ? 40 : 44, text: src === 'custom' ? 'Your text' : '', font: src === 'rules' || src === 'flavor' || src === 'rulesflavor' ? 'crimson' : 'spectral' };
+  st.layers.push(L); st.sel = L.id; layersChanged();
+};
+$('dupLayer').onclick = () => {
+  const L = layerById(st.sel); if (!L) return;
+  const c = { ...L, id: newLid(), x: L.x + 20, y: L.y + 20 };
+  st.layers.splice(st.layers.indexOf(L) + 1, 0, c); st.sel = c.id; layersChanged();
+};
+const moveLayer = dir => {
+  const i = st.layers.findIndex(l => l.id === st.sel), j = i + dir;
+  if (i < 0 || j < 0 || j >= st.layers.length) return;
+  [st.layers[i], st.layers[j]] = [st.layers[j], st.layers[i]]; layersChanged();
+};
+$('upLayer').onclick = () => moveLayer(1);
+$('downLayer').onclick = () => moveLayer(-1);
+$('centerLayer').onclick = () => {
+  const L = layerById(st.sel), b = boundOf(st.sel); if (!L) return;
+  L.x = Math.round(W / 2 - (b ? b.w : L.w) / 2); layersChanged();
+};
+$('delLayer').onclick = () => {
+  const i = st.layers.findIndex(l => l.id === st.sel); if (i < 0) return;
+  st.layers.splice(i, 1);
+  st.sel = st.layers.length ? st.layers[Math.min(i, st.layers.length - 1)].id : null; layersChanged();
+};
+$('layout').addEventListener('input', updateLook);
+for (const k of [...TEXT_KEYS, 'rarity']) $(k).addEventListener('input', renderLayerList);
+
+$('clear').onclick = () => { // clears the card text but keeps the look (layout, layers, symbols)
+  writeForm(Object.fromEntries(TEXT_KEYS.map(k => [k, '']))); st.img = null; st.blob = null; st.sample = false; st.editingId = null;
   st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
   saveDraft(); updateSheetButtons(); renderSheet(); draw(); $('name').focus();
 };
@@ -947,7 +1660,7 @@ function updateSheetButtons() {
   $('addSheet').textContent = editing ? 'Update card on sheet' : 'Add to print sheet';
   $('addNew').hidden = !editing;
 }
-function addCurrent(asNew) {
+async function addCurrent(asNew) {
   if (!st.img) { sheetStatus().textContent = 'Add some art first.'; return; }
   const form = readForm();
   let e = !asNew && st.editingId ? sheet.find(x => x.id === st.editingId) : null;
@@ -958,6 +1671,7 @@ function addCurrent(asNew) {
     e = { id: newId(), kind: 'made', form, img: st.img, blob: st.blob || null, zoom: st.zoom, ox: st.ox, oy: st.oy, copies: 1, order: Date.now() };
     sheet.push(e);
   }
+  await fontsReadyFor(form);
   makeThumb(e); persist(e);
   st.editingId = e.id;
   sheetStatus().textContent = `${updating ? 'Updated' : 'Added'} “${form.name || 'Untitled'}” on the print sheet.`;
@@ -1056,7 +1770,7 @@ async function savePdf() {
     for (let i = 0; i < list.length; i++) {
       const e = list[i], k = i % 9;
       if (k === 0) { if (i) doc.addPage(paper, 'portrait'); drawEdges(); }
-      if (!done.has(e.id)) done.set(e.id, cardCanvas(e, RES).toDataURL('image/jpeg', 0.92));
+      if (!done.has(e.id)) { if (e.kind === 'made') await fontsReadyFor(e.form); done.set(e.id, cardCanvas(e, RES).toDataURL('image/jpeg', 0.92)); }
       doc.addImage(done.get(e.id), 'JPEG', xs[k % 3], ys[(k / 3) | 0], cw, ch, e.id, 'NONE');
       if (k === 8 || i === list.length - 1) drawCorners();
       status.textContent = `Building PDF… ${i + 1} of ${list.length}`;
@@ -1075,7 +1789,7 @@ async function restoreSheet() {
   for (const r of rows) {
     try {
       const img = r.blob ? await loadImage(URL.createObjectURL(r.blob)) : (st.sampleImg.complete ? st.sampleImg : await loadImage(st.sampleImg.src));
-      const e = { ...r, img }; makeThumb(e); sheet.push(e);
+      const e = { ...r, img }; if (e.kind === 'made') await fontsReadyFor(e.form); makeThumb(e); sheet.push(e);
     } catch (err) {}
   }
   renderSheet();
@@ -1085,17 +1799,100 @@ $('addNew').onclick = () => addCurrent(true);
 $('pickFinished').onclick = () => $('finished').click();
 $('finished').onchange = e => { addFinished([...e.target.files]); e.target.value = ''; };
 $('savePdf').onclick = savePdf;
-for (const k of FIELDS) $(k).addEventListener('input', () => { draw(); saveDraft(); });
+for (const k of FIELDS) $(k).addEventListener('input', () => { draw(); saveDraft(); $('randomNote').hidden = true; });
+
+// First visit (nothing saved yet): show a random example card in a random look.
+let lastPick = '';
+function randomStart() {
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  let card, look, key;
+  do {
+    card = pick(EXAMPLES);
+    look = pick([['fade'], ['panel'], ['framed'], ...Object.keys(PRESETS).map(p => ['custom', p])]);
+    key = card.name + look.join();
+  } while (key === lastPick);
+  lastPick = key;
+  const colors = [...new Set(parseCost(card.cost).filter(c => 'WUBRG'.includes(c)))];
+  const color = colors.length > 1 ? 'M' : colors[0] || (card.type.includes('Artifact') ? 'A' : 'C');
+  st.layers = [];
+  if (look[0] === 'custom') applyPreset(look[1], true);
+  writeForm({ ...SAMPLE, ...card, layout: look[0], color, border: look[0] === 'custom' && Math.random() < .5 ? 'none' : '#0b0b0c',
+    pipStyle: look[1] === 'comic' || look[1] === 'poster' ? 'outline' : 'classic', pipColor: '#ffffff' });
+  st.img = st.sampleImg; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
+  $('randomNote').hidden = false;
+  draw();
+}
+$('shuffle').onclick = randomStart;
+$('useDefault').onclick = () => {
+  st.layers = []; st.sel = null;
+  writeForm(SAMPLE); $('randomNote').hidden = true; draw();
+};
+
+// ---------- symbols panel ----------
+const SLOTS = [['SET', 'Set symbol (all rarities)'], ['SET:C', 'Common only'], ['SET:U', 'Uncommon only'], ['SET:R', 'Rare only'], ['SET:M', 'Mythic only']];
+let pendingSym = null;
+const removeSymbol = code => { symLib.delete(code); symVersion++; saveSymbols(); renderSymbols(); draw(); };
+function renderSymbols() {
+  const list = $('symList'); list.textContent = '';
+  for (const [code, v] of symLib) {
+    if (code.startsWith('SET')) continue;
+    const d = document.createElement('div'); d.className = 'sym';
+    const im = document.createElement('img'); im.src = v.src; im.alt = '';
+    const c = document.createElement('code'); c.textContent = '{' + code + '}';
+    const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.title = 'Remove';
+    x.setAttribute('aria-label', 'Remove symbol ' + code); x.onclick = () => removeSymbol(code);
+    d.append(im, c, x); list.append(d);
+  }
+  const slots = $('setSlots'); slots.textContent = '';
+  for (const [code, label] of SLOTS) {
+    const v = symLib.get(code);
+    const d = document.createElement('div'); d.className = 'slot';
+    const im = document.createElement('img'); im.alt = '';
+    const r = code === 'SET' ? null : code.slice(4);
+    const prev = v ? null : r ? null : rarityImage('R', true);
+    if (v) im.src = v.src; else if (prev) im.src = prev.toDataURL ? prev.toDataURL() : prev.src; else im.style.visibility = 'hidden';
+    const t = document.createElement('span'); t.className = 't';
+    t.textContent = label + (v ? '' : code === 'SET' ? ' · built-in gem' : ' · uses set symbol');
+    const b = document.createElement('div'); b.className = 'b';
+    const up = document.createElement('button'); up.type = 'button'; up.textContent = v ? 'Replace…' : 'Choose image…';
+    up.setAttribute('aria-label', (v ? 'Replace ' : 'Choose ') + label.toLowerCase());
+    up.onclick = () => { pendingSym = code; $('symFile').click(); };
+    b.append(up);
+    if (v) { const x = document.createElement('button'); x.type = 'button'; x.textContent = 'Remove'; x.onclick = () => removeSymbol(code); b.append(x); }
+    d.append(im, t, b); slots.append(d);
+  }
+}
+$('symAdd').onclick = () => {
+  const code = $('symCode').value.trim().replace(/^\{|\}$/g, '').toUpperCase().replace(/\s/g, '');
+  if (!/^[A-Z0-9/+\-½∞]{1,12}$/.test(code)) { $('status').textContent = 'Type a symbol code first: letters or numbers, like B, 2 or HEART.'; $('symCode').focus(); return; }
+  pendingSym = code; $('symFile').click();
+};
+$('symFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f || !pendingSym) return;
+  const code = pendingSym; pendingSym = null;
+  try {
+    const ok = putSymbol(code, await shrinkImage(f));
+    $('status').textContent = !ok ? 'Added for now, but this browser is out of storage space, so it will be gone after a reload. Try a smaller image.'
+      : code.startsWith('SET') ? 'Set symbol updated.' : `Added {${code}}. Type it in any text box.`;
+    if (!code.startsWith('SET')) $('symCode').value = '';
+  } catch (err) { $('status').textContent = 'Couldn’t read that image.'; }
+  renderSymbols(); draw();
+};
+renderSymbols();
 
 // ---------- boot ----------
-writeForm(loadDraft() || SAMPLE);
+const draft = loadDraft();
+if (draft) writeForm(draft);
 st.img = st.sampleImg = makeSampleArt();
 st.img.onload = draw;
+if (!draft) randomStart();
 draw();
 const fams = ['700 20px Spectral', '700 20px Cinzel', '700 20px "Cormorant SC"', '20px "IM Fell English SC"', '20px "Crimson Text"', 'italic 20px "Crimson Text"', '600 20px "IBM Plex Sans"'];
 if (document.fonts) {
-  Promise.all(fams.map(f => document.fonts.load(f).catch(() => {}))).then(() => { draw(); restoreSheet(); });
-  document.fonts.ready.then(draw);
+  Promise.all(fams.map(f => document.fonts.load(f).catch(() => {}))).then(() => { glyphCache.clear(); draw(); restoreSheet(); });
+  document.fonts.ready.then(() => { glyphCache.clear(); draw(); });
+  document.fonts.addEventListener?.('loadingdone', () => { glyphCache.clear(); draw(); });
 } else restoreSheet();
 })();
 </script>
