@@ -103,6 +103,19 @@ canvas#card.dragging { cursor: grabbing; }
 .thumb .name { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 button:disabled { opacity: .5; cursor: not-allowed; }
 .notice { border: 1px solid var(--warn); background: color-mix(in srgb, var(--warn) 10%, var(--field)); border-radius: 9px; padding: 12px 14px; display: grid; gap: 10px; }
+.lookup { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+.lookup .go { display: flex; gap: 8px; align-items: end; }
+.lookup .go label { flex: 1; }
+.deck { display: grid; gap: 10px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+.deck textarea { font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace; font-size: 14px; }
+.remix { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.remix .part { display: inline-flex; }
+.remix .part > button:first-child { border-radius: 7px 0 0 7px; }
+.remix .lock { border-radius: 0 7px 7px 0; margin-left: -1px; padding: 9px 9px; display: inline-grid; place-items: center; color: var(--muted); }
+.remix .lock svg { width: 15px; height: 15px; }
+.remix .lock[aria-pressed=true] { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--field)); }
+.credit { margin: 0; font-size: 12px; line-height: 1.45; color: var(--muted); }
+.credit a { color: inherit; }
 .notice.intro { border-color: var(--line); background: var(--panel); }
 .notice p { margin: 0; font-size: 13px; line-height: 1.5; }
 .quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
@@ -165,9 +178,9 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
   <div class="grid">
     <div class="controls">
       <div class="notice intro" id="randomNote" role="status" hidden>
-        <p>You're looking at a <b>random example</b> card and layout. Change anything you like, shuffle for another, or start from the default card.</p>
+        <p>You're looking at a <b>random remix</b>: a real card's text, public-domain art and a random look. Put your own art on it, change anything, remix again, or start from the default card.</p>
         <div class="actions">
-          <button type="button" class="primary" id="shuffle">Shuffle again</button>
+          <button type="button" class="primary" id="shuffle">Remix again</button>
           <button type="button" id="useDefault">Use the default card</button>
         </div>
       </div>
@@ -185,6 +198,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         </div>
         <label class="inline"><input type="checkbox" id="guides" checked> Show art-area guide on the preview (never printed)</label>
         <div class="quality" id="quality" aria-live="polite"></div>
+        <p class="credit" id="artCredit" hidden></p>
         <div class="notice" id="cardNotice" role="status" hidden>
           <p id="cardNoticeText"></p>
           <div class="actions">
@@ -196,6 +210,19 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 
       <fieldset>
         <legend>Card text</legend>
+        <div class="lookup">
+          <div class="go">
+            <label for="lookupName">Look up a real card <input type="text" id="lookupName" list="lookupList" placeholder="Start typing a card name" autocomplete="off" spellcheck="false"></label>
+            <button type="button" id="lookupGo">Fill in</button>
+          </div>
+          <datalist id="lookupList"></datalist>
+          <div class="row" id="lookupMore" hidden>
+            <label for="lookupPrint">Printing <select id="lookupPrint"></select></label>
+            <label for="lookupFace" id="lookupFaceWrap" hidden>Side <select id="lookupFace"></select></label>
+          </div>
+          <label class="inline"><input type="checkbox" id="lookupArt"> Also use the card's official art</label>
+          <span class="hint">Fills in the name, cost, type, rules, flavor, power/toughness, rarity and collector line from <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>. Only the name you type is sent. Change anything afterwards.</span>
+        </div>
         <div class="row">
           <label for="name">Name <input type="text" id="name"></label>
           <label for="cost">Mana cost <input type="text" id="cost" placeholder="{2}{B}{B}"></label>
@@ -383,12 +410,17 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 
     <div class="proof">
       <div class="mat"><canvas id="card" width="1500" height="2100" aria-label="Card preview"></canvas></div>
+      <div class="remix" role="group" aria-label="Remix">
+        <button type="button" class="primary" id="remixAll" title="Roll everything that isn't locked">Remix</button>
+        <span class="part"><button type="button" id="roll-text" title="A random real card from Scryfall">Text</button><button type="button" class="lock" id="lock-text" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span>
+        <span class="part"><button type="button" id="roll-art" title="Public-domain art from Wikimedia Commons, picked to match the card">Art</button><button type="button" class="lock" id="lock-art" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span>
+        <span class="part"><button type="button" id="roll-look" title="A random layout, border, fonts and symbol style">Look</button><button type="button" class="lock" id="lock-look" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span>
+      </div>
       <div class="actions">
         <button type="button" class="primary" id="addSheet">Add to print sheet</button>
         <button type="button" id="addNew" hidden>Add as a new card</button>
         <button type="button" id="save">Save PNG</button>
         <button type="button" id="clear">New blank card</button>
-        <button type="button" id="randomBtn" title="Replace the card you're editing with a random example">Random example</button>
         <button type="button" id="defaultBtn" title="Replace the card you're editing with the default example">Default card</button>
         <span class="status" id="status"></span>
       </div>
@@ -403,6 +435,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <p class="hint" id="sheetCount">No cards yet.</p>
       </div>
       <div class="actions">
+        <button type="button" id="deckOpen">Add a deck list…</button>
         <button type="button" id="pickFinished">Add finished card images…</button>
         <input type="file" id="finished" accept="image/*" multiple hidden>
         <button type="button" class="primary" id="savePdf" disabled>Save PDF</button>
@@ -427,6 +460,17 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <option value="#ff3b30">Red</option><option value="#ffffff">White</option><option value="#000000">Black</option><option value="none">Off</option>
         </select>
       </label>
+    </div>
+    <div class="deck" id="deckPanel" hidden>
+      <label for="deckText">Paste a deck list, one card per line
+        <textarea id="deckText" rows="9" spellcheck="false" placeholder="4 Lightning Bolt&#10;2x Counterspell&#10;1 Sol Ring (C21) 263"></textarea>
+      </label>
+      <label class="inline"><input type="checkbox" id="deckArt"> Use each card's official art</label>
+      <p class="hint" style="margin:0">Works with lists from most deck sites and Arena / MTGO exports. Each card gets the look of the card you're editing (layout, border, fonts, symbols). Without official art the cards get plain placeholder art; press <b>Edit</b> on one to add your own. Card details come from Scryfall; only the card names are sent.</p>
+      <div class="actions">
+        <button type="button" class="primary" id="deckGo">Add cards to sheet</button>
+        <button type="button" id="deckCancel">Cancel</button>
+      </div>
     </div>
     <ol class="thumbs" id="thumbs"></ol>
     <p class="hint" id="sheetEmpty">Make a card above and press <b>Add to print sheet</b>, or add card images you already have (scans, other proxies). Nine cards fit on each page at real card size, 2.5 × 3.5″. Print the PDF at 100% / “Actual size”, not “Fit to page”.</p>
@@ -461,7 +505,7 @@ const EXAMPLES = [
 ];
 const BLANK = { ...SAMPLE, name: '', cost: '', type: '', rules: '', flavor: '', pt: '', artist: '', info: '', note: '' };
 
-const st = { img: null, zoom: 1, ox: 0, oy: 0, sample: true, layers: [], sel: null, layerBounds: [] };
+const st = { edits: 0, img: null, zoom: 1, ox: 0, oy: 0, sample: true, layers: [], sel: null, layerBounds: [] };
 
 // ---------- state <-> form ----------
 // Custom-layout layers live in st.layers and travel with the form (drafts, print-sheet cards).
@@ -1363,7 +1407,7 @@ function loadFile(file) {
     checkFinishedCard(img, file);
     st.img = img; st.blob = file; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
     if (st.sample && $('artist').value === 'Sample art') $('artist').value = '';
-    st.sample = false; $('status').textContent = ''; draw();
+    st.sample = false; $('status').textContent = ''; setCredit(null); st.edits++; draw();
   };
   img.onerror = () => { $('status').textContent = 'Couldn’t read that image.'; };
   img.src = URL.createObjectURL(file);
@@ -1801,39 +1845,373 @@ $('addNew').onclick = () => addCurrent(true);
 $('pickFinished').onclick = () => $('finished').click();
 $('finished').onchange = e => { addFinished([...e.target.files]); e.target.value = ''; };
 $('savePdf').onclick = savePdf;
-for (const k of FIELDS) $(k).addEventListener('input', () => { draw(); saveDraft(); $('randomNote').hidden = true; });
+for (const k of FIELDS) $(k).addEventListener('input', () => { st.edits++; draw(); saveDraft(); $('randomNote').hidden = true; });
 
 // First visit (nothing saved yet): show a random example card in a random look.
 let lastPick = '';
-function randomStart() {
-  const pick = a => a[Math.floor(Math.random() * a.length)];
-  let card, look, key;
-  do {
-    card = pick(EXAMPLES);
-    look = pick([['fade'], ['panel'], ['framed'], ...Object.keys(PRESETS).map(p => ['custom', p])]);
-    key = card.name + look.join();
-  } while (key === lastPick);
-  lastPick = key;
-  const colors = [...new Set(parseCost(card.cost).filter(c => 'WUBRG'.includes(c)))];
-  const color = colors.length > 1 ? 'M' : colors[0] || (card.type.includes('Artifact') ? 'A' : 'C');
+const pick = a => a[Math.floor(Math.random() * a.length)];
+// A random look: layout (or a custom-layout design), border, title font, shading and symbol style. Sets st.layers.
+let lastLook = '';
+function randomLook() {
+  let lk;
+  do lk = pick([['fade'], ['panel'], ['framed'], ...Object.keys(PRESETS).map(p => ['custom', p])]); while (lk.join() === lastLook);
+  lastLook = lk.join();
   st.layers = [];
-  if (look[0] === 'custom') applyPreset(look[1], true);
-  writeForm({ ...SAMPLE, ...card, layout: look[0], color, border: look[0] === 'custom' && Math.random() < .5 ? 'none' : '#0b0b0c',
-    pipStyle: look[1] === 'comic' || look[1] === 'poster' ? 'outline' : 'classic', pipColor: '#ffffff' });
+  if (lk[0] === 'custom') applyPreset(lk[1], true);
+  const bold = lk[1] === 'comic' || lk[1] === 'poster';
+  return {
+    layout: lk[0],
+    border: lk[0] === 'custom' && Math.random() < .5 ? 'none' : pick(['#0b0b0c', '#0b0b0c', '#0b0b0c', '#f3f1ec', '#a9abae', '#b8964c', 'none']),
+    titleFont: pick(['Spectral', 'Cinzel', 'Cormorant SC', 'IM Fell English SC']),
+    shade: String(Math.round((0.6 + Math.random() * 0.3) * 100) / 100),
+    pipStyle: bold ? pick(['outline', 'solid', 'glyph']) : pick(['classic', 'classic', 'flat', 'outline', 'solid', 'glyph']),
+    pipColor: pick(['#ffffff', '#ffffff', '#111111', '#f2c14e', '#ff5d8f', '#4cc9f0', '#90e39a']),
+  };
+}
+function costColor(card) {
+  const colors = [...new Set(parseCost(card.cost).filter(c => 'WUBRG'.includes(c)))];
+  return colors.length > 1 ? 'M' : colors[0] || (card.type.includes('Artifact') ? 'A' : 'C');
+}
+function randomStart() {
+  let card;
+  do card = pick(EXAMPLES); while (card.name === lastPick);
+  lastPick = card.name;
+  writeForm({ ...SAMPLE, ...card, color: costColor(card), ...randomLook() });
   st.img = st.sampleImg; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
   $('randomNote').hidden = false;
   draw();
 }
 // Buttons (banner and the always-visible ones) start a fresh example, so stop editing any print-sheet card and save it as the draft.
 const leaveSheetCard = () => { st.editingId = null; updateSheetButtons(); renderSheet(); };
-$('shuffle').onclick = $('randomBtn').onclick = () => { leaveSheetCard(); randomStart(); saveDraft(); };
+$('shuffle').onclick = () => remixUnlocked();
 $('useDefault').onclick = $('defaultBtn').onclick = () => {
   leaveSheetCard();
   st.layers = []; st.sel = null;
   writeForm(SAMPLE);
   st.img = st.sampleImg; st.blob = null; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
-  $('randomNote').hidden = true; saveDraft(); draw();
+  $('randomNote').hidden = true; setCredit(null); saveDraft(); draw();
 };
+
+// ---------- card lookup (Scryfall) ----------
+// Scryfall's public API needs no key and allows browser requests. They ask for ~10 requests a second at most.
+const SF = 'https://api.scryfall.com';
+let sfLast = 0;
+async function sf(path, opts = {}) {
+  const wait = sfLast + 110 - Date.now(); if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  sfLast = Date.now();
+  const r = await fetch(path.startsWith('http') ? path : SF + path, { ...opts, headers: { Accept: 'application/json', ...(opts.headers || {}) } });
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j || j.object === 'error') throw new Error(j?.details || 'Scryfall didn’t answer. Check your connection.');
+  return j;
+}
+const RARITY_CODE = { common: 'C', uncommon: 'U', rare: 'R', mythic: 'M', special: 'R', bonus: 'M' };
+function sideOf(card, i) { return card.card_faces && card.card_faces[i] && (card.card_faces[i].oracle_text != null || card.card_faces[i].type_line) ? card.card_faces[i] : null; }
+// Text fields for one side of a Scryfall card (front side unless i says otherwise).
+function cardText(card, i = 0) {
+  const f = sideOf(card, i) || card;
+  const pick = k => f[k] ?? card[k];
+  const pt = pick('power') != null ? `${pick('power')}/${pick('toughness')}` : pick('loyalty') ?? pick('defense') ?? '';
+  const colors = f.colors || card.colors || [], type = pick('type_line') || '';
+  const color = colors.length > 1 ? 'M' : colors[0] || (/\bLand\b/.test(type) ? 'L' : /\bArtifact\b/.test(type) ? 'A' : 'C');
+  return {
+    name: pick('name') || '', cost: pick('mana_cost') || '', type, rules: pick('oracle_text') || '', flavor: pick('flavor_text') || '', pt: String(pt),
+    info: [card.collector_number, (card.set || '').toUpperCase(), (card.lang || 'en').toUpperCase()].filter(Boolean).join(' · '),
+    rarity: RARITY_CODE[card.rarity] || '', color, artist: pick('artist') || '',
+    art: (f.image_uris || card.image_uris || {}).art_crop || '',
+  };
+}
+async function fetchArt(url) {
+  const r = await fetch(url); if (!r.ok) throw new Error('art');
+  const blob = await r.blob();
+  return { blob, img: await loadImage(URL.createObjectURL(blob)) };
+}
+// Plain art for cards added without official art: a soft gradient in the card's color.
+const PLACE = { W: ['#f4ecd2', '#b9ab84'], U: ['#5e9bd1', '#14324f'], B: ['#5a4a58', '#141014'], R: ['#e0784f', '#5a1a10'], G: ['#6fa46a', '#18341a'],
+  M: ['#e3c46c', '#6e5420'], A: ['#b8c2c9', '#4a545b'], L: ['#b39a7a', '#4a3a2a'], C: ['#c9c4bd', '#5c5853'] };
+const placeCache = new Map();
+async function placeholderArt(color) {
+  if (placeCache.has(color)) return placeCache.get(color);
+  const c = document.createElement('canvas'); c.width = 600; c.height = 840;
+  const g = c.getContext('2d'), [a, b] = PLACE[color] || PLACE.C;
+  const gr = g.createRadialGradient(300, 300, 40, 300, 420, 620); gr.addColorStop(0, a); gr.addColorStop(1, b);
+  g.fillStyle = gr; g.fillRect(0, 0, 600, 840);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const v = { blob, img: await loadImage(URL.createObjectURL(blob)) };
+  placeCache.set(color, v); return v;
+}
+
+const look = { card: null, prints: [] };
+let acTimer = 0, acSeq = 0;
+$('lookupName').addEventListener('input', () => {
+  clearTimeout(acTimer);
+  const q = $('lookupName').value.trim();
+  if (q.length < 2) return;
+  acTimer = setTimeout(async () => {
+    const seq = ++acSeq;
+    try {
+      const j = await sf('/cards/autocomplete?q=' + encodeURIComponent(q));
+      if (seq !== acSeq) return;
+      const list = $('lookupList'); list.textContent = '';
+      for (const n of j.data.slice(0, 20)) { const o = document.createElement('option'); o.value = n; list.append(o); }
+    } catch (e) {}
+  }, 250);
+});
+$('lookupName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); lookupCard(); } });
+$('lookupGo').onclick = () => lookupCard();
+async function lookupCard() {
+  const q = $('lookupName').value.trim();
+  if (!q) { $('status').textContent = 'Type a card name to look up.'; $('lookupName').focus(); return; }
+  $('status').textContent = `Looking up “${q}”…`; $('lookupGo').disabled = true;
+  try {
+    const card = await sf('/cards/named?fuzzy=' + encodeURIComponent(q));
+    showLookup(card);
+    await applyLookup();
+  } catch (e) { $('status').textContent = e.message.includes('Too many') ? 'Several cards match that. Type more of the name.' : e.message; }
+  $('lookupGo').disabled = false;
+}
+// Shows a card in the lookup panel (printings and sides) so it can be switched or given its official art.
+function showLookup(card) {
+  look.card = card; look.prints = [card];
+  $('lookupName').value = card.name;
+  fillPrintings(card);
+  const faces = (card.card_faces || []).filter((f, i) => sideOf(card, i));
+  $('lookupFaceWrap').hidden = faces.length < 2;
+  $('lookupFace').textContent = '';
+  faces.forEach((f, i) => { const o = document.createElement('option'); o.value = i; o.textContent = (i ? 'Back: ' : 'Front: ') + f.name; $('lookupFace').append(o); });
+  $('lookupMore').hidden = false;
+  loadPrintings(card);
+}
+function fillPrintings(current) {
+  const sel = $('lookupPrint'); sel.textContent = '';
+  for (const p of look.prints) {
+    const o = document.createElement('option'); o.value = p.id;
+    o.textContent = `${p.set_name} (${p.set.toUpperCase()}) #${p.collector_number}${p.released_at ? ' · ' + p.released_at.slice(0, 4) : ''}`;
+    sel.append(o);
+  }
+  sel.value = current.id;
+}
+async function loadPrintings(card) { // every English printing, newest first; the list can span several pages
+  try {
+    let url = card.prints_search_uri, all = [];
+    for (let page = 0; url && page < 4; page++) { const j = await sf(url); all = all.concat(j.data); url = j.has_more ? j.next_page : null; }
+    if (look.card !== card || !all.length) return;
+    if (!all.some(p => p.id === card.id)) all.unshift(card);
+    look.prints = all; fillPrintings(card);
+  } catch (e) {}
+}
+$('lookupPrint').onchange = () => { look.card = look.prints.find(p => p.id === $('lookupPrint').value) || look.card; applyLookup(); };
+$('lookupFace').onchange = () => applyLookup();
+$('lookupArt').onchange = () => { if (look.card && $('lookupArt').checked) applyLookup(); };
+async function applyLookup(withArt = $('lookupArt').checked) {
+  const card = look.card; if (!card) return;
+  const t = cardText(card, +$('lookupFace').value || 0);
+  const { art, artist, ...fields } = t;
+  writeForm(fields);
+  if ($('artist').value === 'Sample art') $('artist').value = '';
+  $('status').textContent = `Filled in “${t.name}”.`;
+  if (withArt && art) {
+    try {
+      const a = await fetchArt(art);
+      if (look.card !== card) return;
+      st.img = a.img; st.blob = a.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false;
+      $('artist').value = artist; setCredit(null);
+      $('status').textContent = `Filled in “${t.name}” with its official art.`;
+    } catch (e) { $('status').textContent = `Filled in “${t.name}”, but its art couldn’t be loaded.`; }
+  }
+  $('randomNote').hidden = true;
+  renderLayerList(); saveDraft(); draw();
+}
+
+// ---------- deck list ----------
+const DECK_HEAD = /^(deck|main ?deck|mainboard|sideboard|commander|companion|maybeboard|considering|tokens?|about|name\s.*|lands?|creatures?|spells?|instants?|sorceries|artifacts?|enchantments?|planeswalkers?)\s*(\(\d+\))?:?$/i;
+function parseDeck(text) {
+  const out = new Map();
+  for (let line of text.split(/\r?\n/)) {
+    line = line.replace(/^\s*SB:\s*/i, '').replace(/\s+\*[A-Z]+\*\s*$/, '').replace(/\s+#.*$/, '').trim();
+    if (!line || line.startsWith('//') || line.startsWith('#') || DECK_HEAD.test(line)) continue;
+    const m = line.match(/^(\d+)\s*x?\s+(.+)$/i);
+    let n = m ? parseInt(m[1]) : 1, rest = m ? m[2] : line, set = '', num = '';
+    const sm = rest.match(/^(.+?)\s+[(\[]([A-Za-z0-9]{2,6})[)\]](?:\s+([A-Za-z0-9★\-]+))?$/);
+    if (sm) { rest = sm[1]; set = sm[2].toLowerCase(); num = sm[3] || ''; }
+    const name = rest.trim(); if (!name || n < 1) continue;
+    const id = set && num ? { set, collector_number: num } : set ? { name, set } : { name };
+    const key = JSON.stringify(id);
+    const e = out.get(key); if (e) e.n += n; else out.set(key, { id, n, label: name });
+  }
+  return [...out.values()];
+}
+$('deckOpen').onclick = () => { $('deckPanel').hidden = false; $('deckText').focus(); };
+$('deckCancel').onclick = () => { $('deckPanel').hidden = true; };
+$('deckGo').onclick = async () => {
+  const rows = parseDeck($('deckText').value);
+  if (!rows.length) { $('status').textContent = 'Paste a deck list first, one card per line, like “4 Lightning Bolt”.'; return; }
+  const btn = $('deckGo'); btn.disabled = true;
+  const withArt = $('deckArt').checked, base = readForm(), retry = [], missing = [];
+  let added = 0, copies = 0, artFail = 0;
+  const addCard = async (card, r) => {
+    $('status').textContent = `Adding ${added + 1} of ${rows.length}: ${card.name}…`;
+    const { art, artist, ...fields } = cardText(card);
+    let a = null;
+    if (withArt && art) { try { a = await fetchArt(art); } catch (e) { artFail++; } }
+    const official = !!a;
+    if (!a) a = await placeholderArt(fields.color);
+    const form = { ...base, ...fields, artist: official ? artist : '' };
+    const e = { id: newId(), kind: 'made', form, img: a.img, blob: a.blob, zoom: 1, ox: 0, oy: 0, copies: Math.min(99, r.n), order: Date.now() + added };
+    await fontsReadyFor(form); makeThumb(e); sheet.push(e); persist(e);
+    added++; copies += e.copies;
+    if (added % 6 === 0) renderSheet();
+  };
+  try {
+    for (let i = 0; i < rows.length; i += 75) {
+      const batch = rows.slice(i, i + 75);
+      $('status').textContent = `Looking up ${rows.length} card${rows.length > 1 ? 's' : ''}…`;
+      const j = await sf('/cards/collection', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ identifiers: batch.map(r => r.id) }) });
+      const lost = new Set((j.not_found || []).map(x => JSON.stringify(x)));
+      const found = [...j.data];
+      for (const r of batch) {
+        if (lost.has(JSON.stringify(r.id))) { retry.push(r); continue; }
+        const card = found.shift(); if (card) await addCard(card, r); else retry.push(r);
+      }
+    }
+    // Not found exactly (typos, split cards written "Fire // Ice", unknown set codes): try a looser search by name.
+    for (const r of retry.slice(0, 25)) {
+      try { await addCard(await sf('/cards/named?fuzzy=' + encodeURIComponent(r.label.split(/\s*\/\/?\s*/)[0])), r); }
+      catch (e) { missing.push(r.label); }
+    }
+    missing.push(...retry.slice(25).map(r => r.label));
+    let msg = added ? `Added ${added} card${added > 1 ? 's' : ''} (${copies} cop${copies > 1 ? 'ies' : 'y'}) to the print sheet.` : 'No cards were added.';
+    if (artFail) msg += ` ${artFail} couldn’t get official art, so they have placeholder art.`;
+    if (missing.length) msg += ` Couldn’t find: ${missing.slice(0, 8).join(', ')}${missing.length > 8 ? ` and ${missing.length - 8} more` : ''}.`;
+    $('status').textContent = msg;
+    if (added && !missing.length) { $('deckText').value = ''; $('deckPanel').hidden = true; }
+  } catch (e) { $('status').textContent = (added ? `Added ${added} cards, then stopped: ` : '') + e.message; }
+  btn.disabled = false; renderSheet();
+};
+
+// ---------- remix ----------
+// Rolls any mix of three parts: text (a random real card from Scryfall), art (public-domain art from
+// Wikimedia Commons, searched with words from the card) and look. Locked parts are skipped by Remix.
+const PARTS = ['text', 'art', 'look'];
+let locks = {};
+try { locks = JSON.parse(localStorage.getItem('proxyforge.locks') || '{}') || {}; } catch (e) {}
+const PART_NAME = { text: 'text', art: 'art', look: 'look' };
+function showLocks() {
+  for (const k of PARTS) {
+    const b = $('lock-' + k), on = !!locks[k];
+    b.setAttribute('aria-pressed', on); b.setAttribute('aria-label', (on ? 'Unlock ' : 'Lock ') + PART_NAME[k]);
+    b.title = on ? `Locked: Remix keeps this ${PART_NAME[k]}` : `Lock the ${PART_NAME[k]} so Remix keeps it`;
+  }
+}
+for (const k of PARTS) {
+  $('lock-' + k).onclick = () => { locks[k] = !locks[k]; try { localStorage.setItem('proxyforge.locks', JSON.stringify(locks)); } catch (e) {} showLocks(); };
+  $('roll-' + k).onclick = () => remix([k]);
+}
+$('remixAll').onclick = () => remixUnlocked();
+function remixUnlocked() {
+  const parts = PARTS.filter(k => !locks[k]);
+  if (!parts.length) { $('status').textContent = 'Everything is locked. Unlock a part to remix it.'; return; }
+  remix(parts);
+}
+showLocks();
+
+const SF_RANDOM = 'game:paper lang:en -is:funny -is:digital -type:token -type:emblem -type:basic -layout:art_series -layout:planar -layout:scheme -layout:vanguard';
+const MOODS = {
+  W: ['angel', 'sun', 'knight', 'cathedral', 'saint', 'dawn'], U: ['sea', 'storm', 'ship', 'moon', 'waterfall', 'wave'],
+  B: ['skull', 'night', 'death', 'ruins', 'cemetery', 'demon'], R: ['fire', 'volcano', 'battle', 'dragon', 'sunset', 'war'],
+  G: ['forest', 'tiger', 'lion', 'mountain', 'garden', 'bear'], M: ['allegory', 'procession', 'myth', 'triumph', 'feast'],
+  A: ['armor', 'clock', 'sword', 'sculpture', 'crown'], L: ['landscape', 'valley', 'river', 'mountain', 'castle'],
+  C: ['ruins', 'cave', 'desert', 'fog', 'stone'],
+};
+const STOP = new Set('the of and a an to in on for with from at by into your you this that its it is are be as or all each other target creature card cards'.split(' '));
+// Search words for art: a creature type or a word from the name first, then a mood that fits the card's color.
+function artWords(o) {
+  const sub = ((o.type || '').split(/[—-]/)[1] || '').split(/\s+/).filter(w => w.length > 2);
+  const name = (o.name || '').replace(/[^A-Za-z\s']/g, ' ').split(/\s+/).filter(w => w.length > 3 && !STOP.has(w.toLowerCase()));
+  const mood = MOODS[o.color] || MOODS.C;
+  const words = [];
+  if (sub.length) words.push(pick(sub));
+  if (name.length) words.push(pick(name));
+  words.sort(() => Math.random() - .5);
+  words.push(pick(mood), pick(MOODS[pick(Object.keys(MOODS))]));
+  return [...new Set(words.map(w => w.toLowerCase()))];
+}
+const COMMONS = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*';
+const usedArt = new Set();
+const plain = html => { const d = new DOMParser().parseFromString(html || '', 'text/html'); return (d.body.textContent || '').replace(/\s+/g, ' ').trim(); };
+async function findArt(words) {
+  for (const w of words.slice(0, 4)) {
+    for (const offset of [pick([0, 0, 20, 40]), 0]) {
+      const q = `intitle:${w.replace(/[^a-z]/gi, '')} "Google Art Project" filetype:bitmap`; // word in the artwork's title
+      let j;
+      try {
+        const r = await fetch(`${COMMONS}&generator=search&gsrnamespace=6&gsrlimit=20&gsroffset=${offset}&gsrsearch=${encodeURIComponent(q)}` +
+          '&prop=imageinfo&iiprop=url|size|extmetadata&iiextmetadatafilter=LicenseShortName|Artist&iiurlwidth=1600&iiurlheight=1600');
+        j = await r.json();
+      } catch (e) { throw new Error('Couldn’t reach Wikimedia Commons for art.'); }
+      const pages = Object.values(j.query?.pages || {}).filter(p => {
+        const i = p.imageinfo?.[0]; if (!i || usedArt.has(p.title)) return false;
+        const lic = i.extmetadata?.LicenseShortName?.value || '', ratio = i.width / i.height;
+        return /public domain|cc0|pd/i.test(lic) && ratio > 0.45 && ratio < 1.9 && Math.min(i.width, i.height) >= 900;
+      });
+      if (!pages.length) { if (offset === 0) break; continue; }
+      const p = pick(pages), i = p.imageinfo[0];
+      try {
+        const r = await fetch(i.thumburl || i.url); if (!r.ok) throw 0;
+        const blob = await r.blob(), img = await loadImage(URL.createObjectURL(blob));
+        usedArt.add(p.title);
+        let artist = plain(i.extmetadata?.Artist?.value);
+        if (!artist || /unknown/i.test(artist)) artist = 'Unknown artist';
+        if (artist.length > 48) artist = artist.slice(0, 46).trim() + '…';
+        const title = p.title.replace(/^File:/, '').replace(/\.[a-z0-9]+$/i, '').replace(/\s*-\s*Google Art Project.*$/i, '').replace(/_/g, ' ');
+        return { img, blob, artist, title, url: i.descriptionurl, word: w };
+      } catch (e) { continue; }
+    }
+  }
+  throw new Error('Couldn’t find matching art this time.');
+}
+function setCredit(a) {
+  const el = $('artCredit'); el.textContent = '';
+  if (!a) { el.hidden = true; return; }
+  const link = document.createElement('a'); link.href = a.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = a.title;
+  el.append('Art: ', link, ` · ${a.artist} · public domain, from Wikimedia Commons (searched for “${a.word}”). Put your own art on it any time.`);
+  el.hidden = false;
+}
+let remixing = false;
+async function remix(parts, firstVisit = false) {
+  if (remixing) return;
+  remixing = true;
+  const btns = ['remixAll', 'shuffle', ...PARTS.map(k => 'roll-' + k)].map($);
+  btns.forEach(b => b.disabled = true);
+  const edits = st.edits, notes = [];
+  $('status').textContent = 'Remixing…';
+  try {
+    let card = null, fields = null;
+    if (parts.includes('text')) {
+      try { card = await sf('/cards/random?q=' + encodeURIComponent(SF_RANDOM)); const { art, artist, ...f } = cardText(card); fields = f; }
+      catch (e) { const ex = pick(EXAMPLES); fields = { ...ex, color: costColor(ex), info: '', rarity: '' }; notes.push('Scryfall didn’t answer, so this is one of the built-in examples.'); }
+    }
+    let art = null;
+    if (parts.includes('art')) {
+      const o = { ...readForm(), ...(fields || {}) };
+      try { art = await findArt(artWords(o)); } catch (e) { notes.push(e.message); }
+    }
+    if (firstVisit && st.edits !== edits) return; // the visitor started editing; leave their card alone
+    if (parts.includes('look')) writeForm(randomLook());
+    if (fields) {
+      writeForm(fields);
+      if (card) { showLookup(card); $('lookupName').value = card.name; }
+    }
+    if (art) {
+      st.img = art.img; st.blob = art.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false;
+      $('artist').value = art.artist; $('cardNotice').hidden = true; setCredit(art);
+    } else if (fields && st.sample) $('artist').value = 'Sample art';
+    renderLayerList(); saveDraft(); draw();
+    const what = parts.length === 3 ? 'Remixed' : 'New ' + parts.map(k => PART_NAME[k]).join(' and ');
+    $('status').textContent = notes.length ? notes.join(' ') : firstVisit ? '' : `${what}${fields ? `: “${fields.name}”` : ''}.`;
+  } finally {
+    remixing = false; btns.forEach(b => b.disabled = false);
+  }
+}
 
 // ---------- symbols panel ----------
 const SLOTS = [['SET', 'Set symbol (all rarities)'], ['SET:C', 'Common only'], ['SET:U', 'Uncommon only'], ['SET:R', 'Rare only'], ['SET:M', 'Mythic only']];
@@ -1895,6 +2273,7 @@ st.img = st.sampleImg = makeSampleArt();
 st.img.onload = draw;
 if (!draft) randomStart();
 draw();
+if (!draft) remix(['text', 'art'], true);
 const fams = ['700 20px Spectral', '700 20px Cinzel', '700 20px "Cormorant SC"', '20px "IM Fell English SC"', '20px "Crimson Text"', 'italic 20px "Crimson Text"', '600 20px "IBM Plex Sans"'];
 if (document.fonts) {
   Promise.all(fams.map(f => document.fonts.load(f).catch(() => {}))).then(() => { glyphCache.clear(); draw(); restoreSheet(); });
