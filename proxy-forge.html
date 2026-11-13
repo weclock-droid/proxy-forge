@@ -351,6 +351,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="comic">Comic book cover</option>
               <option value="pulp">Pulp comic with stickers</option>
               <option value="paperback">Worn paperback with stickers</option>
+              <option value="retro">Retro video game box</option>
+              <option value="saga">Saga (chapters on the left)</option>
               <option value="strips">Torn paper strips</option>
               <option value="poster">Bold poster</option>
               <option value="vertical">Vertical title</option>
@@ -400,13 +402,13 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Text effect</h3>
           <div class="row">
-            <label>Effect <select id="L-effect"><option value="none">None</option><option value="shadow">Shadow</option><option value="outline">Outline</option><option value="extrude">3D block</option></select></label>
+            <label>Effect <select id="L-effect"><option value="none">None</option><option value="shadow">Shadow</option><option value="outline">Outline</option><option value="extrude">3D block</option><option value="chrome">Chrome / metal</option></select></label>
             <label>Effect color <input type="color" id="L-effColor"></label>
             <label>Strength <input type="range" id="L-effSize" min="0.3" max="3" step="0.1"></label>
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -799,8 +801,10 @@ function bodyFont(size, it, bold) { return `${it ? 'italic ' : ''}${bold ? 600 :
 function parseRich(text, baseItalic) {
   const paras = [];
   let depth = 0, manual = false;
-  for (const line of (text || '').split('\n')) {
+  for (let line of (text || '').split('\n')) {
     const chunks = [];
+    const ch = line.match(/^\s*((?:I|II|III|IV|V|VI)(?:\s*,\s*(?:I|II|III|IV|V|VI))*)\s+[—–-]\s+/);
+    if (ch) { chunks.chapter = ch[1].split(/\s*,\s*/); line = line.slice(ch[0].length); }
     for (const word of line.split(/ +/)) {
       if (!word) continue;
       const segs = []; let buf = '', bufIt = null;
@@ -833,22 +837,38 @@ function measureChunk(g, chunk, size) {
   }
   return w;
 }
+const chapterIndent = size => size * 1.85;
+const chapterH = (n, size) => n * size * 1.18 + (n - 1) * size * .16;
 function layoutRich(g, paras, size, maxW) {
   g.font = bodyFont(size, false); const space = g.measureText(' ').width;
   const out = [];
   for (const chunks of paras) {
     const lines = []; let cur = [], curW = 0;
+    const room = chunks.chapter ? maxW - chapterIndent(size) : maxW;
     for (const ch of chunks) {
       const w = measureChunk(g, ch, size);
-      if (cur.length && curW + space + w > maxW) { lines.push(cur); cur = []; curW = 0; }
+      if (cur.length && curW + space + w > room) { lines.push(cur); cur = []; curW = 0; }
       cur.push({ ch, w }); curW += (cur.length > 1 ? space : 0) + w;
     }
     if (cur.length) lines.push(cur);
+    if (chunks.chapter) lines.chapter = chunks.chapter;
     out.push(lines);
   }
   const lh = size * curLH, pg = size * .32;
-  let h = 0; out.forEach((p, i) => { h += Math.max(1, p.length) * lh + (i ? pg : 0); });
-  return { paras: out, h, lh, pg, space };
+  const paraH = p => Math.max(Math.max(1, p.length) * lh, p.chapter ? chapterH(p.chapter.length, size) : 0);
+  let h = 0; out.forEach((p, i) => { h += paraH(p) + (i ? (p.chapter ? pg * 2 : pg) : 0); });
+  return { paras: out, h, lh, pg, space, maxW, paraH };
+}
+// A chapter badge: a hexagon with a Roman numeral, light or dark to suit the text color.
+function drawChapter(g, num, x, y, w, h, color) {
+  const darkText = lum(/^#[0-9a-f]{6}$/i.test(color) ? color : '#ffffff') < .5;
+  g.save();
+  g.beginPath(); g.moveTo(x + h * .28, y); g.lineTo(x + w - h * .28, y); g.lineTo(x + w, y + h / 2); g.lineTo(x + w - h * .28, y + h); g.lineTo(x + h * .28, y + h); g.lineTo(x, y + h / 2); g.closePath();
+  g.fillStyle = darkText ? '#2b2620' : '#ece5d4'; g.fill();
+  g.lineWidth = Math.max(1, h * .07); g.strokeStyle = darkText ? '#8b7d64' : '#2b2620'; g.stroke();
+  g.fillStyle = darkText ? '#f3ecdc' : '#1d1a15'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `700 ${h * .62}px "Spectral", Georgia, serif`; g.fillText(num, x + w / 2, y + h * .54);
+  g.restore();
 }
 const lineW = (line, lay) => line.reduce((s, it, i) => s + it.w + (i ? lay.space : 0), 0);
 // opt: align/w (align lines inside width w), paint(text,x,y) for effects, boxes (collects line rects), dry (measure only)
@@ -857,11 +877,20 @@ function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
   let cy = y;
   g.fillStyle = color; g.textBaseline = 'alphabetic';
   lay.paras.forEach((lines, pi) => {
-    if (pi) cy += lay.pg;
+    if (pi) cy += lines.chapter ? lay.pg * 2 : lay.pg;
     if (!lines.length) { cy += lay.lh; return; }
+    const top = cy, ind = lines.chapter ? chapterIndent(size) : 0, room = (w || lay.maxW || 0) - ind;
+    if (lines.chapter && !dry) {
+      if (pi && lay.paras[pi - 1].chapter) { // a rule between chapters
+        g.save(); g.globalAlpha = .35; g.fillStyle = color; g.fillRect(x, cy - lay.pg - 1, w || lay.maxW || 0, Math.max(1, size * .05)); g.restore();
+      }
+      const bh = size * 1.18, bw = size * 1.5;
+      lines.chapter.forEach((num, k) => drawChapter(g, num, x, cy + k * (bh + size * .16), bw, bh, color));
+      g.fillStyle = color;
+    }
     for (const line of lines) {
       const base = cy + size * .88, lw = lineW(line, lay);
-      const off = align === 'center' ? (w - lw) / 2 : align === 'right' ? w - lw : 0;
+      const off = ind + (align === 'center' ? (room - lw) / 2 : align === 'right' ? room - lw : 0);
       if (boxes) boxes.push({ x: x + off, y: cy, w: lw, h: lay.lh });
       if (dry) { cy += lay.lh; continue; }
       let cx = x + off;
@@ -881,6 +910,7 @@ function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
       });
       cy += lay.lh;
     }
+    cy = Math.max(cy, top + lay.paraH(lines));
   });
   return cy;
 }
@@ -1430,6 +1460,25 @@ const LDEF = {
 };
 // Starting designs, in card units (750 × 1050). Later layers draw on top.
 const PRESETS = {
+  saga: () => [
+    { src: 'name', x: 40, y: 40, w: 670, size: 40, fit: true, bg: 'box', bgOp: .85, pad: 12, rad: 10, effect: 'none' },
+    { src: 'cost', x: 440, y: 50, w: 260, size: 34, align: 'right', effect: 'none' },
+    { src: 'rulesflavor', x: 40, y: 116, w: 330, h: 790, size: 31, font: 'crimson', color: '#1b1813', bg: 'box', bgColor: '#efe7d6', bgOp: .93, pad: 18, rad: 10, effect: 'none' },
+    { src: 'type', x: 40, y: 922, w: 670, size: 28, fit: true, bg: 'box', bgOp: .85, pad: 12, rad: 10, effect: 'none' },
+    { src: 'rarity', x: 600, y: 934, w: 98, size: 32, align: 'right', effect: 'none' },
+    { src: 'pt', x: 560, y: 850, w: 140, size: 38, align: 'right', bg: 'box', bgOp: .85, pad: 10, rad: 10, effect: 'none' },
+    { src: 'credit', x: 50, y: 990, w: 650, size: 14, font: 'plex', color: '#e8e4de', effect: 'none' },
+  ],
+  retro: () => [
+    { src: 'custom', text: 'PROXY  ✦  16-BIT  ✦  CARD SYSTEM', x: -425, y: 480, w: 1000, h: 90, size: 50, font: 'russo', upper: true, color: '#ffffff', align: 'center', ls: 4, lh: 1, rot: -90, bg: 'box', bgColor: '#c8161d', bgOp: 1, pad: 18, rad: 0, fit: true, effect: 'none' },
+    { src: 'name', x: 138, y: 46, w: 574, size: 92, font: 'russo', upper: true, color: '#8fb6e0', align: 'center', fit: true, lh: .95, rot: -2, effect: 'chrome', effColor: '#141b33' },
+    { src: 'cost', x: 406, y: 178, w: 300, size: 34, align: 'right', bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 8, rad: 30, bdW: 3, bdColor: '#111111', pip: 'classic', effect: 'none' },
+    { src: 'custom', text: 'ALL NEW!', x: 168, y: 650, w: 136, size: 30, font: 'bangers', color: '#c8161d', align: 'center', rot: -12, bg: 'burst', bgColor: '#ffd93b', bgOp: 1, pad: 8, bdW: 2, bdColor: '#111111', effect: 'none' },
+    { src: 'type', x: 138, y: 772, w: 456, size: 32, font: 'anton', upper: true, color: '#c8161d', fit: true, bg: 'box', bgColor: '#ffe14d', bgOp: 1, pad: 10, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'rulesflavor', x: 138, y: 830, w: 456, h: 150, size: 20, font: 'oswald', upper: true, color: '#111111', bg: 'box', bgColor: '#ffe14d', bgOp: 1, pad: 12, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none', pip: 'classic' },
+    { src: 'pt', x: 610, y: 872, w: 100, size: 40, font: 'russo', color: '#111111', align: 'center', bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 12, rad: 4, bdW: 4, bdColor: '#111111', effect: 'none' },
+    { src: 'credit', x: 140, y: 992, w: 570, size: 13, font: 'plex', color: '#ffffff', upper: true, ls: 1, effect: 'none' },
+  ],
   paperback: () => [
     { src: 'custom', text: ' ', x: 30, y: 30, w: 690, h: 72, size: 20, bg: 'box', bgColor: '#141414', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'name', x: 30, y: 100, w: 690, h: 150, size: 108, font: 'anton', upper: true, color: '#ece6da', align: 'center', fit: true, lh: .9, bg: 'box', bgColor: '#141414', bgOp: 1, pad: 22, rad: 0, effect: 'outline', effColor: '#111111' },
@@ -1552,7 +1601,20 @@ function makePaint(g, L, size) {
     g.fillStyle = ec; for (let i = n; i >= 1; i--) g.fillText(t, x + i * .7, y + i);
     g.fillStyle = col; g.fillText(t, x, y);
   };
+  if (L.effect === 'chrome') return (t, x, y) => { // 90s metal lettering: dark 3D depth, metallic gradient, thin outline
+    const n = Math.max(2, Math.round(size * .06 * k));
+    g.fillStyle = ec; for (let i = n; i >= 1; i--) g.fillText(t, x + i * .6, y + i);
+    const gr = g.createLinearGradient(0, y - size * .82, 0, y + size * .05);
+    gr.addColorStop(0, '#ffffff'); gr.addColorStop(.42, mixHex(col, '#ffffff', .45)); gr.addColorStop(.5, mixHex(col, '#000000', .45));
+    gr.addColorStop(.62, col); gr.addColorStop(.9, mixHex(col, '#ffffff', .6)); gr.addColorStop(1, mixHex(col, '#000000', .2));
+    g.fillStyle = gr; g.fillText(t, x, y);
+    g.save(); g.lineJoin = 'round'; g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = Math.max(.8, size * .02); g.strokeText(t, x, y); g.restore();
+  };
   return (t, x, y) => { g.fillStyle = col; g.fillText(t, x, y); };
+}
+function mixHex(a, b, t) {
+  const [r1, g1, b1] = hex(/^#[0-9a-f]{6}$/i.test(a) ? a : '#888888'), [r2, g2, b2] = hex(b);
+  return `rgb(${Math.round(r1 + (r2 - r1) * t)},${Math.round(g1 + (g2 - g1) * t)},${Math.round(b1 + (b2 - b1) * t)})`;
 }
 // Draws one layer and returns its box (for selecting and dragging), or null when it has no text.
 function drawLayer(g, L, o) {
@@ -1568,7 +1630,7 @@ function drawLayer(g, L, o) {
   g.save();
   if ('letterSpacing' in g) g.letterSpacing = (+L.ls || 0) + 'px';
   const alignOff = (room, used) => L.align === 'center' ? (room - used) / 2 : L.align === 'right' ? room - used : 0;
-  let bw, bh, paintAll, kind, lay = null, avail = 0;
+  let bw, bh, paintAll, kind, lay = null, avail = 0, hugX = 0;
   if (L.src === 'rarity') {
     kind = 'cost';
     const img = rarityImage(o.rarity, o.setTint);
@@ -1582,6 +1644,10 @@ function drawLayer(g, L, o) {
     if (!syms.length) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; return null; }
     const d = size, gap = d * .1 + (+L.ls || 0), len = syms.length * d + Math.max(0, syms.length - 1) * gap;
     bw = L.vert ? d + 2 * pad : +L.w; bh = (L.vert ? len : d) + 2 * pad;
+    if (!L.vert && L.bg && L.bg !== 'none') {
+      const fit = Math.max(len + 2 * pad, L.bg === 'price' ? size * 2.8 : 0);
+      hugX = alignOff(bw, fit); bw = fit;
+    }
     paintAll = (bx, by) => {
       let px = bx + pad + (L.vert ? 0 : alignOff(bw - 2 * pad, len)), py = by + pad;
       for (const s of syms) { drawSym(g, s, px, py, d, true); if (L.vert) py += d + gap; else px += d + gap; }
@@ -1634,7 +1700,7 @@ function drawLayer(g, L, o) {
     const fx = makePaint(g, L, size);
     paintAll = (bx, by) => drawRich(g, lay, size, bx + pad, by + pad, L.color, { align: L.align, w: avail, paint: fx });
   }
-  const bx = +L.x, by = +L.y, cx = bx + bw / 2, cy = by + bh / 2;
+  const bx = +L.x + hugX, by = +L.y, cx = bx + bw / 2, cy = by + bh / 2;
   g.translate(cx, cy); g.rotate(rot * Math.PI / 180); g.translate(-cx, -cy);
   // background
   const fillStroke = () => {
@@ -1652,6 +1718,15 @@ function drawLayer(g, L, o) {
   } else if (L.bg === 'box' || L.bg === 'strips') {
     g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); fillStroke();
   } else if (L.bg === 'sticker' || L.bg === 'barcode' || L.bg === 'price') drawSticker(g, L, bx, by, bw, bh, size);
+  else if (L.bg === 'burst') {
+    const cx0 = bx + bw / 2, cy0 = by + bh / 2, ro = Math.max(bw, bh) / 2 * 1.22, sy = Math.min(1, (bh + 40) / bw * 1.1), spikes = 18;
+    g.save(); g.beginPath();
+    for (let i = 0; i < spikes * 2; i++) { const a = (i / (spikes * 2)) * Math.PI * 2, r = i % 2 ? ro * .8 : ro; g[i ? 'lineTo' : 'moveTo'](cx0 + Math.cos(a) * r, cy0 + Math.sin(a) * r * Math.max(.6, sy)); }
+    g.closePath(); g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 6; g.shadowOffsetY = 3;
+    g.fillStyle = hexA(L.bgColor, Math.max(.6, +L.bgOp)); g.fill(); g.shadowColor = 'transparent';
+    if (+L.bdW > 0) { g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
+    g.restore();
+  }
   if (L.effect === 'shadow') {
     const k = +L.effSize || 1;
     g.shadowColor = hexA(L.effColor, .85); g.shadowBlur = size * .14 * k; g.shadowOffsetY = size * .04 * k;
@@ -2038,8 +2113,8 @@ for (const [k, t] of Object.entries(LPROPS)) {
     const L = layerById(st.sel); if (!L) return;
     L[k] = t === 'b' ? e.target.checked : t === 'n' ? +e.target.value : e.target.value;
     if (k === 'src' && L.src === 'custom' && !L.text) L.text = 'Your text';
-    if (k === 'bg' && /sticker|barcode|price/.test(L.bg) && (L.bgColor === '#000000' || +L.bgOp < .6)) {
-      Object.assign(L, { bgColor: L.bg === 'price' ? '#f6c64a' : '#efe9dc', bgOp: 1, color: '#151515', effect: 'none', rad: Math.min(+L.rad || 0, 6) });
+    if (k === 'bg' && /sticker|barcode|price|burst/.test(L.bg) && (L.bgColor === '#000000' || +L.bgOp < .6)) {
+      Object.assign(L, { bgColor: L.bg === 'price' ? '#f6c64a' : L.bg === 'burst' ? '#ffd93b' : '#efe9dc', bgOp: 1, color: '#151515', effect: 'none', rad: Math.min(+L.rad || 0, 6) });
       syncEditor();
     }
     if (k === 'src' || k === 'text') { renderLayerList(); syncEditor(); }
@@ -2673,6 +2748,8 @@ const STYLES = [
   { id: 'noir', name: 'Noir', f: { layout: 'fade', border: '#0b0b0c', titleFont: 'Playfair Display', shade: '0.85', pipStyle: 'glyph', pipColor: '#ffffff', artFx: 'bw', fxAmt: '0.7' } },
   { id: 'popart', name: 'Pop art', preset: 'comic', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'outline', pipColor: '#ffffff', artFx: 'pop', fxAmt: '0.45' } },
   { id: 'riso', name: 'Risograph', f: { layout: 'panel', border: '#f3f1ec', titleFont: 'Righteous', shade: '0.8', pipStyle: 'solid', pipColor: '#ff6b4a', artFx: 'duotone', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.55' } },
+  { id: 'retro', name: 'Retro game', preset: 'retro', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
+  { id: 'saga', name: 'Saga', preset: 'saga', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'paperback', name: 'Worn paperback', preset: 'paperback', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'glyph', pipColor: '#ece6da', wear: 'worn' } },
   { id: 'pulp', name: 'Pulp comic', preset: 'pulp', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#ffffff', wear: 'worn' } },
   { id: 'minimal', name: 'Minimal', preset: 'clean', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#ffffff' } },

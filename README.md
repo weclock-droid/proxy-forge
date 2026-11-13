@@ -13,7 +13,8 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Mana symbol styles:** classic, flat, outline, solid color or symbol only, in any color, for the whole card or one layer.
 - **Your own symbols:** upload an image for any symbol code. Replace a built-in one like `{B}`, or make a new one like `{HEART}`.
 - **Set symbol and rarity:** common, uncommon, rare or mythic. Upload your own set symbol and it's colored by rarity automatically, or upload a separate image for each rarity.
-- **One-click styles:** seventeen ready-made looks, including classic, borderless, comic, noir, pop art, risograph, worn paperback and pulp comic, each previewed with your own card.
+- **One-click styles:** nineteen ready-made looks, including classic, borderless, comic, noir, pop art, risograph, worn paperback, pulp comic, retro game box and saga, each previewed with your own card.
+- **Saga cards:** chapter lines like `I — …` or `II, III — …` get numbered chapter badges and dividers in every layout, and the Saga style puts the chapters in a tall column beside the art.
 - **Art filters:** black & white, sepia, duotone, halftone dots, color halftone (pop art), posterize and film grain, with color pairs to pick from.
 - **Wear & aging:** four levels, from lightly used to falling apart, so a card looks like a well-read paperback or an old comic: yellowed paper, rubbed-off ink, a cracked spine, creases, chipped edges, frayed corners, tears, a folded corner, crinkled laminate and old price-sticker residue. Shuffle damage for a different pattern.
 - **Stickers:** put any text on a paper sticker, a barcode sticker or a crossed-out "sale price" sticker.
