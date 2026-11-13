@@ -388,6 +388,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <button type="button" id="addNew" hidden>Add as a new card</button>
         <button type="button" id="save">Save PNG</button>
         <button type="button" id="clear">New blank card</button>
+        <button type="button" id="randomBtn" title="Replace the card you're editing with a random example">Random example</button>
+        <button type="button" id="defaultBtn" title="Replace the card you're editing with the default example">Default card</button>
         <span class="status" id="status"></span>
       </div>
       <p class="small mouse" style="margin:0">If saving is blocked where you're viewing this, right-click the card and choose “Save image as”.</p>
@@ -1822,10 +1824,15 @@ function randomStart() {
   $('randomNote').hidden = false;
   draw();
 }
-$('shuffle').onclick = randomStart;
-$('useDefault').onclick = () => {
+// Buttons (banner and the always-visible ones) start a fresh example, so stop editing any print-sheet card and save it as the draft.
+const leaveSheetCard = () => { st.editingId = null; updateSheetButtons(); renderSheet(); };
+$('shuffle').onclick = $('randomBtn').onclick = () => { leaveSheetCard(); randomStart(); saveDraft(); };
+$('useDefault').onclick = $('defaultBtn').onclick = () => {
+  leaveSheetCard();
   st.layers = []; st.sel = null;
-  writeForm(SAMPLE); $('randomNote').hidden = true; draw();
+  writeForm(SAMPLE);
+  st.img = st.sampleImg; st.blob = null; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
+  $('randomNote').hidden = true; saveDraft(); draw();
 };
 
 // ---------- symbols panel ----------
