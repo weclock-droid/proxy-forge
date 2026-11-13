@@ -108,6 +108,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .lookup .go label { flex: 1; }
 .deck { display: grid; gap: 10px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
 .deck textarea { font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace; font-size: 14px; }
+.matSize { display: none; }
 .remix { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .remix .part { display: inline-flex; }
 .remix .part > button:first-child { border-radius: 7px 0 0 7px; }
@@ -166,8 +167,13 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
   .proof { display: contents; }
   .mat { order: -2; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; padding: 10px;
     box-shadow: 0 6px 14px rgba(0,0,0,.25); }
-  canvas#card { width: auto; height: min(36svh, 330px); max-width: 100%; }
-  .proof .actions { order: -1; }
+  canvas#card { width: auto; height: min(46svh, 440px); max-width: 100%; }
+  /* "Bigger": the card fills the screen width and stops following you while you scroll */
+  .mat.big { position: relative; top: auto; }
+  .mat.big canvas#card { width: 100%; height: auto; }
+  .matSize { display: inline-flex; position: absolute; right: 8px; bottom: 8px; z-index: 1; padding: 7px 11px; font-size: 13px;
+    background: rgba(12,12,14,.72); color: #fff; border-color: rgba(255,255,255,.25); backdrop-filter: blur(4px); }
+  .proof .remix, .proof .actions { order: -1; }
   .proof .actions .status { flex-basis: 100%; }
   fieldset { padding: 12px; }
   .sheet-opts > label { min-width: 0; flex: 1 1 140px; }
@@ -456,7 +462,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
     </div>
 
     <div class="proof">
-      <div class="mat"><canvas id="card" width="1500" height="2100" aria-label="Card preview"></canvas></div>
+      <div class="mat" id="mat"><canvas id="card" width="1500" height="2100" aria-label="Card preview"></canvas>
+        <button type="button" class="matSize" id="matSize" aria-pressed="false">Bigger</button></div>
       <div class="remix" role="group" aria-label="Remix">
         <button type="button" class="primary" id="remixAll" title="Roll everything that isn't locked">Remix</button>
         <span class="part"><button type="button" id="roll-text" title="A random real card from Scryfall">Text</button><button type="button" class="lock" id="lock-text" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span>
@@ -2848,6 +2855,16 @@ $('symFile').onchange = async e => {
   renderSymbols(); draw();
 };
 renderSymbols();
+
+// ---------- phone preview size ----------
+// On phones the card stays pinned above the fields; "Bigger" shows it at full width instead (not pinned).
+function setBig(on) {
+  $('mat').classList.toggle('big', on);
+  $('matSize').textContent = on ? 'Smaller' : 'Bigger'; $('matSize').setAttribute('aria-pressed', on);
+  try { localStorage.setItem('proxyforge.bigPreview', on ? '1' : ''); } catch (e) {}
+}
+$('matSize').onclick = () => { const on = !$('mat').classList.contains('big'); setBig(on); if (on) $('mat').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+try { if (localStorage.getItem('proxyforge.bigPreview')) setBig(true); } catch (e) {}
 
 // ---------- boot ----------
 const draft = loadDraft();
