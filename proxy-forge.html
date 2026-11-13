@@ -32,6 +32,7 @@
   --accent: #c9505f; --accent-ink: #fff; --field: #141213; --mat: #22332f; color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size: 14px; }
 .wrap {
   max-width: 1240px; margin: 0 auto;
@@ -100,6 +101,8 @@ canvas#card.dragging { cursor: grabbing; }
 .thumb .ctl .x { margin-left: auto; }
 .thumb .name { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 button:disabled { opacity: .5; cursor: not-allowed; }
+.notice { border: 1px solid var(--warn); background: color-mix(in srgb, var(--warn) 10%, var(--field)); border-radius: 9px; padding: 12px 14px; display: grid; gap: 10px; }
+.notice p { margin: 0; font-size: 13px; line-height: 1.5; }
 .quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
 .quality:empty { display: none; }
 .pill { flex: none; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 999px; font-variant-numeric: tabular-nums; color: #fff; }
@@ -125,7 +128,15 @@ button:disabled { opacity: .5; cursor: not-allowed; }
           <label for="zoom">Zoom <input type="range" id="zoom" min="0.3" max="4" step="0.01" value="1"></label>
           <div class="actions" style="align-self:end"><button type="button" id="resetArt">Recenter art</button></div>
         </div>
+        <label class="inline"><input type="checkbox" id="guides" checked> Show art-area guide on the preview (never printed)</label>
         <div class="quality" id="quality" aria-live="polite"></div>
+        <div class="notice" id="cardNotice" role="status" hidden>
+          <p id="cardNoticeText"></p>
+          <div class="actions">
+            <button type="button" class="primary" id="useAsIs">Add to print sheet as-is</button>
+            <button type="button" id="useAsArt">Use it as art anyway</button>
+          </div>
+        </div>
       </fieldset>
 
       <fieldset>
@@ -683,8 +694,31 @@ function draw() {
     const o = readForm();
     ctx.setTransform(RES, 0, 0, RES, 0, 0);
     render(ctx, o, false);
+    drawGuides(ctx, o);
     updateQuality(o);
   });
+}
+// Preview-only overlay: a dashed outline of where the art shows, and, while dragging,
+// a faint view of the parts of the image hidden under the border and frame.
+function drawGuides(g, o) {
+  if (!$('guides').checked) return;
+  const r = artRect(o);
+  g.save();
+  if (drag && st.img) {
+    g.beginPath(); g.rect(0, 0, W, H); g.rect(r.x, r.y, r.w, r.h); g.clip('evenodd');
+    g.globalAlpha = 0.4; drawArt(g, r, st.img); g.globalAlpha = 1;
+  }
+  g.restore(); g.save();
+  g.setLineDash([10, 7]); g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.75)'; g.strokeRect(r.x, r.y, r.w, r.h);
+  g.lineWidth = 2; g.strokeStyle = '#33e0ff'; g.strokeRect(r.x, r.y, r.w, r.h);
+  g.setLineDash([]);
+  const label = o.layout === 'framed' ? 'Art window' : o.border === 'none' ? 'Art area (whole card)' : 'Art area (inside the border)';
+  g.font = '600 15px "IBM Plex Sans", system-ui, sans-serif';
+  const inBorder = o.layout !== 'framed' && r.y >= 26;
+  const tw = g.measureText(label).width, lx = r.x + 8, ly = inBorder ? r.y - 25 : r.y + 8;
+  g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(lx, ly, tw + 14, 22);
+  g.fillStyle = '#33e0ff'; g.fillText(label, lx + 7, ly + 16);
+  g.restore();
 }
 // Card space is 300 units per inch (750 units = 2.5"), so print dpi = 300 / (units per image pixel).
 function updateQuality(o) {
@@ -729,6 +763,8 @@ function loadFile(file) {
   if (!file || !file.type.startsWith('image/')) { $('status').textContent = 'That file isn’t an image. Try a JPG, PNG or WebP.'; return; }
   const img = new Image();
   img.onload = () => {
+    st.prev = { img: st.img, blob: st.blob, zoom: st.zoom, ox: st.ox, oy: st.oy, sample: st.sample };
+    checkFinishedCard(img, file);
     st.img = img; st.blob = file; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
     if (st.sample && $('artist').value === 'Sample art') $('artist').value = '';
     st.sample = false; $('status').textContent = ''; draw();
@@ -736,6 +772,41 @@ function loadFile(file) {
   img.onerror = () => { $('status').textContent = 'Couldn’t read that image.'; };
   img.src = URL.createObjectURL(file);
 }
+// A finished card is 63 × 88 mm (ratio ≈ 0.716). If a new image has that shape, it's probably
+// a complete card, and running it through the editor would put a second border around it.
+function borderInfo(img) {
+  const c = document.createElement('canvas'); c.width = 100; c.height = 140;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, 100, 140);
+  const d = g.getImageData(0, 0, 100, 140).data, lum = [];
+  for (let y = 0; y < 140; y++) for (let x = 0; x < 100; x++) {
+    const edge = x < 3 || x >= 97 || y < 3 || y >= 137, corner = (x < 9 || x >= 91) && (y < 9 || y >= 131);
+    if (!edge || corner) continue;
+    const i = (y * 100 + x) * 4; if (d[i + 3] < 128) continue;
+    lum.push(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+  }
+  const mean = lum.reduce((a, b) => a + b, 0) / lum.length;
+  const sd = Math.sqrt(lum.reduce((a, b) => a + (b - mean) ** 2, 0) / lum.length);
+  return { uniform: sd < 28, mean };
+}
+function checkFinishedCard(img, file) {
+  const ratio = img.naturalWidth / img.naturalHeight, box = $('cardNotice');
+  st.pendingFinished = null;
+  if (Math.abs(ratio - 63 / 88) > 0.03) { box.hidden = true; return; }
+  const b = borderInfo(img);
+  const tone = b.mean < 70 ? 'black' : b.mean > 190 ? 'white' : 'solid';
+  $('cardNoticeText').textContent = b.uniform
+    ? `This looks like a finished card: it's card-shaped and already has a ${tone} border. Using it here would add a second border.`
+    : `This image is card-shaped. If it's already a finished card (for example a borderless one), using it here would add a border around it.`;
+  st.pendingFinished = file; box.hidden = false;
+}
+$('useAsIs').onclick = async () => {
+  const file = st.pendingFinished; if (!file) return;
+  $('cardNotice').hidden = true; st.pendingFinished = null;
+  if (st.prev) { Object.assign(st, st.prev); $('zoom').value = st.zoom; }
+  await addFinished([file]); draw();
+  document.querySelector('.sheet').scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+$('useAsArt').onclick = () => { $('cardNotice').hidden = true; st.pendingFinished = null; };
 $('pick').onclick = () => $('file').click();
 $('file').onchange = e => { loadFile(e.target.files[0]); e.target.value = ''; };
 const drop = $('drop');
@@ -758,7 +829,7 @@ canvas.addEventListener('pointermove', e => {
   const k = W / canvas.getBoundingClientRect().width;
   st.ox = drag.ox + (e.clientX - drag.x) * k; st.oy = drag.oy + (e.clientY - drag.y) * k; draw();
 });
-const endDrag = () => { drag = null; canvas.classList.remove('dragging'); };
+const endDrag = () => { drag = null; canvas.classList.remove('dragging'); draw(); };
 canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
@@ -766,6 +837,7 @@ canvas.addEventListener('wheel', e => {
   $('zoom').value = st.zoom; draw();
 }, { passive: false });
 $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
+$('guides').onchange = draw;
 $('resetArt').onclick = () => { st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; draw(); };
 $('save').onclick = exportPng;
 $('clear').onclick = () => {
