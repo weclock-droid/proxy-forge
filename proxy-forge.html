@@ -1,5 +1,6 @@
 <meta charset="utf-8">
 <title>Proxy Forge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,6 +108,32 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .quality:empty { display: none; }
 .pill { flex: none; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 999px; font-variant-numeric: tabular-nums; color: #fff; }
 .pill.good { background: var(--good); } .pill.ok { background: var(--warn); } .pill.bad { background: var(--bad); }
+/* Touch screens: swap mouse hints for touch hints, bigger tap targets, 16px fields so iOS doesn't zoom on focus */
+.touch { display: none; }
+@media (pointer: coarse) {
+  .mouse { display: none; } .touch { display: inline; }
+  button { padding: 11px 16px; font-size: 14px; }
+  input[type=text], textarea, select { font-size: 16px; }
+  input[type=checkbox] { width: 20px; height: 20px; }
+  .thumb .ctl input { font-size: 16px; }
+  .thumb .ctl button { padding: 8px 10px; }
+}
+/* Phones: the card preview stays pinned at the top while you scroll the fields under it */
+@media (max-width: 640px) {
+  .wrap { padding-block: 12px 32px; }
+  header { margin-bottom: 12px; gap: 4px 12px; }
+  h1 { font-size: 24px; }
+  .grid { gap: 14px; }
+  .proof { display: contents; }
+  .mat { order: -2; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; padding: 10px;
+    box-shadow: 0 6px 14px rgba(0,0,0,.25); }
+  canvas#card { width: auto; height: min(36svh, 330px); max-width: 100%; }
+  .proof .actions { order: -1; }
+  .proof .actions .status { flex-basis: 100%; }
+  fieldset { padding: 12px; }
+  .sheet-opts > label { min-width: 0; flex: 1 1 140px; }
+  .thumbs { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px 10px; }
+}
 </style>
 
 <div class="wrap">
@@ -121,7 +148,8 @@ button:disabled { opacity: .5; cursor: not-allowed; }
         <legend>Art</legend>
         <div class="drop" id="drop">
           <button type="button" class="primary" id="pick">Choose image…</button>
-          <span class="hint">or drag a file here, or paste one with Ctrl+V.<br>Drag the card to move the art; scroll on it to zoom.</span>
+          <span class="hint mouse">or drag a file here, or paste one with Ctrl+V.<br>Drag the card to move the art; scroll on it to zoom.</span>
+          <span class="hint touch">Pick a photo or a saved image.<br>Drag the card to move the art; pinch it to zoom.</span>
           <input type="file" id="file" accept="image/*" hidden>
         </div>
         <div class="row">
@@ -219,7 +247,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
         <button type="button" id="clear">New blank card</button>
         <span class="status" id="status"></span>
       </div>
-      <p class="small" style="margin:0">If saving is blocked where you're viewing this, right-click the card and choose “Save image as”.</p>
+      <p class="small mouse" style="margin:0">If saving is blocked where you're viewing this, right-click the card and choose “Save image as”.</p>
     </div>
   </div>
 
@@ -819,17 +847,43 @@ document.addEventListener('paste', e => {
 });
 
 // pan & zoom on the card
+// One pointer drags the art; two pointers (fingers) pinch to zoom and move together.
 let drag = null;
+const pts = new Map();
+const pinchState = () => {
+  const [a, b] = [...pts.values()];
+  return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+};
+const startGesture = () => {
+  if (pts.size >= 2) { const p = pinchState(); drag = { ...p, pinch: true, zoom: st.zoom, ox: st.ox, oy: st.oy }; }
+  else if (pts.size === 1) { const [p] = pts.values(); drag = { x: p.x, y: p.y, ox: st.ox, oy: st.oy }; }
+  else drag = null;
+};
 canvas.addEventListener('pointerdown', e => {
-  drag = { x: e.clientX, y: e.clientY, ox: st.ox, oy: st.oy };
+  pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
   canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
+  startGesture();
 });
 canvas.addEventListener('pointermove', e => {
-  if (!drag) return;
+  if (!drag || !pts.has(e.pointerId)) return;
+  pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
   const k = W / canvas.getBoundingClientRect().width;
-  st.ox = drag.ox + (e.clientX - drag.x) * k; st.oy = drag.oy + (e.clientY - drag.y) * k; draw();
+  if (drag.pinch && pts.size >= 2) {
+    const p = pinchState();
+    st.zoom = Math.min(4, Math.max(.3, drag.zoom * p.d / drag.d));
+    $('zoom').value = st.zoom;
+    st.ox = drag.ox + (p.x - drag.x) * k; st.oy = drag.oy + (p.y - drag.y) * k;
+  } else {
+    st.ox = drag.ox + (e.clientX - drag.x) * k; st.oy = drag.oy + (e.clientY - drag.y) * k;
+  }
+  draw();
 });
-const endDrag = () => { drag = null; canvas.classList.remove('dragging'); draw(); };
+const endDrag = e => {
+  pts.delete(e.pointerId);
+  startGesture(); // lifting one finger of a pinch carries on as a drag
+  if (!drag) canvas.classList.remove('dragging');
+  draw();
+};
 canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
