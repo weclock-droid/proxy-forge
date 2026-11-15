@@ -135,6 +135,9 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .mylist span button { padding: 1px 7px; border-radius: 999px; font-size: 12px; }
 .artlib { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; }
 .randsrc { display: grid; gap: 8px; }
+.aiRow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.aiRow input[type=text] { flex: 1 1 160px; }
+#aiModel:disabled { opacity: .5; }
 .mycard { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; margin: 8px 0; }
 .mycard summary { cursor: pointer; font-weight: 600; }
 .mycard[open] { display: grid; gap: 10px; }
@@ -388,6 +391,10 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <div class="row">
           <label for="pt">Power / toughness <input type="text" id="pt" placeholder="2/3"></label>
           <label for="artist">Artist <input type="text" id="artist"></label>
+          <div class="aiRow">
+            <label class="inline"><input type="checkbox" id="aiArt"> AI-generated</label>
+            <input type="text" id="aiModel" placeholder="Model name, e.g. Nano Banana Pro" aria-label="AI model name">
+          </div>
         </div>
         <div class="row">
           <label for="info">Collector line <input type="text" id="info" placeholder="666 · SLD · EN"></label>
@@ -636,7 +643,14 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <button type="button" class="primary" id="addSheet">Add to print sheet</button>
         <button type="button" id="addNew" hidden>Add as a new card</button>
         <button type="button" id="save">Save PNG</button>
-        <button type="button" id="saveBleed" title="Adds ⅛″ of extra art around every edge, for print shops that trim">Save PNG with ⅛″ bleed</button>
+        <button type="button" id="saveBleed" title="800 dpi with ⅛″ of extra art around every edge and square corners: what online print shops ask for">Print-shop PNG (800 dpi + bleed)</button>
+        <label class="inline" for="exportDpi">Size
+          <select id="exportDpi">
+            <option value="600">600 dpi</option>
+            <option value="800">800 dpi (print shops)</option>
+            <option value="1200">1200 dpi (home printing)</option>
+          </select>
+        </label>
         <button type="button" id="clear">New blank card</button>
         <button type="button" id="defaultBtn" title="Replace the card you're editing with the default example">Default card</button>
         <span class="status" id="status"></span>
@@ -656,6 +670,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <button type="button" id="landOpen">Make basic lands…</button>
         <button type="button" id="pickFinished">Add finished card images…</button>
         <input type="file" id="finished" accept="image/*" multiple hidden>
+        <button type="button" id="saveZip" disabled title="Every card on the sheet as its own 800 dpi PNG with ⅛″ bleed, in one zip: ready to upload to a print shop">Save all as print-shop PNGs (zip)</button>
         <button type="button" class="primary" id="savePdf" disabled>Save PDF</button>
       </div>
     </div>
@@ -751,12 +766,13 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 (() => {
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label','aiArt','aiModel'];
 const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
@@ -766,7 +782,7 @@ const SAMPLE = {
   pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Playtest card — not for sale',
   layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
   pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true,
-  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none', label: 'design'
+  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none', label: 'design', aiArt: false, aiModel: ''
 };
 // Original example cards used for the random first-visit card.
 const EXAMPLES = [
@@ -1710,6 +1726,7 @@ function swapLabel(t, mode) {
 }
 function render(g, o, bleed) {
   if (o.label && o.label !== 'design') o = { ...o, note: swapLabel(o.note, o.label) };
+  if (o.aiArt) o = { ...o, artist: [o.artist, 'AI: ' + ((o.aiModel || '').trim() || 'model not given')].filter(Boolean).join(' · ') };
   const borderCol = o.border === 'none' ? '#0b0b0c' : o.border === 'gilt' ? '#b8964c' : o.border;
   const shade = +o.shade, size = +o.size;
   g.save();
@@ -3736,23 +3753,49 @@ function updateQuality(o) {
   const dpi = Math.round(300 / (Math.max(r.w / img.naturalWidth, r.h / img.naturalHeight) * st.zoom));
   const [cls, word] = dpi >= 300 ? ['good', 'Sharp'] : dpi >= 200 ? ['ok', 'Okay'] : ['bad', 'Soft'];
   const need = `${Math.round(r.w)} × ${Math.round(r.h)}`;
-  const tip = dpi >= 300 ? 'Plenty of detail for printing.'
+  const full = r.w * r.h > W * H * .6, target = full ? [1500, 2000] : [1200, 900];
+  const small = Math.max(img.naturalWidth, img.naturalHeight) < Math.max(...target) || Math.min(img.naturalWidth, img.naturalHeight) < Math.min(...target);
+  const goal = ` Print-shop guides suggest at least ${target[0]} × ${target[1]} px for ${full ? 'full-card' : 'framed'} art${small ? '; an AI upscaler can enlarge smaller pictures' : ''}.`;
+  const tip = (dpi >= 300 ? 'Plenty of detail for printing.'
     : dpi >= 200 ? `Fine for casual play, slightly soft up close. For crisp prints use at least ${need} px for this layout.`
-    : `This will look blurry when printed. Find a larger version (at least ${need} px for this layout), or zoom out.`;
+    : `This will look blurry when printed. Find a larger version (at least ${need} px for this layout), or zoom out.`) + (small ? goal : '');
   q.innerHTML = `<span class="pill ${cls}">${word} · ${dpi} dpi</span><span>Your image is ${img.naturalWidth} × ${img.naturalHeight} px. ${tip}</span>`;
 }
-async function exportPng(forceBleed) {
-  const o = readForm(), bleed = forceBleed === true || o.bleed;
-  if (bleed) o.bleed = true;
-  const c = document.createElement('canvas');
-  c.width = (W + (bleed ? BLEED * 2 : 0)) * RES; c.height = (H + (bleed ? BLEED * 2 : 0)) * RES;
-  const g = c.getContext('2d');
-  g.setTransform(RES, 0, 0, RES, bleed ? BLEED * RES : 0, bleed ? BLEED * RES : 0);
+// Card space is 300 units per inch, so the scale for a given dpi is dpi / 300.
+function exportDpi() { return Math.max(300, Math.min(1200, +$('exportDpi').value || 600)); }
+try { const d = localStorage.getItem('proxyforge.dpi'); if (d) $('exportDpi').value = d; } catch (e) {}
+$('exportDpi').addEventListener('change', () => { try { localStorage.setItem('proxyforge.dpi', $('exportDpi').value); } catch (e) {} });
+const fileBase = name => (String(name || 'card').replace(/[^\w\- ]+/g, '').trim() || 'card');
+// Draws one card (the one being edited, or a print-sheet entry) to a canvas at the given dpi, with or without bleed.
+function cardPng(o, art, dpi, bleed) {
+  const k = dpi / 300, m = bleed ? BLEED : 0, c = document.createElement('canvas');
+  c.width = Math.round((W + m * 2) * k); c.height = Math.round((H + m * 2) * k);
+  const g = c.getContext('2d'); g.setTransform(k, 0, 0, k, m * k, m * k);
+  if (art.finished) { // a finished card image: fill the card (and its bleed) edge to edge
+    const s0 = Math.max((W + m * 2) / art.img.naturalWidth, (H + m * 2) / art.img.naturalHeight), w = art.img.naturalWidth * s0, h = art.img.naturalHeight * s0;
+    g.fillStyle = '#000'; g.fillRect(-m, -m, W + m * 2, H + m * 2); g.drawImage(art.img, (W - w) / 2, (H - h) / 2, w, h);
+    return c;
+  }
+  const saved = { img: st.img, zoom: st.zoom, ox: st.ox, oy: st.oy };
+  Object.assign(st, { img: art.img, zoom: art.zoom, ox: art.ox, oy: art.oy });
+  try { render(g, { ...o, bleed: !!bleed, round: bleed ? false : o.round }, bleed); } finally { Object.assign(st, saved); }
+  return c;
+}
+// The playtest-card guidelines ask for accurate artist credit; remind (once per card) before saving without it.
+function creditOk(o) {
+  if ((o.artist || '').trim() || o.aiArt || st.sample || st.creditAsked === (o.name || '')) return true;
+  st.creditAsked = o.name || '';
+  return confirm('This card has no artist credit. Please add the artist’s name (or tick “AI-generated” and the model) under Card text.\n\nSave anyway?');
+}
+async function exportPng(printShop) {
+  const o = readForm(), bleed = printShop === true || o.bleed, dpi = printShop === true ? 800 : exportDpi();
+  if (!creditOk(o)) { $('artist').focus(); return; }
   await fontsReadyFor(o);
-  render(g, o, bleed);
+  const c = cardPng(o, { img: st.img, zoom: st.zoom, ox: st.ox, oy: st.oy }, dpi, bleed);
   const blob = await new Promise(r => c.toBlob(r, 'image/png'));
-  const filename = ((o.name || 'card').replace(/[^\w\- ]+/g, '').trim() || 'card') + (bleed ? ' (bleed)' : '') + '.png';
+  const filename = fileBase(o.name) + (bleed ? ' (bleed)' : '') + ` ${dpi}dpi.png`;
   await saveBlob(blob, filename, $('status'));
+  if ($('status').textContent.startsWith('Saved')) $('status').textContent += ` · ${c.width} × ${c.height} px`;
 }
 async function saveBlob(blob, filename, status) {
   let dl = null;
@@ -3944,6 +3987,8 @@ $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
 $('guides').onchange = draw;
 $('resetArt').onclick = () => { st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; draw(); };
 $('save').onclick = () => exportPng(false);
+const syncAi = () => { $('aiModel').disabled = !$('aiArt').checked; };
+$('aiArt').addEventListener('input', syncAi); syncAi();
 $('saveBleed').onclick = () => exportPng(true);
 // ---------- custom layout editor ----------
 const LPROPS = {
@@ -4181,8 +4226,31 @@ function renderSheet() {
 function updateCount() {
   const total = sheet.reduce((s, e) => s + e.copies, 0), pages = Math.ceil(total / 9);
   $('sheetCount').textContent = total ? `${total} card${total > 1 ? 's' : ''} · ${pages} page${pages > 1 ? 's' : ''} · 9 per page` : 'No cards yet.';
-  $('savePdf').disabled = !total;
+  $('savePdf').disabled = !total; $('saveZip').disabled = !total;
 }
+async function saveZip() {
+  const status = sheetStatus();
+  if (!window.JSZip) { status.textContent = 'The zip builder didn’t load. Check your internet connection and reload the page.'; return; }
+  const btn = $('saveZip'); btn.disabled = true;
+  try {
+    const zip = new window.JSZip(), used = new Map(), missing = [];
+    for (let i = 0; i < sheet.length; i++) {
+      const e = sheet[i]; status.textContent = `Rendering card ${i + 1} of ${sheet.length}…`;
+      if (e.kind === 'made') { await fontsReadyFor(e.form); if (!(e.form.artist || '').trim() && !e.form.aiArt) missing.push(e.form.name || 'Untitled'); }
+      const c = e.kind === 'made' ? cardPng(e.form, { img: e.img, zoom: e.zoom, ox: e.ox, oy: e.oy }, 800, true) : cardPng({}, { img: e.img, finished: true }, 800, true);
+      const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+      let base = fileBase(e.form && e.form.name); const n = (used.get(base) || 0) + 1; used.set(base, n);
+      zip.file(`${base}${n > 1 ? ' ' + n : ''}${e.copies > 1 ? ` (x${e.copies})` : ''}.png`, blob);
+      await new Promise(r => setTimeout(r, 0));
+    }
+    status.textContent = 'Zipping…';
+    const out = await zip.generateAsync({ type: 'blob' });
+    await saveBlob(out, 'proxy-sheet-800dpi-bleed.zip', status);
+    if (missing.length) status.textContent += ` · No artist credit on: ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '…' : ''}`;
+  } catch (err) { status.textContent = 'Couldn’t build the zip: ' + (err.message || err); }
+  btn.disabled = !sheet.length;
+}
+$('saveZip').onclick = saveZip;
 async function savePdf() {
   const status = sheetStatus();
   if (!window.jspdf) { status.textContent = 'The PDF builder didn’t load. Check your internet connection and reload the page.'; return; }

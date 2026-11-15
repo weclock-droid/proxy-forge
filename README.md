@@ -63,9 +63,11 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Look up real cards:** type a card name and the name, cost, type, rules, flavor, power/toughness, rarity and collector line are filled in from [Scryfall](https://scryfall.com). Pick a printing or the back side, and optionally use the card's official art.
 - **Deck lists:** paste a list like `4 Lightning Bolt` (Arena and MTGO exports work too) and every card is added to the print sheet with its number of copies, in the look of the card you're editing. Double-faced cards get their back face too. Each card gets public-domain art picked to match it, its official art, or plain placeholder art.
 - **Basic lands:** pick which basics (and Wastes or snow-covered versions), how many of each, and whether every copy gets different art: public-domain landscapes, official basic land art or placeholders. They're added to the print sheet in your current style.
-- **Sharpness meter** that tells you whether your image is big enough to print well.
 - **Print sheets:** add cards (or card images you already have), set copies, and save a PDF with 9 cards per page at real card size (2.5 × 3.5″), with cut marks. Print at 100% / "Actual size".
-- **Single cards:** save a 600 dpi PNG with **Save PNG**, or press **Save PNG with ⅛″ bleed** for print shops that trim the edges.
+- **Single cards:** save a PNG at 600, 800 or 1200 dpi. **Print-shop PNG** saves at 800 dpi with ⅛″ bleed and square corners (2200 × 3000 px), which is what online print shops ask for.
+- **Whole sheet for a print shop:** **Save all as print-shop PNGs (zip)** saves every card on the print sheet as its own 800 dpi bleed PNG, named after the card, in one zip.
+- **Artist credit:** you're reminded before saving a card with no artist credit, and an **AI-generated** tick box adds the model name to the credit.
+- **Sharpness meter** also shows the art sizes print-shop guides recommend (1200 × 900 for framed art, 1500 × 2000 for full-card art) and suggests upscaling smaller pictures.
 
 Everything runs in your browser. Nothing is uploaded anywhere, and your print sheet is saved in your own browser. Card lookups and deck lists send only the card names to Scryfall, Remix asks Scryfall for a random card and Wikimedia Commons for art, and art search sends only the words you type to the source you picked.
 
