@@ -4386,6 +4386,24 @@ function addBleed(img) {
   for (let t = .1; t < .9; t += .02) ring.push(d * w + Math.round(w * t), (h - 1 - d) * w + Math.round(w * t), Math.round(h * t) * w + d, Math.round(h * t) * w + w - 1 - d);
   const mean = [0, 1, 2].map(c => ring.reduce((s, p) => s + out[p * 3 + c], 0) / ring.length);
   const solid = ring.reduce((s, p) => s + Math.abs(out[p * 3] - mean[0]) + Math.abs(out[p * 3 + 1] - mean[1]) + Math.abs(out[p * 3 + 2] - mean[2]), 0) / ring.length < 30;
+  // A thin frame (a dark or light edge narrower than the bleed, like a worn black border): mirroring the whole
+  // bleed width would pull the card face out past it, so mirror back and forth within the frame band instead.
+  const lum = p => .3 * out[p * 3] + .59 * out[p * 3 + 1] + .11 * out[p * 3 + 2];
+  let band = Math.max(Mx, My);
+  if (!solid) {
+    const edgeL = [], deepL = [], widths = [];
+    for (let t = .1; t < .9; t += .02) {
+      const x = Math.round(w * t), y = Math.round(h * t);
+      for (const [e0, step] of [[d * w + x, w], [(h - 1 - d) * w + x, -w], [y * w + d, 1], [y * w + w - 1 - d, -1]]) {
+        const e = lum(e0); edgeL.push(e); deepL.push(lum(e0 + step * (Mx - d)));
+        let k = 0; while (k < Mx && Math.abs(lum(e0 + step * k) - e) < 60) k++; widths.push(k + d);
+      }
+    }
+    const mean = a => a.reduce((s, v) => s + v, 0) / a.length, em = mean(edgeL);
+    const dev = mean(edgeL.map(v => Math.abs(v - em))), apart = mean(edgeL.map((v, i) => Math.abs(v - deepL[i])));
+    if (apart > 90 && dev < 50) { widths.sort((p, q) => p - q); band = Math.max(4, Math.min(band, widths[widths.length >> 1] - 2)); }
+  }
+  const fold = k => { k %= 2 * band; return k < band ? k : 2 * band - 1 - k; }; // distance past the edge -> distance in from it
   const OW = w + 2 * Mx, OH = h + 2 * My, res = new ImageData(OW, OH), o = res.data;
   const clampX = x => x < R ? R : x >= w - R ? w - 1 - R : x, clampY = y => y < R ? R : y >= h - R ? h - 1 - R : y;
   for (let Y = 0; Y < OH; Y++) for (let X = 0; X < OW; X++) {
@@ -4398,8 +4416,8 @@ function addBleed(img) {
           : mn === dl ? clampY(Math.min(Math.max(y, 0), h - 1)) * w + d : clampY(Math.min(Math.max(y, 0), h - 1)) * w + w - 1 - d;
       }
     } else { // mirror
-      if (x < 0) x = -1 - x; else if (x >= w) x = 2 * w - 1 - x;
-      if (y < 0) y = -1 - y; else if (y >= h) y = 2 * h - 1 - y;
+      if (x < 0) x = fold(-1 - x); else if (x >= w) x = w - 1 - fold(x - w);
+      if (y < 0) y = fold(-1 - y); else if (y >= h) y = h - 1 - fold(y - h);
       p = y * w + x;
     }
     const q = (Y * OW + X) * 4; o[q] = out[p * 3]; o[q + 1] = out[p * 3 + 1]; o[q + 2] = out[p * 3 + 2]; o[q + 3] = 255;
