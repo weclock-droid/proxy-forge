@@ -107,6 +107,8 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .lookup .go { display: flex; gap: 8px; align-items: end; }
 .lookup .go label { flex: 1; }
 .deck { display: grid; gap: 10px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+#landPanel .row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: end; }
+#landPanel .row label:not(.inline) { flex: 1 1 200px; }
 .deck textarea { font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace; font-size: 14px; }
 .matSize { display: none; }
 .remix { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -121,6 +123,25 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .styles button { padding: 6px; display: grid; gap: 6px; justify-items: center; scroll-snap-align: start; font-size: 12px; }
 .styles canvas { width: 84px; height: 118px; border-radius: 5px; display: block; background: #000; }
 .styles button[aria-pressed=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.styletabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.styletabs button { flex: none; padding: 5px 11px; border-radius: 999px; font-size: 13px; }
+.styletabs button[aria-selected=true] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.styles .empty { grid-column: 1 / -1; align-self: center; font-size: 13px; color: var(--muted, #888); padding: 12px 4px; }
+.mystyles { display: grid; gap: 8px; }
+.mystyles .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+.mystyles .row label { flex: 1 1 180px; }
+.mylist { display: flex; flex-wrap: wrap; gap: 6px; }
+.mylist span { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 4px 2px 10px; font-size: 13px; }
+.mylist span button { padding: 1px 7px; border-radius: 999px; font-size: 12px; }
+.artlib { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; }
+.artlib summary { cursor: pointer; font-weight: 600; }
+.artlib[open] summary { margin-bottom: 8px; }
+.libgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; margin-bottom: 8px; }
+.libgrid:empty { display: none; }
+.libgrid .item { position: relative; }
+.libgrid .use { padding: 0; border-radius: 6px; overflow: hidden; aspect-ratio: 3 / 4; width: 100%; background: #000; display: block; }
+.libgrid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.libgrid .del { position: absolute; top: 3px; right: 3px; padding: 0 6px; font-size: 13px; line-height: 20px; border-radius: 999px; }
 .fxpal { display: flex; gap: 6px; flex-wrap: wrap; }
 .fxpal button { width: 34px; height: 26px; padding: 0; border-radius: 6px; }
 .artsearch { display: grid; gap: 8px; }
@@ -205,8 +226,22 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
       </div>
       <fieldset>
         <legend>Style</legend>
+        <div class="styletabs" id="styleTabs" role="tablist" aria-label="Style groups"></div>
         <div class="styles" id="styles" role="group" aria-label="One-click styles"></div>
         <span class="hint">One click changes the whole look and keeps your text and art. Fine-tune it under <b>Look</b>.</span>
+        <div class="mystyles">
+          <div class="row">
+            <label for="myStyleName">Save this look as your own style <input type="text" id="myStyleName" placeholder="Name it, like “Moody blue”" maxlength="40" autocomplete="off"></label>
+            <button type="button" id="saveStyle">Save style</button>
+          </div>
+          <div class="mylist" id="myStyleList" aria-label="Your styles"></div>
+          <div class="actions">
+            <button type="button" id="exportStyles">Export my styles</button>
+            <button type="button" id="importStyles">Import styles…</button>
+            <input type="file" id="importStylesFile" accept=".json,application/json" hidden>
+            <span class="hint">Your styles keep the frame, fonts, filters, effects and every layer, but not the card text or art. They're saved in this browser. Export them to back them up or share them, and import a file someone sent you.</span>
+          </div>
+        </div>
       </fieldset>
 
       <fieldset>
@@ -217,6 +252,14 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <span class="hint touch">Pick a photo or a saved image.<br>Drag the card to move the art; pinch it to zoom.</span>
           <input type="file" id="file" accept="image/*" hidden>
         </div>
+        <details class="artlib" id="artLib">
+          <summary>My art library (<span id="libCount">0</span>)</summary>
+          <div class="libgrid" id="libGrid" role="list" aria-label="Your saved art"></div>
+          <div class="actions">
+            <button type="button" id="libSave">Save current art to my library</button>
+            <span class="hint" id="libHint">Images you add are kept here, in this browser on this device, so you can reuse them on other cards. Nothing is uploaded.</span>
+          </div>
+        </details>
         <div class="artsearch">
           <div class="go" style="flex-wrap:wrap">
             <label for="artSrc" style="flex:0 1 190px">Source
@@ -253,6 +296,10 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="paint">Oil painting</option>
               <option value="copy">Photocopy</option>
               <option value="pixel">Pixel art</option>
+              <option value="glass">Stained glass</option>
+              <option value="woodcut">Woodcut</option>
+              <option value="blueprint">Blueprint</option>
+              <option value="pencil">Pencil sketch</option>
             </select>
           </label>
           <label for="fxAmt" id="fxAmtWrap" hidden><span id="fxAmtLabel">Strength</span> <input type="range" id="fxAmt" min="0" max="1" step="0.01" value="0.5"></label>
@@ -463,7 +510,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -539,6 +586,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
       </div>
       <div class="actions">
         <button type="button" id="deckOpen">Add a deck list…</button>
+        <button type="button" id="landOpen">Make basic lands…</button>
         <button type="button" id="pickFinished">Add finished card images…</button>
         <input type="file" id="finished" accept="image/*" multiple hidden>
         <button type="button" class="primary" id="savePdf" disabled>Save PDF</button>
@@ -568,11 +616,44 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
       <label for="deckText">Paste a deck list, one card per line
         <textarea id="deckText" rows="9" spellcheck="false" placeholder="4 Lightning Bolt&#10;2x Counterspell&#10;1 Sol Ring (C21) 263"></textarea>
       </label>
-      <label class="inline"><input type="checkbox" id="deckArt"> Use each card's official art</label>
-      <p class="hint" style="margin:0">Works with lists from most deck sites and Arena / MTGO exports. Each card gets the look of the card you're editing (layout, border, fonts, symbols). Without official art the cards get plain placeholder art; press <b>Edit</b> on one to add your own. Card details come from Scryfall; only the card names are sent.</p>
+      <label for="deckArt">Art for each card
+        <select id="deckArt">
+          <option value="pd">Public-domain art picked to match each card (Wikimedia Commons)</option>
+          <option value="official">The card's official art (Scryfall)</option>
+          <option value="none">Plain placeholder art</option>
+        </select>
+      </label>
+      <p class="hint" style="margin:0">Works with lists from most deck sites and Arena / MTGO exports. Each card gets the look of the card you're editing, so pick a style first. Press <b>Edit</b> on any card afterwards to change its art or text. Card details come from Scryfall; only the card names are sent. Matching art takes a few seconds per card.</p>
       <div class="actions">
         <button type="button" class="primary" id="deckGo">Add cards to sheet</button>
         <button type="button" id="deckCancel">Cancel</button>
+      </div>
+    </div>
+    <div class="deck" id="landPanel" hidden>
+      <div class="row" role="group" aria-label="Which basic lands">
+        <label class="inline"><input type="checkbox" class="landPick" value="Plains" checked> Plains</label>
+        <label class="inline"><input type="checkbox" class="landPick" value="Island" checked> Island</label>
+        <label class="inline"><input type="checkbox" class="landPick" value="Swamp" checked> Swamp</label>
+        <label class="inline"><input type="checkbox" class="landPick" value="Mountain" checked> Mountain</label>
+        <label class="inline"><input type="checkbox" class="landPick" value="Forest" checked> Forest</label>
+        <label class="inline"><input type="checkbox" class="landPick" value="Wastes"> Wastes</label>
+        <label class="inline"><input type="checkbox" id="landSnow"> Snow-covered</label>
+      </div>
+      <div class="row">
+        <label for="landCopies">Copies of each <input type="number" id="landCopies" min="1" max="40" value="4"></label>
+        <label for="landArt">Art
+          <select id="landArt">
+            <option value="pd">Public-domain landscapes (Wikimedia Commons)</option>
+            <option value="official">Official basic land art (Scryfall)</option>
+            <option value="none">Plain placeholder art</option>
+          </select>
+        </label>
+      </div>
+      <label class="inline"><input type="checkbox" id="landVary" checked> Different art on every copy</label>
+      <p class="hint" style="margin:0">Lands get the look of the card you're editing, so pick a style first (Vintage pack, Wrist computer and Starship console all have land-friendly layouts). For other lands, like duals or utility lands, put them in a deck list.</p>
+      <div class="actions">
+        <button type="button" class="primary" id="landGo">Add lands to sheet</button>
+        <button type="button" id="landCancel">Cancel</button>
       </div>
     </div>
     <ol class="thumbs" id="thumbs"></ol>
@@ -1089,6 +1170,10 @@ function fxImage(img, o) {
     g.imageSmoothingEnabled = false; g.drawImage(t, 0, 0, w, h);
     if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c;
   }
+  if (fx === 'glass' || fx === 'woodcut' || fx === 'blueprint' || fx === 'pencil') {
+    craftFx(c, g, img, iw, ih, amt, fx);
+    if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c;
+  }
   if (fx === 'paint') { oilPaint(c, g, img, iw, ih, amt); if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c; }
   if (fx === 'halftone' || fx === 'pop') halftone(g, img, w, h, amt, fx === 'pop', hex(o.fxDark), o.fxLight);
   else {
@@ -1117,6 +1202,82 @@ function fxImage(img, o) {
   }
   if (m.size > 6) m.delete(m.keys().next().value);
   m.set(key, c); return c;
+}
+// Hand-made looks worked on the pixels, at up to 1100 px:
+// glass = panes of flat color with dark lead lines and a glow in each pane;
+// woodcut = carved ink lines that thicken in the shadows, on cream paper;
+// blueprint = the picture's edges as white lines on blue, over a grid;
+// pencil = graphite outlines and cross-hatching on sketchbook paper.
+function craftFx(c, g, img, iw, ih, amt, fx) {
+  const k = Math.min(1, 1100 / Math.max(iw, ih)), w = Math.max(1, Math.round(iw * k)), h = Math.max(1, Math.round(ih * k));
+  c.width = w; c.height = h; g.drawImage(img, 0, 0, w, h);
+  const src = g.getImageData(0, 0, w, h), d = src.data, n = w * h, out = g.createImageData(w, h), o = out.data;
+  const L = new Float32Array(n);
+  for (let p = 0, q = 0; p < n; p++, q += 4) L[p] = (0.299 * d[q] + 0.587 * d[q + 1] + 0.114 * d[q + 2]) / 255;
+  const edge = () => { // Sobel edge strength, 0..1
+    const E = new Float32Array(n);
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const p = y * w + x, a = L[p - w - 1], b = L[p - w], cc = L[p - w + 1], dd = L[p - 1], f = L[p + 1], gg = L[p + w - 1], hh = L[p + w], ii = L[p + w + 1];
+      const gx = cc + 2 * f + ii - a - 2 * dd - gg, gy = gg + 2 * hh + ii - a - 2 * b - cc;
+      E[p] = Math.min(1, Math.hypot(gx, gy) * 1.4);
+    }
+    return E;
+  };
+  const set = (p, r, g2, b) => { const q = p * 4; o[q] = r; o[q + 1] = g2; o[q + 2] = b; o[q + 3] = 255; };
+  const hash = (x, y) => (Math.imul(x * 374761393 + y * 668265263, 1274126177) >>> 0) / 4294967296;
+  if (fx === 'glass') {
+    const cell = Math.round((14 + amt * 46) * w / 1100), gw = Math.ceil(w / cell) + 1, gh = Math.ceil(h / cell) + 1;
+    const sx = new Float32Array(gw * gh), sy = new Float32Array(gw * gh);
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) { const s0 = j * gw + i; sx[s0] = (i + .15 + hash(i, j) * .7) * cell; sy[s0] = (j + .15 + hash(j + 99, i) * .7) * cell; }
+    const owner = new Int32Array(n), dist = new Float32Array(n), dist2 = new Float32Array(n);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const ci = Math.floor(x / cell), cj = Math.floor(y / cell); let best = 1e9, second = 1e9, who = 0;
+      for (let j = cj - 1; j <= cj + 1; j++) for (let i = ci - 1; i <= ci + 1; i++) {
+        if (i < 0 || j < 0 || i >= gw || j >= gh) continue;
+        const s0 = j * gw + i, dd = (sx[s0] - x) ** 2 + (sy[s0] - y) ** 2;
+        if (dd < best) { second = best; best = dd; who = s0; } else if (dd < second) second = dd;
+      }
+      const p = y * w + x; owner[p] = who; dist[p] = Math.sqrt(best); dist2[p] = Math.sqrt(second) - Math.sqrt(best);
+    }
+    const sr = new Float32Array(gw * gh), sg = new Float32Array(gw * gh), sb = new Float32Array(gw * gh), cnt = new Float32Array(gw * gh);
+    for (let p = 0, q = 0; p < n; p++, q += 4) { const s0 = owner[p]; sr[s0] += d[q]; sg[s0] += d[q + 1]; sb[s0] += d[q + 2]; cnt[s0]++; }
+    const lead = Math.max(1.5, cell * .09);
+    for (let p = 0; p < n; p++) {
+      const s0 = owner[p], m = cnt[s0] || 1;
+      if (dist2[p] < lead) { set(p, 22, 20, 18); continue; }
+      let r = sr[s0] / m, g2 = sg[s0] / m, b = sb[s0] / m; const l = (r + g2 + b) / 3;
+      r = l + (r - l) * 1.45; g2 = l + (g2 - l) * 1.45; b = l + (b - l) * 1.45; // richer glass
+      const glow = 1.18 - Math.min(1, dist[p] / cell) * .4, grain = .94 + hash(p % w, p / w | 0) * .1;
+      set(p, Math.min(255, r * glow * grain), Math.min(255, g2 * glow * grain), Math.min(255, b * glow * grain));
+    }
+  } else if (fx === 'woodcut') {
+    const freq = (.9 - amt * .55) * w / 1100;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const p = y * w + x, t = Math.max(0, Math.min(1, (L[p] - .5) * 1.5 + .5));
+      const wave = .5 + .5 * Math.sin((y + Math.sin(x * .013) * 9 + Math.sin(x * .041 + y * .01) * 3) * freq);
+      const ink = t < .12 || (t < .9 && wave > t * 1.05);
+      if (ink) set(p, 26, 20, 16); else set(p, 239, 230, 210);
+    }
+  } else if (fx === 'blueprint') {
+    const E = edge(), thr = .32 - amt * .22, grid = Math.round(44 * w / 1100);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const p = y * w + x, line = Math.max(0, Math.min(1, (E[p] - thr) / .2));
+      const gl = (x % grid === 0 || y % grid === 0) ? .16 : (x % (grid / 4 | 0) === 0 || y % (grid / 4 | 0) === 0) ? .06 : 0;
+      const fill = (1 - L[p]) * .08, v = Math.min(1, line * .95 + gl + fill);
+      set(p, 24 + (235 - 24) * v, 74 + (244 - 74) * v, 140 + (255 - 140) * v);
+    }
+  } else { // pencil
+    const E = edge(), hatch = .25 + amt * .45;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const p = y * w + x, t = L[p];
+      let v = 1 - Math.max(0, Math.min(1, (E[p] - .12) / .45)) * .85;
+      if (t < hatch && (x + y) % 7 < 1.2) v *= .55 + t;
+      if (t < hatch * .55 && (x - y + 1000) % 7 < 1.2) v *= .55 + t;
+      v *= .96 + hash(x >> 1, y >> 1) * .05;
+      set(p, 58 + (244 - 58) * v, 58 + (240 - 58) * v, 62 + (232 - 62) * v);
+    }
+  }
+  g.putImageData(out, 0, 0);
 }
 // Oil painting: a Kuwahara filter (each pixel takes the average of its calmest neighbouring square,
 // which flattens detail into brush-like patches while keeping edges), richer color, and a canvas weave.
@@ -1180,7 +1341,7 @@ function halftone(g, img, w, h, amt, color, ink, paper) {
 
 function artRect(o) {
   const aw = o.layout === 'custom' && (o.layers || []).find(l => l.src === 'art');
-  if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true };
+  if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true, arch: aw.bg === 'arch', rad: +aw.rad || 0, clean: aw.bg === 'arch' || +aw.rad > 0 || aw.bg === 'box' };
   if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
   if (o.layout === 'wrist') return { x: 66, y: 140, w: 618, h: 400 };
   if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 132, w: 690, h: o.rules ? 616 : 718 } : { x: 30, y: 132, w: 690, h: 410 };
@@ -1403,7 +1564,7 @@ function drawMisprint(g, o, bleed) {
   let seed = 2166136261; for (const ch of (o.name || 'card') + 'press' + o.misprint + (o.wearSeed || 0)) seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619);
   const R = rng(seed), t = g.getTransform(), u = Math.hypot(t.a, t.b) || 1;
   const m = bleed ? BLEED : 0;
-  if (lv >= 2) {
+  if (lv >= 2 && !(g === ctx && canvas.classList.contains('dragging'))) { // skipped mid-drag; drawn again when you let go
     // the card's area in canvas pixels
     const rx = Math.max(0, Math.floor(t.e - m * u)), ry = Math.max(0, Math.floor(t.f - m * u));
     const rw = Math.min(g.canvas.width - rx, Math.ceil((W + m * 2) * u)), rh = Math.min(g.canvas.height - ry, Math.ceil((H + m * 2) * u));
@@ -2051,7 +2212,7 @@ const FONTS = {
 };
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
-  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
+  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
 };
 const LDEF = {
   src: 'custom', text: '', x: 60, y: 60, w: 630, h: 0, rot: 0, font: 'spectral', size: 40, color: '#ffffff', align: 'left',
@@ -2132,23 +2293,23 @@ const PRESETS = {
   ],
   storybook: () => [
     { src: 'art', x: 70, y: 196, w: 610, h: 560, bdW: 8, bdColor: '#3b260c', effect: 'none' },
-    { src: 'name', x: 70, y: 46, w: 470, size: 70, font: 'almendra', color: '#2a1a08', fit: true, lh: 1, rot: -3, bg: 'ribbon', bgColor: '#ecd9a0', bgOp: 1, pad: 14, bdW: 3, bdColor: '#3b260c', effect: 'none' },
-    { src: 'cost', x: 470, y: 128, w: 230, size: 40, align: 'right', rot: 2, bg: 'ribbon', bgColor: '#ecd9a0', bgOp: 1, pad: 10, bdW: 3, bdColor: '#3b260c', pip: 'classic', effect: 'none' },
-    { src: 'type', x: 80, y: 778, w: 590, size: 32, font: 'medieval', upper: true, color: '#2a1a08', align: 'center', fit: true, bg: 'ribbon', bgColor: '#ecd9a0', bgOp: 1, pad: 12, bdW: 3, bdColor: '#3b260c', effect: 'none' },
+    { src: 'name', x: 70, y: 46, w: 470, size: 70, font: 'almendra', color: '#2a1a08', fit: true, lh: 1, rot: -3, bg: 'ribbon', tintBg: 'pale', bgColor: '#ecd9a0', bgOp: 1, pad: 14, bdW: 3, bdColor: '#3b260c', effect: 'none' },
+    { src: 'cost', x: 470, y: 128, w: 230, size: 40, align: 'right', rot: 2, bg: 'ribbon', tintBg: 'pale', bgColor: '#ecd9a0', bgOp: 1, pad: 10, bdW: 3, bdColor: '#3b260c', pip: 'classic', effect: 'none' },
+    { src: 'type', x: 80, y: 778, w: 590, size: 32, font: 'medieval', upper: true, color: '#2a1a08', align: 'center', fit: true, bg: 'ribbon', tintBg: 'pale', bgColor: '#ecd9a0', bgOp: 1, pad: 12, bdW: 3, bdColor: '#3b260c', effect: 'none' },
     { src: 'rulesflavor', x: 70, y: 852, w: 516, h: 146, size: 26, font: 'crimson', color: '#2a1a08', bg: 'box', bgColor: '#f1e4bd', bgOp: .95, pad: 14, rad: 8, bdW: 3, bdColor: '#3b260c', effect: 'none' },
     { src: 'pt', x: 600, y: 900, w: 100, size: 42, font: 'almendra', color: '#2a1a08', align: 'center', bg: 'box', bgColor: '#f1e4bd', bgOp: 1, pad: 10, rad: 6, bdW: 4, bdColor: '#3b260c', effect: 'none' },
     { src: 'credit', x: 60, y: 1008, w: 630, size: 13, font: 'plex', color: '#2a1a08', align: 'center', effect: 'none' },
   ],
   pack: () => [
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 480, bg: 'box', bgColor: '#f4efe2', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 0, y: 480, w: 750, h: 570, bg: 'pinstripe', bgColor: '#2f6b5a', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 0, y: 480, w: 750, h: 570, bg: 'pinstripe', tintBg: 'main', bgColor: '#2f6b5a', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 0, y: 466, w: 750, h: 14, bg: 'box', bgColor: '#b8956a', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'art', x: 215, y: 540, w: 320, h: 300, bdW: 8, bdColor: '#f4efe2', effect: 'none' },
     { src: 'custom', text: 'FINE QUALITY  ·  EST. 1993', x: 60, y: 44, w: 630, size: 20, font: 'oswald', color: '#8a6a3a', align: 'center', ls: 6, effect: 'none' },
     { src: 'name', x: 40, y: 104, w: 670, size: 160, font: 'anton', upper: true, color: '#1d1d1d', align: 'center', fit: true, lh: .92, effect: 'none' },
-    { src: 'type', x: 60, y: 318, w: 630, size: 30, font: 'oswald', upper: true, color: '#2f6b5a', align: 'center', fit: true, ls: 8, effect: 'none' },
+    { src: 'type', x: 60, y: 318, w: 630, size: 30, font: 'oswald', upper: true, tintInk: 'main', color: '#2f6b5a', align: 'center', fit: true, ls: 8, effect: 'none' },
     { src: 'cost', x: 40, y: 384, w: 670, size: 40, align: 'center', effect: 'none' },
-    { src: 'rulesflavor', x: 60, y: 868, w: 630, h: 110, size: 24, font: 'oswald', color: '#f4efe2', align: 'center', bg: 'box', bgColor: '#2f6b5a', bgOp: .9, pad: 12, rad: 4, pip: 'outline', pipColor: '#f4efe2', effect: 'none' },
+    { src: 'rulesflavor', x: 60, y: 868, w: 630, h: 110, size: 24, font: 'oswald', color: '#f4efe2', align: 'center', bg: 'box', tintBg: 'deep', bgColor: '#2f6b5a', bgOp: .9, pad: 12, rad: 4, pip: 'outline', pipColor: '#f4efe2', effect: 'none' },
     { src: 'pt', x: 610, y: 960, w: 100, size: 34, font: 'anton', color: '#1d1d1d', align: 'center', bg: 'box', bgColor: '#f4efe2', bgOp: 1, pad: 8, rad: 4, effect: 'none' },
     { src: 'credit', x: 40, y: 1004, w: 560, size: 13, font: 'plex', color: '#f4efe2', effect: 'none' },
   ],
@@ -2164,15 +2325,15 @@ const PRESETS = {
     { src: 'credit', x: 40, y: 1004, w: 670, size: 13, font: 'plex', color: '#f2efe6', effect: 'shadow' },
   ],
   scales: () => [
-    { src: 'custom', text: '\u00a0', x: -190, y: 300, w: 320, h: 520, bg: 'coil', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 6, y: 4, w: 744, h: 220, bg: 'breath', bgColor: '#e6e2d8', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 552, y: 206, w: 240, h: 880, bg: 'scales', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'name', x: 74, y: 40, w: 440, size: 52, font: 'spectral', color: '#2a2118', fit: true, effect: 'none' },
-    { src: 'cost', x: 470, y: 36, w: 230, size: 36, align: 'right', pip: 'classic', effect: 'none' },
-    { src: 'rulesflavor', x: 0, y: 700, w: 750, h: 350, size: 32, font: 'crimson', color: '#2a2118', align: 'center', vmid: true, bg: 'mist', bgColor: '#ece2c8', bgOp: 1, pad: 56, effect: 'none', pip: 'classic' },
-    { src: 'type', x: 30, y: 640, w: 690, size: 32, font: 'spectral', color: '#f3ead6', align: 'center', fit: true, bg: 'plaque', bgColor: '#3a2f25', bgOp: 1, pad: 16, bdW: 4, bdColor: '#d8c9a2', effect: 'none' },
-    { src: 'pt', x: 600, y: 960, w: 118, size: 34, font: 'spectral', color: '#f3ead6', align: 'center', bg: 'plaque', bgColor: '#3a2f25', bgOp: 1, pad: 10, bdW: 3, bdColor: '#d8c9a2', effect: 'none' },
-    { src: 'credit', x: 40, y: 1010, w: 540, size: 13, font: 'plex', color: '#3a2f25', effect: 'none' },
+    { src: 'custom', text: ' ', x: -150, y: 330, w: 230, h: 460, bg: 'coil', tintBg: 'pale', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: ' ', x: 6, y: 4, w: 744, h: 152, bg: 'breath', bgColor: '#e6e2d8', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: ' ', x: 600, y: 140, w: 170, h: 790, bg: 'scales', tintBg: 'pale', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'name', x: 64, y: 26, w: 440, size: 44, font: 'spectral', color: '#2a2118', fit: true, effect: 'none' },
+    { src: 'cost', x: 480, y: 22, w: 216, size: 32, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'rulesflavor', x: 0, y: 790, w: 750, h: 260, size: 28, font: 'crimson', color: '#2a2118', align: 'center', vmid: true, bg: 'mist', bgColor: '#ece2c8', bgOp: 1, pad: 44, effect: 'none', pip: 'classic' },
+    { src: 'type', x: 40, y: 730, w: 670, size: 28, font: 'spectral', color: '#f3ead6', align: 'center', fit: true, bg: 'plaque', bgColor: '#3a2f25', bgOp: 1, pad: 12, bdW: 4, bdColor: '#d8c9a2', effect: 'none' },
+    { src: 'pt', x: 610, y: 968, w: 108, size: 30, font: 'spectral', color: '#f3ead6', align: 'center', bg: 'plaque', bgColor: '#3a2f25', bgOp: 1, pad: 8, bdW: 3, bdColor: '#d8c9a2', effect: 'none' },
+    { src: 'credit', x: 40, y: 1012, w: 540, size: 13, font: 'plex', color: '#3a2f25', effect: 'none' },
   ],
   pixel: () => [
     { src: 'custom', text: ' ', x: 26, y: 26, w: 698, h: 92, bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 0, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
@@ -2194,6 +2355,109 @@ const PRESETS = {
     { src: 'rules', x: 40, y: 758, w: 520, h: 214, size: 22, font: 'comic', upper: true, color: '#111111', lh: 1.1, bg: 'box', bgColor: '#f6d32a', bgOp: 1, pad: 14, rad: 0, bdW: 3, bdColor: '#111111', pip: 'classic', effect: 'none' },
     { src: 'pt', x: 590, y: 868, w: 130, size: 76, font: 'bangers', color: '#f6d32a', align: 'center', rot: -6, effect: 'extrude', effColor: '#111111', effSize: 1 },
     { src: 'credit', x: 40, y: 1004, w: 670, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
+  ],
+  glass: () => [
+    { src: 'art', x: 34, y: 34, w: 682, h: 680, bg: 'arch', bdW: 10, bdColor: '#171512', effect: 'none' },
+    { src: 'name', x: 70, y: 40, w: 470, size: 46, font: 'cinzel', color: '#f0d58a', fit: true, bg: 'box', bgColor: '#171512', bgOp: .92, pad: 14, rad: 30, bdW: 3, bdColor: '#c9a54e', effect: 'none' },
+    { src: 'cost', x: 500, y: 44, w: 200, size: 36, align: 'right', bg: 'box', bgColor: '#171512', bgOp: .92, pad: 10, rad: 30, bdW: 3, bdColor: '#c9a54e', pip: 'classic', effect: 'none' },
+    { src: 'type', x: 34, y: 724, w: 682, size: 30, font: 'cinzel', color: '#f0d58a', align: 'center', fit: true, bg: 'box', bgColor: '#171512', bgOp: 1, pad: 12, rad: 0, bdW: 3, bdColor: '#c9a54e', effect: 'none' },
+    { src: 'rulesflavor', x: 34, y: 786, w: 682, h: 196, size: 27, font: 'crimson', color: '#1d1a14', align: 'center', vmid: true, bg: 'box', bgColor: '#efe4c8', bgOp: 1, pad: 22, rad: 0, bdW: 8, bdColor: '#171512', pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 604, y: 950, w: 112, size: 34, font: 'cinzel', color: '#f0d58a', align: 'center', bg: 'box', bgColor: '#171512', bgOp: 1, pad: 8, rad: 22, bdW: 3, bdColor: '#c9a54e', effect: 'none' },
+    { src: 'credit', x: 40, y: 1004, w: 540, size: 13, font: 'plex', color: '#d9cfb8', effect: 'none' },
+  ],
+  tarot: () => [
+    { src: 'custom', text: '\u00a0', x: 24, y: 24, w: 702, h: 1002, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 18, bdW: 3, bdColor: '#2a1d12', effect: 'none' },
+    { src: 'custom', text: 'XVII', x: 225, y: 34, w: 300, size: 34, font: 'cinzel', color: '#2a1d12', align: 'center', ls: 4, effect: 'none' },
+    { src: 'cost', x: 520, y: 36, w: 186, size: 30, align: 'right', pip: 'outline', pipColor: '#2a1d12', effect: 'none' },
+    { src: 'art', x: 66, y: 92, w: 618, h: 676, bg: 'arch', bdW: 6, bdColor: '#2a1d12', effect: 'none' },
+    { src: 'name', x: 90, y: 788, w: 570, size: 40, font: 'cinzel', upper: true, color: '#2a1d12', align: 'center', fit: true, ls: 3, bg: 'ribbon', tintBg: 'pale', bgColor: '#e8d9b0', bgOp: 1, pad: 12, bdW: 3, bdColor: '#2a1d12', effect: 'none' },
+    { src: 'type', x: 66, y: 862, w: 618, size: 22, font: 'cinzel', color: '#5a4426', align: 'center', fit: true, effect: 'none' },
+    { src: 'rulesflavor', x: 66, y: 894, w: 520, h: 108, size: 22, font: 'crimson', italic: false, color: '#2a1d12', align: 'center', vmid: true, pip: 'outline', pipColor: '#2a1d12', effect: 'none' },
+    { src: 'pt', x: 596, y: 930, w: 100, size: 30, font: 'cinzel', color: '#2a1d12', align: 'center', effect: 'none' },
+    { src: 'credit', x: 40, y: 1008, w: 670, size: 12, font: 'plex', color: '#5a4426', align: 'center', effect: 'none' },
+  ],
+  manuscript: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'parchment', bgColor: '#efe3c4', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 22, y: 22, w: 706, h: 1006, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 6, bdW: 9, bdColor: '#b8903a', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 38, y: 38, w: 674, h: 974, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 4, bdW: 2, tintBd: 'main', bdColor: '#8b1e1e', effect: 'none' },
+    { src: 'name', x: 60, y: 54, w: 470, size: 54, font: 'fraktur', color: '#8b1e1e', fit: true, effect: 'none' },
+    { src: 'cost', x: 520, y: 60, w: 170, size: 34, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'art', x: 60, y: 130, w: 630, h: 520, rad: 6, bdW: 7, bdColor: '#b8903a', effect: 'none' },
+    { src: 'type', x: 60, y: 668, w: 630, size: 28, font: 'fell', color: '#2a1d12', align: 'center', fit: true, effect: 'none' },
+    { src: 'monogram', x: 60, y: 716, w: 112, h: 112, size: 84, font: 'fraktur', color: '#f6e7b4', align: 'center', lh: 1, bg: 'box', tintBg: 'main', bgColor: '#8b1e1e', bgOp: 1, pad: 10, rad: 4, bdW: 5, bdColor: '#b8903a', effect: 'none' },
+    { src: 'rulesflavor', x: 186, y: 716, w: 504, h: 250, size: 27, font: 'crimson', color: '#2a1d12', pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 600, y: 948, w: 94, size: 32, font: 'fell', color: '#8b1e1e', align: 'center', bg: 'box', bgColor: '#f6ebcc', bgOp: 1, pad: 8, rad: 4, bdW: 3, bdColor: '#b8903a', effect: 'none' },
+    { src: 'credit', x: 60, y: 990, w: 520, size: 13, font: 'plex', color: '#5a4426', effect: 'none' },
+  ],
+  woodblock: () => [
+    { src: 'art', x: 44, y: 44, w: 548, h: 650, bdW: 4, bdColor: '#1a1410', effect: 'none' },
+    { src: 'name', x: 608, y: 44, w: 98, h: 520, size: 52, font: 'dela', color: '#f6efe0', align: 'center', vert: true, fit: true, bg: 'box', tintBg: 'main', bgColor: '#b3261e', bgOp: 1, pad: 14, rad: 0, bdW: 3, bdColor: '#1a1410', effect: 'none' },
+    { src: 'cost', x: 628, y: 580, w: 60, size: 40, vert: true, pip: 'outline', pipColor: '#1a1410', effect: 'none' },
+    { src: 'custom', text: 'PROXY', x: 486, y: 600, w: 92, size: 18, font: 'dela', color: '#f6efe0', align: 'center', lh: 1, rot: -4, bg: 'box', bgColor: '#b3261e', bgOp: .92, pad: 10, rad: 4, effect: 'none' },
+    { src: 'type', x: 44, y: 712, w: 662, size: 28, font: 'plex', upper: true, color: '#1a1410', fit: true, ls: 3, effect: 'none' },
+    { src: 'rulesflavor', x: 44, y: 756, w: 662, h: 236, size: 27, font: 'crimson', color: '#1a1410', vmid: true, bg: 'box', bgColor: '#f3ead6', bgOp: 1, pad: 20, rad: 0, bdW: 3, bdColor: '#1a1410', pip: 'outline', pipColor: '#1a1410', effect: 'none' },
+    { src: 'pt', x: 608, y: 946, w: 98, size: 32, font: 'dela', color: '#f6efe0', align: 'center', bg: 'box', tintBg: 'main', bgColor: '#b3261e', bgOp: 1, pad: 8, rad: 0, effect: 'none' },
+    { src: 'credit', x: 44, y: 1006, w: 540, size: 13, font: 'plex', color: '#3a2f25', effect: 'none' },
+  ],
+  blueprint: () => [
+    { src: 'custom', text: '\u00a0', x: 26, y: 26, w: 698, h: 998, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 0, bdW: 2, bdColor: '#e8f2ff', effect: 'none' },
+    { src: 'name', x: 44, y: 44, w: 470, size: 40, font: 'plex', upper: true, color: '#ffffff', fit: true, ls: 3, bg: 'box', bgColor: '#1a4a87', bgOp: .85, pad: 12, rad: 0, bdW: 2, bdColor: '#e8f2ff', effect: 'none' },
+    { src: 'cost', x: 520, y: 48, w: 186, size: 34, align: 'right', pip: 'outline', pipColor: '#ffffff', effect: 'none' },
+    { src: 'type', x: 44, y: 690, w: 662, size: 24, font: 'plex', upper: true, color: '#ffffff', ls: 3, fit: true, bg: 'box', bgColor: '#1a4a87', bgOp: .9, pad: 10, rad: 0, bdW: 2, bdColor: '#e8f2ff', effect: 'none' },
+    { src: 'rulesflavor', x: 44, y: 744, w: 470, h: 236, size: 24, font: 'plex', color: '#ffffff', bg: 'box', bgColor: '#1a4a87', bgOp: .9, pad: 16, rad: 0, bdW: 2, bdColor: '#e8f2ff', pip: 'outline', pipColor: '#ffffff', effect: 'none' },
+    { src: 'custom', text: 'DWG. NO.  0042\nSCALE  1 : 1\nREV.  B', x: 528, y: 744, w: 178, h: 150, size: 18, font: 'plex', upper: true, color: '#e8f2ff', lh: 1.5, bg: 'box', bgColor: '#1a4a87', bgOp: .9, pad: 14, rad: 0, bdW: 2, bdColor: '#e8f2ff', effect: 'none' },
+    { src: 'pt', x: 528, y: 906, w: 178, size: 40, font: 'plex', color: '#ffffff', align: 'center', bg: 'box', bgColor: '#1a4a87', bgOp: .9, pad: 12, rad: 0, bdW: 2, bdColor: '#e8f2ff', effect: 'none' },
+    { src: 'credit', x: 44, y: 996, w: 600, size: 13, font: 'plex', color: '#e8f2ff', effect: 'none' },
+  ],
+  synth: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'synth', bgColor: '#000000', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 70, y: 150, w: 610, h: 470, rad: 10, bdW: 4, bdColor: '#29e3ff', effect: 'none' },
+    { src: 'name', x: 40, y: 36, w: 670, size: 64, font: 'audiowide', upper: true, color: '#ffffff', align: 'center', fit: true, effect: 'shadow', effColor: '#ff3fd2', effSize: 3 },
+    { src: 'cost', x: 40, y: 112, w: 670, size: 30, align: 'center', pip: 'outline', pipColor: '#29e3ff', effect: 'none' },
+    { src: 'type', x: 70, y: 640, w: 610, size: 26, font: 'audiowide', upper: true, color: '#29e3ff', align: 'center', fit: true, effect: 'shadow', effColor: '#29e3ff', effSize: 1.6 },
+    { src: 'rulesflavor', x: 70, y: 690, w: 610, h: 250, size: 26, font: 'plex', color: '#ffffff', vmid: true, bg: 'box', bgColor: '#12002b', bgOp: .75, pad: 20, rad: 10, bdW: 2, bdColor: '#ff3fd2', pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 590, y: 950, w: 120, size: 36, font: 'audiowide', color: '#ffffff', align: 'center', effect: 'shadow', effColor: '#ff3fd2', effSize: 2.5 },
+    { src: 'credit', x: 40, y: 1004, w: 540, size: 13, font: 'plex', color: '#f7c6ff', effect: 'none' },
+  ],
+  sketch: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'parchment', bgColor: '#f4f1ea', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 50, y: 130, w: 650, h: 560, effect: 'none' },
+    { src: 'name', x: 50, y: 34, w: 470, size: 74, font: 'caveat', color: '#2f2f33', fit: true, effect: 'none' },
+    { src: 'cost', x: 500, y: 52, w: 200, size: 36, align: 'right', pip: 'outline', pipColor: '#2f2f33', effect: 'none' },
+    { src: 'type', x: 50, y: 704, w: 650, size: 34, font: 'shadows', color: '#3b3b40', fit: true, effect: 'none' },
+    { src: 'rulesflavor', x: 50, y: 760, w: 540, h: 220, size: 30, font: 'shadows', color: '#2f2f33', lh: 1.1, pip: 'outline', pipColor: '#2f2f33', effect: 'none' },
+    { src: 'pt', x: 600, y: 900, w: 110, size: 46, font: 'caveat', color: '#2f2f33', align: 'center', bg: 'box', bgColor: '#000000', bgOp: 0, pad: 8, rad: 50, bdW: 3, bdColor: '#2f2f33', effect: 'none' },
+    { src: 'credit', x: 50, y: 1004, w: 540, size: 13, font: 'plex', color: '#6b6b70', effect: 'none' },
+  ],
+  atlas: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'parchment', bgColor: '#e9d8ad', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 30, y: 30, w: 690, h: 990, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 0, bdW: 4, bdColor: '#6b4a22', effect: 'none' },
+    { src: 'art', x: 54, y: 126, w: 642, h: 560, bdW: 3, bdColor: '#6b4a22', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 560, y: 560, w: 150, h: 150, bg: 'compass', bgColor: '#f3e6c4', bgOp: 1, pad: 0, bdColor: '#5a3c1a', effect: 'none' },
+    { src: 'name', x: 54, y: 44, w: 470, size: 52, font: 'eagle', color: '#3d2810', fit: true, effect: 'none' },
+    { src: 'cost', x: 520, y: 52, w: 176, size: 34, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'type', x: 70, y: 702, w: 610, size: 28, font: 'cinzel', color: '#3d2810', align: 'center', fit: true, bg: 'ribbon', tintBg: 'pale', bgColor: '#e3cc97', bgOp: 1, pad: 10, bdW: 2, bdColor: '#6b4a22', effect: 'none' },
+    { src: 'rulesflavor', x: 54, y: 770, w: 530, h: 220, size: 27, font: 'crimson', color: '#3d2810', vmid: true, pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 600, y: 940, w: 100, size: 34, font: 'cinzel', color: '#3d2810', align: 'center', bg: 'box', bgColor: '#f3e6c4', bgOp: 1, pad: 8, rad: 4, bdW: 3, bdColor: '#6b4a22', effect: 'none' },
+    { src: 'credit', x: 54, y: 998, w: 540, size: 13, font: 'plex', color: '#5a3c1a', effect: 'none' },
+  ],
+  polaroid: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#f7f5ef', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 46, y: 46, w: 658, h: 658, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 300, y: 20, w: 150, h: 46, rot: -3, bg: 'box', bgColor: '#efe6b8', bgOp: .7, pad: 0, rad: 2, effect: 'none' },
+    { src: 'cost', x: 520, y: 70, w: 170, size: 34, align: 'right', rot: 4, bg: 'sticker', bgColor: '#fffaf0', bgOp: 1, pad: 8, rad: 4, pip: 'classic', effect: 'none' },
+    { src: 'name', x: 52, y: 724, w: 646, size: 64, font: 'marker', color: '#1f2a44', align: 'center', fit: true, rot: -1.5, effect: 'none' },
+    { src: 'type', x: 52, y: 808, w: 646, size: 28, font: 'shadows', color: '#3a3f55', align: 'center', fit: true, effect: 'none' },
+    { src: 'rulesflavor', x: 52, y: 852, w: 540, h: 150, size: 26, font: 'shadows', color: '#1f2a44', lh: 1.05, pip: 'outline', pipColor: '#1f2a44', effect: 'none' },
+    { src: 'pt', x: 604, y: 936, w: 100, size: 46, font: 'marker', color: '#1f2a44', align: 'center', rot: -6, effect: 'none' },
+    { src: 'credit', x: 52, y: 1012, w: 540, size: 12, font: 'plex', color: '#8a8a8a', effect: 'none' },
+  ],
+  token: () => [
+    { src: 'name', x: 120, y: 30, w: 510, size: 52, font: 'cinzel', upper: true, color: '#1b1b1b', align: 'center', fit: true, bg: 'box', bgColor: '#f3efe4', bgOp: .95, pad: 14, rad: 40, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
+    { src: 'type', x: 40, y: 836, w: 670, size: 30, font: 'spectral', color: '#1b1b1b', align: 'center', fit: true, bg: 'box', bgColor: '#f3efe4', bgOp: .95, pad: 12, rad: 8, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
+    { src: 'rulesflavor', x: 70, y: 900, w: 500, h: 100, size: 24, font: 'crimson', color: '#1b1b1b', align: 'center', vmid: true, bg: 'box', bgColor: '#f3efe4', bgOp: .85, pad: 12, rad: 8, pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 600, y: 920, w: 110, size: 40, font: 'spectral', color: '#1b1b1b', align: 'center', bg: 'box', bgColor: '#f3efe4', bgOp: 1, pad: 10, rad: 8, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
+    { src: 'credit', x: 40, y: 1010, w: 540, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
   ],
   clean: () => [
     { src: 'name', x: 50, y: 50, w: 420, size: 42, fit: true },
@@ -2255,6 +2519,7 @@ function layerText(L, o) {
     case 'rulesflavor': return [o.rules, o.flavor].filter(Boolean).join('\n');
     case 'credit': return [o.info, o.artist && '✎ ' + o.artist].filter(Boolean).join('   ');
     case 'custom': return L.text || '';
+    case 'monogram': return (o.name || '').trim().charAt(0).toUpperCase();
     default: return o[L.src] || '';
   }
 }
@@ -2327,10 +2592,26 @@ function mixHex(a, b, t) {
   return `rgb(${Math.round(r1 + (r2 - r1) * t)},${Math.round(g1 + (g2 - g1) * t)},${Math.round(b1 + (b2 - b1) * t)})`;
 }
 // Draws one layer and returns its box (for selecting and dragging), or null when it has no text.
+function artShape(g, x, y, w, h, arch, rad) {
+  g.beginPath();
+  if (arch) { const r = Math.min(w / 2, h / 2); g.moveTo(x, y + h); g.lineTo(x, y + r); g.arc(x + w / 2, y + r, w / 2, Math.PI, 0); g.lineTo(x + w, y + h); g.closePath(); }
+  else g.roundRect(x, y, w, h, Math.min(rad, w / 2, h / 2));
+}
+// Card-color tints for layers marked tintBg / tintInk: 'main' is a strong color, 'pale' a light one, 'deep' a dark one.
+const TINT = { W: '#b8963a', U: '#2f5f9e', B: '#4a3d57', R: '#a8392c', G: '#2f6b5a', M: '#b08a2e', A: '#6f7780', L: '#7a6446', C: '#6f6a60' };
+function tintOf(o, kind) {
+  const c = TINT[o.color] || TINT.C, [r, g2, b] = hex(c), mix = (t, [r2, g3, b3]) => '#' + [r + (r2 - r) * t, g2 + (g3 - g2) * t, b + (b3 - b) * t].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+  return kind === 'pale' ? mix(.62, [232, 228, 218]) : kind === 'deep' ? mix(.45, [16, 14, 12]) : c;
+}
 function drawLayer(g, L, o) {
+  if (L.tintBg || L.tintInk || L.tintBd) { L = { ...L }; if (L.tintBg) L.bgColor = tintOf(o, L.tintBg); if (L.tintInk) L.color = tintOf(o, L.tintInk); if (L.tintBd) L.bdColor = tintOf(o, L.tintBd); }
   if (L.src === 'art') { // the art is drawn under every layer by renderCustom; this only adds an optional frame
     const bx = +L.x, by = +L.y, bw = +L.w, bh = +L.h || 400;
-    if (+L.bdW > 0) { g.save(); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.strokeRect(bx, by, bw, bh); g.restore(); }
+    if (+L.bdW > 0) {
+      g.save(); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor;
+      if (L.bg === 'arch' || +L.rad > 0) { artShape(g, bx, by, bw, bh, L.bg === 'arch', +L.rad || 0); g.stroke(); } else g.strokeRect(bx, by, bw, bh);
+      g.restore();
+    }
     return { id: L.id, x: bx, y: by, w: bw, h: bh, cx: bx + bw / 2, cy: by + bh / 2, rot: 0, resizeW: true, resizeH: true, art: true };
   }
   let text = layerText(L, o);
@@ -2513,6 +2794,38 @@ function drawLayer(g, L, o) {
     }
     g.restore();
     body(); g.lineWidth = 3; g.strokeStyle = 'rgba(20,16,10,.7)'; g.stroke();
+  }
+  else if (L.bg === 'compass') { // an eight-point compass rose in the box
+    const cx0 = bx + bw / 2, cy0 = by + bh / 2, R0 = Math.min(bw, bh) / 2, ink = L.bdColor || '#3a2a14', fill = hexA(L.bgColor, Math.max(.3, +L.bgOp));
+    g.save(); g.lineWidth = Math.max(1, R0 * .03); g.strokeStyle = ink;
+    for (const rr of [R0 * .92, R0 * .78]) { g.beginPath(); g.arc(cx0, cy0, rr, 0, Math.PI * 2); g.stroke(); }
+    for (let i = 0; i < 32; i++) { const a = i / 32 * Math.PI * 2, r1 = R0 * (i % 4 ? .86 : .82); g.beginPath(); g.moveTo(cx0 + Math.cos(a) * r1, cy0 + Math.sin(a) * r1); g.lineTo(cx0 + Math.cos(a) * R0 * .92, cy0 + Math.sin(a) * R0 * .92); g.stroke(); }
+    const point = (a, len, wid, dark) => {
+      for (const side of [-1, 1]) {
+        g.beginPath(); g.moveTo(cx0, cy0); g.lineTo(cx0 + Math.cos(a) * len, cy0 + Math.sin(a) * len); g.lineTo(cx0 + Math.cos(a + side * Math.PI / 2) * wid, cy0 + Math.sin(a + side * Math.PI / 2) * wid); g.closePath();
+        g.fillStyle = (side < 0) === dark ? ink : fill; g.fill(); g.stroke();
+      }
+    };
+    for (let i = 0; i < 4; i++) point(Math.PI / 4 + i * Math.PI / 2, R0 * .55, R0 * .1, true);
+    for (let i = 0; i < 4; i++) point(-Math.PI / 2 + i * Math.PI / 2, R0 * .9, R0 * .14, false);
+    g.fillStyle = ink; g.font = `700 ${R0 * .2}px ${FONTS.cinzel.f}`; g.textAlign = 'center'; g.textBaseline = 'bottom'; g.fillText('N', cx0, cy0 - R0 * .92);
+    g.restore();
+  }
+  else if (L.bg === 'synth') { // a retro sunset: banded sun over a glowing grid floor
+    g.save(); g.beginPath(); g.rect(bx, by, bw, bh); g.clip();
+    const sky = g.createLinearGradient(0, by, 0, by + bh * .62);
+    sky.addColorStop(0, '#12002b'); sky.addColorStop(.55, '#5a0f6e'); sky.addColorStop(1, '#ff4f8b');
+    g.fillStyle = sky; g.fillRect(bx, by, bw, bh * .62);
+    const hz = by + bh * .62, sr = bw * .3, sun = g.createLinearGradient(0, hz - sr * 1.6, 0, hz);
+    sun.addColorStop(0, '#ffe14d'); sun.addColorStop(1, '#ff3f8e');
+    g.save(); g.beginPath(); g.arc(bx + bw / 2, hz - sr * .25, sr, Math.PI, 0); g.closePath(); g.clip(); g.fillStyle = sun; g.fillRect(bx, hz - sr * 1.6, bw, sr * 1.6);
+    g.fillStyle = '#5a0f6e'; for (let k = 0; k < 6; k++) { const yy = hz - sr * .25 - k * k * 4 - k * 6; g.fillRect(bx, yy - 2 - k, bw, 3 + k * .9); }
+    g.restore();
+    g.fillStyle = '#16002c'; g.fillRect(bx, hz, bw, bh - (hz - by));
+    g.strokeStyle = 'rgba(255,63,210,.85)'; g.lineWidth = 2; g.shadowColor = '#ff3fd2'; g.shadowBlur = 8;
+    for (let k = 1; k < 14; k++) { const yy = hz + (bh - (hz - by)) * Math.pow(k / 13, 2.2); g.beginPath(); g.moveTo(bx, yy); g.lineTo(bx + bw, yy); g.stroke(); }
+    for (let k = -12; k <= 12; k++) { g.beginPath(); g.moveTo(bx + bw / 2 + k * 18, hz); g.lineTo(bx + bw / 2 + k * bw * .16, by + bh); g.stroke(); }
+    g.restore();
   }
   else if (L.bg === 'breath') {
     const P = (u, v) => [bx + u * bw, by + v * bh];
@@ -2720,10 +3033,13 @@ function renderCustom(g, o, bleed) {
   for (const L of o.layers || []) {
     if (L.src === 'art' && ar.win) { // an art window: pasted-in, with slightly uneven edges
       g.save();
-      const R = rng(ar.x * 7 + ar.y * 13 + ar.w), j = () => (R() - .5) * 5;
-      g.beginPath(); g.moveTo(ar.x + j(), ar.y + j());
-      for (const [px, py] of [[ar.x + ar.w, ar.y], [ar.x + ar.w, ar.y + ar.h], [ar.x, ar.y + ar.h]]) g.lineTo(px + j(), py + j());
-      g.closePath(); g.clip();
+      if (ar.clean) { artShape(g, ar.x, ar.y, ar.w, ar.h, ar.arch, ar.rad); g.clip(); }
+      else {
+        const R = rng(ar.x * 7 + ar.y * 13 + ar.w), j = () => (R() - .5) * 5;
+        g.beginPath(); g.moveTo(ar.x + j(), ar.y + j());
+        for (const [px, py] of [[ar.x + ar.w, ar.y], [ar.x + ar.w, ar.y + ar.h], [ar.x, ar.y + ar.h]]) g.lineTo(px + j(), py + j());
+        g.closePath(); g.clip();
+      }
       drawArt(g, ar, st.img);
       g.restore();
     }
@@ -2837,6 +3153,7 @@ function loadFile(file) {
     st.img = img; st.blob = file; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
     if (st.sample && $('artist').value === 'Sample art') $('artist').value = '';
     st.sample = false; $('status').textContent = ''; setCredit(null); st.edits++; draw();
+    if (typeof libAdd === 'function') libAdd(file, file.name, '');
   };
   img.onerror = () => { $('status').textContent = 'Couldn’t read that image.'; };
   img.src = URL.createObjectURL(file);
@@ -2985,6 +3302,7 @@ const endDrag = e => {
   draw();
 };
 canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+canvas.addEventListener('pointerup', () => { if ($('misprint').value !== 'none') setTimeout(draw, 0); });
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
   const h = hitLayer(cardPoint(e)), L = h && layerById(h.id);
@@ -3115,18 +3433,25 @@ const sheetStatus = () => $('status');
 const idb = (() => {
   let p;
   const open = () => p || (p = new Promise((res, rej) => {
-    const r = indexedDB.open('proxyforge', 1);
-    r.onupgradeneeded = () => r.result.createObjectStore('cards', { keyPath: 'id' });
+    const r = indexedDB.open('proxyforge', 2);
+    r.onupgradeneeded = () => {
+      const db = r.result;
+      if (!db.objectStoreNames.contains('cards')) db.createObjectStore('cards', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('art')) db.createObjectStore('art', { keyPath: 'id' });
+    };
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   }));
-  const tx = async (mode, fn) => {
+  const tx = async (mode, fn, store = 'cards') => {
     const db = await open();
     return new Promise((res, rej) => {
-      const t = db.transaction('cards', mode), req = fn(t.objectStore('cards'));
+      const t = db.transaction(store, mode), req = fn(t.objectStore(store));
       t.oncomplete = () => res(req && req.result); t.onerror = () => rej(t.error);
     });
   };
-  return { all: () => tx('readonly', s => s.getAll()), put: v => tx('readwrite', s => s.put(v)), del: id => tx('readwrite', s => s.delete(id)) };
+  return {
+    all: () => tx('readonly', s => s.getAll()), put: v => tx('readwrite', s => s.put(v)), del: id => tx('readwrite', s => s.delete(id)),
+    artAll: () => tx('readonly', s => s.getAll(), 'art'), artPut: v => tx('readwrite', s => s.put(v), 'art'), artDel: id => tx('readwrite', s => s.delete(id), 'art'),
+  };
 })();
 function persist(e) {
   const { img, thumb, ...rest } = e;
@@ -3493,26 +3818,89 @@ function parseDeck(text) {
   }
   return [...out.values()];
 }
+// ---------- basic lands ----------
+const BASICS = {
+  Plains: ['W', ['meadow', 'field', 'plain', 'prairie', 'harvest', 'pasture', 'wheat']],
+  Island: ['U', ['island', 'sea', 'coast', 'ocean', 'bay', 'lake', 'shore']],
+  Swamp: ['B', ['swamp', 'marsh', 'moonlight', 'ruins', 'night', 'pond']],
+  Mountain: ['R', ['mountain', 'mountains', 'alps', 'volcano', 'cliff', 'rocks']],
+  Forest: ['G', ['forest', 'woods', 'trees', 'grove', 'oaks', 'wood']],
+  Wastes: ['C', ['desert', 'dunes', 'wasteland', 'ruins', 'rocks']],
+};
+$('landOpen').onclick = () => { $('landPanel').hidden = false; $('landPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); };
+$('landCancel').onclick = () => { $('landPanel').hidden = true; };
+$('landGo').onclick = async () => {
+  const lands = [...document.querySelectorAll('.landPick:checked')].map(x => x.value);
+  if (!lands.length) { $('status').textContent = 'Tick at least one land.'; return; }
+  const n = Math.max(1, Math.min(40, Math.round(+$('landCopies').value || 1))), vary = $('landVary').checked, mode = $('landArt').value, snow = $('landSnow').checked;
+  const base = readForm(), btn = $('landGo'); btn.disabled = true;
+  let made = 0, fails = 0;
+  const total = lands.length * (vary ? n : 1);
+  try {
+    for (const land of lands) {
+      const [m, words] = BASICS[land], name = (snow ? 'Snow-Covered ' : '') + land;
+      for (let k = 0; k < (vary ? n : 1); k++) {
+        $('status').textContent = `Making ${name} (${made + 1} of ${total})…`;
+        let a = null, artist = '';
+        try {
+          if (mode === 'pd') { a = await findArt([...words].sort(() => Math.random() - .5)); artist = a.artist; }
+          else if (mode === 'official') {
+            const card = await sf('/cards/random?q=' + encodeURIComponent(`!"${name}" game:paper`));
+            const t = cardText(card); if (t.art) { a = await fetchArt(t.art); artist = t.artist || ''; }
+          }
+        } catch (e) { fails++; }
+        if (!a) a = await placeholderArt(m);
+        const form = {
+          ...base, name, cost: '', type: (snow ? 'Basic Snow Land' : 'Basic Land') + (land === 'Wastes' ? '' : ' — ' + land),
+          rules: `({T}: Add {${m}}.)`, flavor: '', pt: '', color: m, artist,
+        };
+        const e = { id: newId(), kind: 'made', form, img: a.img, blob: a.blob, zoom: 1, ox: 0, oy: 0, copies: vary ? 1 : n, order: Date.now() + made };
+        await fontsReadyFor(form); makeThumb(e); sheet.push(e); persist(e);
+        made++; if (made % 4 === 0) renderSheet();
+      }
+    }
+    $('status').textContent = `Added ${lands.length * n} lands to the print sheet.` + (fails ? ` ${fails} couldn’t get art, so they have placeholder art.` : '');
+    $('landPanel').hidden = true;
+  } catch (e) { $('status').textContent = (made ? `Made ${made} lands, then stopped: ` : '') + e.message; }
+  btn.disabled = false; renderSheet();
+};
 $('deckOpen').onclick = () => { $('deckPanel').hidden = false; $('deckText').focus(); };
 $('deckCancel').onclick = () => { $('deckPanel').hidden = true; };
 $('deckGo').onclick = async () => {
   const rows = parseDeck($('deckText').value);
   if (!rows.length) { $('status').textContent = 'Paste a deck list first, one card per line, like “4 Lightning Bolt”.'; return; }
   const btn = $('deckGo'); btn.disabled = true;
-  const withArt = $('deckArt').checked, base = readForm(), retry = [], missing = [];
-  let added = 0, copies = 0, artFail = 0;
+  const artMode = $('deckArt').value, withArt = artMode === 'official', base = readForm(), retry = [], missing = [];
+  let added = 0, copies = 0, artFail = 0, backs = 0;
+  const BACKED = /^(transform|modal_dfc|double_faced_token|reversible_card|art_series)$/;
+  let pending = [];
   const addCard = async (card, r) => {
+    const k = seq++;
+    pending.push(makeEntry(card, r, 0, k));
+    if (BACKED.test(card.layout || '') && sideOf(card, 1)) pending.push(makeEntry(card, r, 1, k));
+    if (pending.length >= 3) await flush();
+  };
+  const flush = async () => {
+    const list = pending; pending = [];
+    const done = await Promise.all(list);
+    for (const e of done.sort((a, b) => a.seq - b.seq)) { delete e.seq; sheet.push(e); persist(e); if (e.face) backs++; else { added++; copies += e.copies; } delete e.face; }
+    renderSheet();
+  };
+  let seq = 0;
+  const makeEntry = async (card, r, face, k) => {
+    const mySeq = k * 2 + face;
     $('status').textContent = `Adding ${added + 1} of ${rows.length}: ${card.name}…`;
-    const { art, artist, ...fields } = cardText(card);
+    const { art, artist, ...fields } = cardText(card, face);
     let a = null;
     if (withArt && art) { try { a = await fetchArt(art); } catch (e) { artFail++; } }
     const official = !!a;
+    let pdArtist = '';
+    if (!a && artMode === 'pd') { try { a = await findArt(artWords(fields)); pdArtist = a.artist; } catch (e) { artFail++; } }
     if (!a) a = await placeholderArt(fields.color);
-    const form = { ...base, ...fields, artist: official ? artist : '' };
-    const e = { id: newId(), kind: 'made', form, img: a.img, blob: a.blob, zoom: 1, ox: 0, oy: 0, copies: Math.min(99, r.n), order: Date.now() + added };
-    await fontsReadyFor(form); makeThumb(e); sheet.push(e); persist(e);
-    added++; copies += e.copies;
-    if (added % 6 === 0) renderSheet();
+    const form = { ...base, ...fields, artist: official ? artist : pdArtist };
+    const e = { id: newId(), kind: 'made', form, img: a.img, blob: a.blob, zoom: 1, ox: 0, oy: 0, copies: Math.min(99, r.n), order: Date.now() + mySeq, seq: mySeq, face };
+    await fontsReadyFor(form); makeThumb(e);
+    return e;
   };
   try {
     for (let i = 0; i < rows.length; i += 75) {
@@ -3527,13 +3915,16 @@ $('deckGo').onclick = async () => {
       }
     }
     // Not found exactly (typos, split cards written "Fire // Ice", unknown set codes): try a looser search by name.
+    await flush();
     for (const r of retry.slice(0, 25)) {
       try { await addCard(await sf('/cards/named?fuzzy=' + encodeURIComponent(r.label.split(/\s*\/\/?\s*/)[0])), r); }
       catch (e) { missing.push(r.label); }
     }
+    await flush();
     missing.push(...retry.slice(25).map(r => r.label));
     let msg = added ? `Added ${added} card${added > 1 ? 's' : ''} (${copies} cop${copies > 1 ? 'ies' : 'y'}) to the print sheet.` : 'No cards were added.';
-    if (artFail) msg += ` ${artFail} couldn’t get official art, so they have placeholder art.`;
+    if (backs) msg += ` Double-faced cards got their back face too (${backs}).`;
+    if (artFail) msg += ` ${artFail} couldn’t get ${artMode === 'pd' ? 'matching' : 'official'} art, so they have placeholder art.`;
     if (missing.length) msg += ` Couldn’t find: ${missing.slice(0, 8).join(', ')}${missing.length > 8 ? ` and ${missing.length - 8} more` : ''}.`;
     $('status').textContent = msg;
     if (added && !missing.length) { $('deckText').value = ''; $('deckPanel').hidden = true; }
@@ -3679,7 +4070,7 @@ function updateFxUI() {
   const fx = $('artFx').value;
   $('wearMore').hidden = $('wear').value === 'none' && $('misprint').value === 'none';
   $('fxAmtWrap').hidden = fx === 'none';
-  $('fxAmtLabel').textContent = { pixel: 'Pixel size', paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
+  $('fxAmtLabel').textContent = { glass: 'Pane size', woodcut: 'Line size', blueprint: 'Detail', pencil: 'Shading', pixel: 'Pixel size', paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
   $('fxColors').hidden = !(fx === 'duotone' || fx === 'halftone');
   $('fxDarkLabel').firstChild.textContent = fx === 'halftone' ? 'Ink ' : 'Shadows ';
   $('fxLightLabel').firstChild.textContent = fx === 'halftone' ? 'Paper ' : 'Highlights ';
@@ -3702,9 +4093,19 @@ const STYLES = [
   { id: 'noir', name: 'Noir', f: { layout: 'fade', border: '#0b0b0c', titleFont: 'Playfair Display', shade: '0.85', pipStyle: 'glyph', pipColor: '#ffffff', artFx: 'bw', fxAmt: '0.7' } },
   { id: 'popart', name: 'Pop art', preset: 'comic', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'outline', pipColor: '#ffffff', artFx: 'pop', fxAmt: '0.45' } },
   { id: 'riso', name: 'Risograph', f: { layout: 'panel', border: '#f3f1ec', titleFont: 'Righteous', shade: '0.8', pipStyle: 'solid', pipColor: '#ff6b4a', artFx: 'duotone', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.55' } },
-  { id: 'retro', name: 'Retro game', preset: 'retro', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
+  { id: 'retrogame', name: 'Retro game', preset: 'retro', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
   { id: 'modern', name: 'Modern game', preset: 'modern', f: { layout: 'custom', border: 'none', pipStyle: 'flat', pipColor: '#ffffff', gloss: true } },
   { id: 'vhs', name: 'VHS tape', preset: 'vhs', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'worn', gloss: true } },
+  { id: 'glass', name: 'Stained glass', preset: 'glass', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'glass', fxAmt: '0.45' } },
+  { id: 'tarot', name: 'Tarot card', preset: 'tarot', f: { layout: 'custom', border: '#efeadc', pipStyle: 'outline', pipColor: '#2a1d12', wear: 'light' } },
+  { id: 'manuscript', name: 'Illuminated', preset: 'manuscript', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'woodblock', name: 'Woodblock print', preset: 'woodblock', f: { layout: 'custom', border: '#efeadc', pipStyle: 'outline', pipColor: '#1a1410', artFx: 'woodcut', fxAmt: '0.5' } },
+  { id: 'blueprint', name: 'Blueprint', preset: 'blueprint', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#ffffff', artFx: 'blueprint', fxAmt: '0.5' } },
+  { id: 'synth', name: 'Neon synthwave', preset: 'synth', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#29e3ff', artFx: 'duotone', fxDark: '#2b0a4a', fxLight: '#ff7ad9', fxAmt: '0.45' } },
+  { id: 'sketch', name: 'Pencil sketch', preset: 'sketch', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#2f2f33', artFx: 'pencil', fxAmt: '0.5' } },
+  { id: 'atlas', name: 'Atlas map', preset: 'atlas', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'sepia', fxAmt: '0.45', wear: 'light' } },
+  { id: 'polaroid', name: 'Polaroid', preset: 'polaroid', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#1f2a44' } },
+  { id: 'token', name: 'Token', preset: 'token', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'bronze', name: 'Comic cover', preset: 'bronze', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
   { id: 'fantasypb', name: 'Fantasy paperback', preset: 'fantasypb', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#f2efe6', artFx: 'duotone', fxDark: '#0e3436', fxLight: '#a6dcd2', fxAmt: '0.4', wear: 'light' } },
   { id: 'scales', name: 'Scales & scroll', preset: 'scales', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
@@ -3725,12 +4126,23 @@ const STYLES = [
   { id: 'manga', name: 'Vertical', preset: 'vertical', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#ffffff' } },
   { id: 'zine', name: 'Handwritten', preset: 'scrawl', f: { layout: 'custom', border: '#f3f1ec', pipStyle: 'outline', pipColor: '#111111' } },
 ];
-const styleLayers = sty => sty.preset ? PRESETS[sty.preset]().map((l, i) => ({ ...LDEF, ...l, id: 'p' + i })) : [];
+const STYLE_CAT = {
+  classic: 'classic', retro: 'classic', gilded: 'classic', fullart: 'classic', borderless: 'classic', showcase: 'classic', noir: 'classic', oil: 'classic', minimal: 'classic',
+  storybook: 'fantasy', scales: 'fantasy', fantasypb: 'fantasy', glass: 'fantasy', tarot: 'fantasy', manuscript: 'fantasy', atlas: 'fantasy', token: 'classic',
+  retrogame: 'games', modern: 'games', vhs: 'games', pixel: 'games', pack: 'games',
+  popart: 'comics', bronze: 'comics', pulp: 'comics', comic: 'comics', poster: 'comics', strips: 'comics', manga: 'comics', zine: 'comics',
+  console: 'scifi', wrist: 'scifi', blueprint: 'scifi', synth: 'scifi',
+  riso: 'print', paperback: 'print', playtest: 'print', misprint: 'print', woodblock: 'print', sketch: 'print', polaroid: 'print',
+};
+const STYLE_TABS = [['all', 'All'], ['classic', 'Classic'], ['fantasy', 'Fantasy'], ['games', 'Retro & games'], ['comics', 'Comics & pulp'], ['scifi', 'Sci-fi'], ['print', 'Print & paper'], ['mine', 'My styles']];
+const styleLayers = sty => sty.preset ? PRESETS[sty.preset]().map((l, i) => ({ ...LDEF, ...l, id: 'p' + i }))
+  : sty.layers ? sty.layers.map((l, i) => ({ ...LDEF, ...l, id: 'u' + i })) : [];
 let activeStyle = null;
 function buildStyles() {
-  const box = $('styles');
+  const box = $('styles'); box.textContent = '';
   for (const sty of STYLES) {
     const b = document.createElement('button'); b.type = 'button'; b.dataset.style = sty.id; b.setAttribute('aria-pressed', 'false');
+    b.dataset.cat = sty.user ? 'mine' : STYLE_CAT[sty.id] || 'classic';
     const c = document.createElement('canvas'); c.width = Math.round(W * 0.24); c.height = Math.round(H * 0.24); c.setAttribute('aria-hidden', 'true');
     const t = document.createElement('span'); t.textContent = sty.name;
     b.append(c, t); b.onclick = () => applyStyle(sty); box.append(b);
@@ -3739,6 +4151,7 @@ function buildStyles() {
 function applyStyle(sty) {
   writeForm({ artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f });
   if (sty.preset) { applyPreset(sty.preset, true); updateLook(); }
+  else if (sty.layers) { st.layers = sty.layers.map(l => ({ ...LDEF, ...l, id: newLid() })); st.sel = st.layers.find(l => l.src === 'name')?.id || st.layers[0]?.id || null; updateLook(); }
   activeStyle = sty.id; markStyle();
   $('randomNote').hidden = true;
   $('status').textContent = `${sty.name} style. Your text and art are unchanged.`;
@@ -3751,15 +4164,169 @@ function refreshStyles() {
   clearTimeout(styleTimer);
   styleTimer = setTimeout(() => {
     const o = readForm();
-    if (!styleFontsAsked) { styleFontsAsked = true; Promise.all(STYLES.map(sty => fontsReadyFor({ ...o, ...sty.f, layers: sty.preset ? styleLayers(sty) : o.layers }))).then(refreshStyles); }
+    if (!styleFontsAsked) { styleFontsAsked = true; Promise.all(STYLES.map(sty => fontsReadyFor({ ...o, ...sty.f, layers: sty.preset || sty.layers ? styleLayers(sty) : o.layers }))).then(refreshStyles); }
     STYLES.forEach((sty, i) => {
-      const c = $('styles').children[i]?.querySelector('canvas'); if (!c) return;
+      const btn = $('styles').children[i]; if (!btn || btn.hidden) return; // styles in other tabs redraw when their tab opens
+      const c = btn.querySelector('canvas'); if (!c) return;
       const g = c.getContext('2d'); g.setTransform(0.24, 0, 0, 0.24, 0, 0);
-      try { render(g, { ...o, artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
+      try { render(g, { ...o, artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f, round: true, bleed: false, layers: sty.preset || sty.layers ? styleLayers(sty) : o.layers }, false); } catch (e) {}
     });
   }, styleFontsAsked ? 600 : 0);
 }
+// ---------- style groups and your own styles ----------
+let styleTab = 'all';
+try { styleTab = localStorage.getItem('proxyforge.styleTab') || 'all'; } catch (e) {}
+function showStyleTab(id) {
+  styleTab = STYLE_TABS.some(t => t[0] === id) ? id : 'all';
+  try { localStorage.setItem('proxyforge.styleTab', styleTab); } catch (e) {}
+  for (const b of $('styleTabs').children) b.setAttribute('aria-selected', b.dataset.tab === styleTab);
+  let shown = 0;
+  for (const b of $('styles').querySelectorAll('button[data-style]')) { b.hidden = styleTab !== 'all' && b.dataset.cat !== styleTab; if (!b.hidden) shown++; }
+  let note = $('styles').querySelector('.empty');
+  if (!shown) {
+    if (!note) { note = document.createElement('span'); note.className = 'empty'; $('styles').append(note); }
+    note.textContent = 'No styles of your own yet. Make a card look the way you like, name it below and press Save style.';
+  } else if (note) note.remove();
+  $('styles').scrollLeft = 0;
+  refreshStyles();
+}
+for (const [id, name] of STYLE_TABS) {
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.tab = id; b.setAttribute('role', 'tab'); b.textContent = name;
+  b.onclick = () => showStyleTab(id); $('styleTabs').append(b);
+}
+// Your styles: the look fields and the custom layers, saved in this browser.
+const LOOK_KEYS = FIELDS.filter(k => !TEXT_KEYS.includes(k) && k !== 'rarity');
+const LAYER_KEYS = new Set([...Object.keys(LDEF), 'vmid', 'tintBg', 'tintInk', 'tintBd']);
+function cleanStyle(x) { // only plain, known settings: anything else in an imported file is dropped
+  if (!x || typeof x !== 'object' || typeof x.name !== 'string' || !x.name.trim()) return null;
+  const prim = v => ['string', 'number', 'boolean'].includes(typeof v);
+  const f = {};
+  for (const k of LOOK_KEYS) if (x.f && prim(x.f[k])) f[k] = typeof x.f[k] === 'string' ? x.f[k].slice(0, 200) : x.f[k];
+  if (!Object.keys(f).length) return null;
+  let layers = null;
+  if (Array.isArray(x.layers)) layers = x.layers.slice(0, 60).filter(l => l && typeof l === 'object').map(l => {
+    const o = {}; for (const k of Object.keys(l)) if (LAYER_KEYS.has(k) && prim(l[k])) o[k] = typeof l[k] === 'string' ? l[k].slice(0, 2000) : l[k];
+    return o;
+  });
+  return { id: 'my-' + (typeof x.id === 'string' ? x.id.replace(/[^\w-]/g, '').slice(-24) : '') + Math.random().toString(36).slice(2, 6), name: x.name.trim().slice(0, 40), f, layers: f.layout === 'custom' ? layers : null, user: true };
+}
+function loadMyStyles() { try { return (JSON.parse(localStorage.getItem('proxyforge.mystyles') || '[]') || []).map(cleanStyle).filter(Boolean); } catch (e) { return []; } }
+function saveMyStyles() {
+  const mine = STYLES.filter(s => s.user).map(({ id, name, f, layers }) => ({ id, name, f, layers }));
+  try { localStorage.setItem('proxyforge.mystyles', JSON.stringify(mine)); return true; } catch (e) { $('status').textContent = 'Couldn’t save your styles: this browser’s storage is full or blocked.'; return false; }
+}
+function rebuildStyles() {
+  buildStyles(); showStyleTab(styleTab); markStyle(); styleFontsAsked = false; refreshStyles(); renderMyStyleList();
+}
+function renderMyStyleList() {
+  const box = $('myStyleList'); box.textContent = '';
+  for (const sty of STYLES.filter(s => s.user)) {
+    const tag = document.createElement('span'), del = document.createElement('button');
+    tag.append(sty.name); del.type = 'button'; del.textContent = '×'; del.title = `Delete “${sty.name}”`; del.setAttribute('aria-label', `Delete style ${sty.name}`);
+    del.onclick = () => {
+      if (!confirm(`Delete your style “${sty.name}”? This can’t be undone.`)) return;
+      STYLES.splice(STYLES.indexOf(sty), 1); saveMyStyles(); if (activeStyle === sty.id) activeStyle = null; rebuildStyles();
+      $('status').textContent = `Deleted “${sty.name}”.`;
+    };
+    tag.append(del); box.append(tag);
+  }
+}
+$('saveStyle').onclick = () => {
+  const name = $('myStyleName').value.trim();
+  if (!name) { $('myStyleName').focus(); $('status').textContent = 'Give your style a name first.'; return; }
+  const o = readForm(), f = {};
+  for (const k of LOOK_KEYS) f[k] = o[k];
+  const sty = cleanStyle({ name, f, layers: o.layout === 'custom' ? st.layers.map(({ id, ...l }) => l) : null });
+  const same = STYLES.findIndex(s => s.user && s.name.toLowerCase() === name.toLowerCase());
+  if (same >= 0) STYLES.splice(same, 1, sty); else STYLES.push(sty);
+  if (!saveMyStyles()) return;
+  $('myStyleName').value = ''; activeStyle = sty.id; rebuildStyles(); showStyleTab('mine');
+  $('status').textContent = same >= 0 ? `Updated your style “${sty.name}”.` : `Saved “${sty.name}” under My styles.`;
+};
+$('myStyleName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('saveStyle').click(); } });
+$('exportStyles').onclick = () => {
+  const mine = STYLES.filter(s => s.user).map(({ name, f, layers }) => ({ name, f, layers }));
+  if (!mine.length) { $('status').textContent = 'You have no styles of your own to export yet.'; return; }
+  const blob = new Blob([JSON.stringify({ app: 'proxy-forge', kind: 'styles', version: 1, styles: mine }, null, 1)], { type: 'application/json' });
+  saveBlob(blob, 'proxy-forge-styles.json', $('status'));
+};
+$('importStyles').onclick = () => $('importStylesFile').click();
+$('importStylesFile').onchange = async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  try {
+    if (file.size > 2e6) throw 0;
+    const data = JSON.parse(await file.text()), list = Array.isArray(data) ? data : data.styles;
+    const got = (Array.isArray(list) ? list : []).map(cleanStyle).filter(Boolean);
+    if (!got.length) throw 0;
+    for (const sty of got) {
+      let name = sty.name, n = 2;
+      while (STYLES.some(s => s.user && s.name.toLowerCase() === name.toLowerCase())) name = `${sty.name} (${n++})`;
+      STYLES.push({ ...sty, name });
+    }
+    saveMyStyles(); rebuildStyles(); showStyleTab('mine');
+    $('status').textContent = `Imported ${got.length} style${got.length > 1 ? 's' : ''} into My styles.`;
+  } catch (err) { $('status').textContent = 'That file doesn’t contain any Proxy Forge styles.'; }
+};
+STYLES.push(...loadMyStyles());
+
 buildStyles();
+showStyleTab(styleTab);
+renderMyStyleList();
+
+// ---------- your art library ----------
+// Every image you add is kept in this browser (IndexedDB), with a small thumbnail, so you can reuse it later.
+const libUrls = new Map();
+async function libRender() {
+  let items = [];
+  try { items = await idb.artAll(); } catch (e) { $('libHint').textContent = 'Your browser blocked saving images here (private window?). You can still use images normally.'; }
+  items.sort((a, b) => b.added - a.added);
+  $('libCount').textContent = items.length;
+  const grid = $('libGrid'); grid.textContent = '';
+  for (const it of items) {
+    let url = libUrls.get(it.id); if (!url) { url = URL.createObjectURL(it.thumb || it.blob); libUrls.set(it.id, url); }
+    const wrap = document.createElement('div'), use = document.createElement('button'), im = document.createElement('img'), del = document.createElement('button');
+    wrap.className = 'item'; wrap.setAttribute('role', 'listitem');
+    use.type = 'button'; use.className = 'use'; use.title = it.name || 'Saved image'; im.src = url; im.alt = it.name || 'Saved image'; im.loading = 'lazy'; use.append(im);
+    use.onclick = () => libUse(it);
+    del.type = 'button'; del.className = 'del'; del.textContent = '×'; del.setAttribute('aria-label', `Remove ${it.name || 'this image'} from your library`);
+    del.onclick = async () => {
+      if (!confirm('Remove this image from your library? It will be deleted from this browser.')) return;
+      await idb.artDel(it.id).catch(() => {}); URL.revokeObjectURL(libUrls.get(it.id)); libUrls.delete(it.id); libRender();
+    };
+    wrap.append(use, del); grid.append(wrap);
+  }
+}
+async function libThumb(img) {
+  const k = Math.min(1, 240 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', .8));
+}
+async function libAdd(blob, name, artist) {
+  if (!blob || !blob.size) return false;
+  try {
+    const id = 'a' + blob.size + '-' + String(name || '').replace(/[^\w.-]/g, '').slice(0, 40);
+    const img = await loadImage(URL.createObjectURL(blob));
+    await idb.artPut({ id, blob, thumb: await libThumb(img), name: String(name || '').slice(0, 80), artist: String(artist || '').slice(0, 80), added: Date.now() });
+    libRender(); return true;
+  } catch (e) { return false; }
+}
+async function libUse(it) {
+  try {
+    const img = await loadImage(URL.createObjectURL(it.blob));
+    st.img = img; st.blob = it.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; st.edits++;
+    if (it.artist) $('artist').value = it.artist;
+    setCredit(null); $('cardNotice').hidden = true; saveDraft(); draw();
+    $('libHint').textContent = `Using ${it.name ? '“' + it.name + '”' : 'your saved image'}.`;
+  } catch (e) { $('libHint').textContent = 'That image couldn’t be opened.'; }
+}
+$('libSave').onclick = async () => {
+  if (!st.blob || st.sample) { $('libHint').textContent = 'Add or pick some art first, then save it here.'; return; }
+  const ok = await libAdd(st.blob, st.blob.name || ($('name').value ? $('name').value + ' art' : 'Saved art'), $('artist').value);
+  $('libHint').textContent = ok ? 'Saved to your library.' : 'Couldn’t save that image here.';
+  $('artLib').open = true;
+};
+libRender();
 for (const k of FIELDS) $(k).addEventListener('input', () => { if (activeStyle) { activeStyle = null; markStyle(); } });
 
 // ---------- art search ----------
