@@ -2435,7 +2435,22 @@ function renderFramed(g, o, size, borderCol) {
   drawFooter(g, o, lum(frame) > .55 ? '#1a1816' : '#f0ece6', 1008, o.pt ? 556 : null);
 }
 
+// Picks dark or light ink for small text from what's already drawn behind it, so credit lines stay readable over any art.
+function inkBehind(g, x, y, w, h, fallback) {
+  try {
+    const t = g.getTransform(), px = Math.max(0, Math.round(t.a * x + t.e)), py = Math.max(0, Math.round(t.d * y + t.f));
+    const pw = Math.min(g.canvas.width - px, Math.round(t.a * w)), ph = Math.min(g.canvas.height - py, Math.round(t.d * h));
+    if (pw < 1 || ph < 1) return fallback;
+    const d = g.getImageData(px, py, pw, ph).data; let sum = 0, n = 0;
+    for (let i = 0; i < d.length; i += 16) { if (d[i + 3] < 128) continue; sum += .2126 * d[i] + .7152 * d[i + 1] + .0722 * d[i + 2]; n++; }
+    if (!n) return fallback;
+    return sum / n > 140 ? '#1a1816' : '#f0ece6';
+  } catch (e) { return fallback; }
+}
 function drawFooter(g, o, color, y, rightLimit) {
+  color = inkBehind(g, 40, y - 18, W - 80, 24, color);
+  g.save();
+  g.shadowColor = color === '#1a1816' ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.6)'; g.shadowBlur = 4;
   g.fillStyle = color; g.textBaseline = 'alphabetic';
   g.font = `600 15px "IBM Plex Sans", system-ui, sans-serif`;
   let left = o.info || '';
@@ -2445,6 +2460,7 @@ function drawFooter(g, o, color, y, rightLimit) {
     g.font = `400 13px "IBM Plex Sans", system-ui, sans-serif`; g.textAlign = 'right';
     g.fillText(o.note, W - 52, y); g.textAlign = 'left';
   }
+  g.restore();
 }
 
 // ---------- custom layout ----------
@@ -3814,8 +3830,30 @@ function cardPng(o, art, dpi, bleed) {
   }
   const saved = { img: st.img, zoom: st.zoom, ox: st.ox, oy: st.oy };
   Object.assign(st, { img: art.img, zoom: art.zoom, ox: art.ox, oy: art.oy });
-  try { render(g, { ...o, bleed: !!bleed, round: bleed ? false : o.round }, bleed); } finally { Object.assign(st, saved); }
+  try {
+    render(g, { ...o, bleed: !!bleed, round: bleed ? false : o.round }, bleed);
+    // Print shops need whatever touches the cut line to carry on to the bleed edge. Many styles only draw the card
+    // itself and leave the bleed one flat color; when the bleed doesn't continue the card's edges, build it from
+    // the card: render the card on its own (square corners) and extend its edges outward.
+    if (bleed && bleedSeam(c, Math.round(BLEED * k)) > 22) {
+      const cc = document.createElement('canvas'); cc.width = Math.round(W * k); cc.height = Math.round(H * k);
+      const cg = cc.getContext('2d'); cg.setTransform(k, 0, 0, k, 0, 0);
+      render(cg, { ...o, bleed: false, round: false }, false);
+      const b = addBleed(cc); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.drawImage(b, 0, 0, c.width, c.height);
+    }
+  } finally { Object.assign(st, saved); }
   return c;
+}
+// How different the bleed is from the card just inside the cut line, along all four sides (0 = continues seamlessly).
+function bleedSeam(c, M) {
+  const w = c.width, h = c.height, d = c.getContext('2d').getImageData(0, 0, w, h).data;
+  const px = (x, y) => (y * w + x) * 4, diff = (a, b) => Math.abs(d[a] - d[b]) + Math.abs(d[a + 1] - d[b + 1]) + Math.abs(d[a + 2] - d[b + 2]);
+  let sum = 0, n = 0;
+  for (let t = .03; t < .97; t += .01) {
+    const x = Math.round(M + (w - 2 * M) * t), y = Math.round(M + (h - 2 * M) * t), o = M >> 1, i = 6;
+    sum += diff(px(x, o), px(x, M + i)) + diff(px(x, h - 1 - o), px(x, h - 1 - M - i)) + diff(px(o, y), px(M + i, y)) + diff(px(w - 1 - o, y), px(w - 1 - M - i, y)); n += 4;
+  }
+  return sum / n;
 }
 // The playtest-card guidelines ask for accurate artist credit; remind (once per card) before saving without it.
 function creditOk(o) {
@@ -4306,7 +4344,7 @@ $('saveZip').onclick = saveZip;
 // by carrying the straight border next to them into the corner. Then a card with a solid border has that border
 // stretched outward; full-art cards have their edges mirrored outward, the usual print-shop trick.
 function addBleed(img) {
-  const w = img.naturalWidth, h = img.naturalHeight, Mx = Math.round(w * .125 / 2.5), My = Math.round(h * .125 / 3.5);
+  const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, Mx = Math.round(w * .125 / 2.5), My = Math.round(h * .125 / 3.5);
   const src = document.createElement('canvas'); src.width = w; src.height = h;
   const sg = src.getContext('2d', { willReadFrequently: true }); sg.drawImage(img, 0, 0);
   const a = sg.getImageData(0, 0, w, h).data, N = w * h;
