@@ -134,6 +134,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .mylist span { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 4px 2px 10px; font-size: 13px; }
 .mylist span button { padding: 1px 7px; border-radius: 999px; font-size: 12px; }
 .artlib { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; }
+.randsrc { display: grid; gap: 8px; }
 .artlib summary { cursor: pointer; font-weight: 600; }
 .artlib[open] summary { margin-bottom: 8px; }
 .libgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; margin-bottom: 8px; }
@@ -252,6 +253,21 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <span class="hint touch">Pick a photo or a saved image.<br>Drag the card to move the art; pinch it to zoom.</span>
           <input type="file" id="file" accept="image/*" hidden>
         </div>
+        <div class="row randsrc">
+          <label for="randSrc">Random art comes from
+            <select id="randSrc">
+              <option value="commons">Public-domain paintings (Wikimedia Commons)</option>
+              <option value="library">My art library</option>
+              <option value="folder">My own folder</option>
+            </select>
+          </label>
+          <div class="actions" id="folderRow" hidden>
+            <button type="button" id="folderPick">Choose a folder…</button>
+            <input type="file" id="folderInput" webkitdirectory multiple hidden>
+            <span class="hint" id="folderHint">No folder chosen yet.</span>
+          </div>
+        </div>
+        <span class="hint" style="margin-top:-6px">Used by Remix’s <b>Art</b> button, and by deck lists and basic lands when you pick “random from my own art”. Your folder’s pictures stay on your computer; nothing is uploaded.</span>
         <details class="artlib" id="artLib">
           <summary>My art library (<span id="libCount">0</span>)</summary>
           <div class="libgrid" id="libGrid" role="list" aria-label="Your saved art"></div>
@@ -267,6 +283,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
                 <option value="commons">Wikimedia Commons</option>
                 <option value="wellcome">Wellcome Collection</option>
                 <option value="rijks">Rijksmuseum</option>
+                <option value="photos">Wikimedia Commons photos</option>
+                <option value="nasa">NASA Image Library</option>
               </select>
             </label>
           </div>
@@ -300,6 +318,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="woodcut">Woodcut</option>
               <option value="blueprint">Blueprint</option>
               <option value="pencil">Pencil sketch</option>
+              <option value="fried">Deep fried</option>
             </select>
           </label>
           <label for="fxAmt" id="fxAmtWrap" hidden><span id="fxAmtLabel">Strength</span> <input type="range" id="fxAmt" min="0" max="1" step="0.01" value="0.5"></label>
@@ -510,7 +529,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="chamfer">Neon box (cut corners)</option><option value="bevel">Beveled picture frame</option><option value="shade">Dark fade (for text over art)</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -523,6 +542,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <h3>Mana symbols in this layer</h3>
           <div class="row">
             <label>Style <select id="L-pip"><option value="inherit">Same as card</option><option value="classic">Classic colored</option><option value="flat">Flat colored</option><option value="outline">Outline</option><option value="solid">Solid color</option><option value="glyph">Symbol only</option><option value="pixel">Pixel</option><option value="letters">Plain letters (2W)</option></select></label>
+            <label>Keywords <select id="L-kw"><option value="none">Plain</option><option value="color">Colored capitals</option><option value="chip">Highlighted tags</option></select></label>
+            <label>Keyword color <input type="color" id="L-kwColor"></label>
             <label>Symbol color <input type="color" id="L-pipColor"></label>
           </div>
         </div>
@@ -619,6 +640,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
       <label for="deckArt">Art for each card
         <select id="deckArt">
           <option value="pd">Public-domain art picked to match each card (Wikimedia Commons)</option>
+          <option value="own">Random from my own art (folder or library, as set under Art)</option>
           <option value="official">The card's official art (Scryfall)</option>
           <option value="none">Plain placeholder art</option>
         </select>
@@ -643,8 +665,10 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <label for="landCopies">Copies of each <input type="number" id="landCopies" min="1" max="40" value="4"></label>
         <label for="landArt">Art
           <select id="landArt">
-            <option value="pd">Public-domain landscapes (Wikimedia Commons)</option>
+            <option value="pd">Public-domain landscape paintings (Wikimedia Commons)</option>
+            <option value="photo">Public-domain landscape photos (Wikimedia Commons)</option>
             <option value="official">Official basic land art (Scryfall)</option>
+            <option value="own">Random from my own art (folder or library, as set under Art)</option>
             <option value="none">Plain placeholder art</option>
           </select>
         </label>
@@ -1030,14 +1054,33 @@ function parseRich(text, baseItalic) {
       flush();
       if (segs.length) chunks.push(segs);
     }
+    markKeywords(chunks);
     paras.push(chunks);
   }
   return paras;
 }
+// Keywords that can be shown as colored capitals or highlighted tags (a layer's "Keywords" setting).
+const KEYWORDS = new Set(('flying haste trample vigilance deathtouch lifelink menace reach defender flash hexproof indestructible shroud prowess ward equip ' +
+  'cycling kicker flashback convoke delve cascade persist undying infect wither fear intimidate protection crew storm affinity annihilator exalted evolve ' +
+  'flanking horsemanship shadow toxic training vanishing echo madness morph ninjutsu unearth dash blitz escape foretell disturb emerge changeling ' +
+  'islandwalk swampwalk forestwalk mountainwalk plainswalk landwalk bushido rampage bloodthirst devour mentor riot afflict embalm eternalize exploit ' +
+  'scry surveil investigate explore proliferate connive amass populate fight mill adapt bolster manifest monstrosity transform').split(' '));
+const KEY_PAIRS = new Set(['first strike', 'double strike', 'split second', 'totem armor', 'umbra armor', 'living weapon', 'battle cry']);
+function markKeywords(chunks) {
+  const word = ch => ch.filter(x => x.t === 'txt' && !x.it).map(x => x.s).join('').toLowerCase().replace(/[^a-z]/g, '');
+  const mark = ch => { for (const x of ch) if (x.t === 'txt' && !x.it) x.kw = true; };
+  for (let i = 0; i < chunks.length; i++) {
+    const w = word(chunks[i]); if (!w) continue;
+    if (i + 1 < chunks.length && KEY_PAIRS.has(w + ' ' + word(chunks[i + 1]))) { mark(chunks[i]); mark(chunks[i + 1]); chunks[i + 1][0].pair = true; i++; continue; }
+    if (KEYWORDS.has(w)) mark(chunks[i]);
+  }
+}
+let curKw = null; // { mode: 'color' | 'chip', color, ink } while a layer that highlights keywords is drawn
 function measureChunk(g, chunk, size) {
   let w = 0;
   for (const s of chunk) {
     if (s.t === 'sym') w += size * .8 + size * .06;
+    else if (s.kw && curKw) { g.font = bodyFont(size, false); w += g.measureText(s.s.toUpperCase()).width + (curKw.mode === 'chip' ? size * .36 : 0); }
     else { g.font = bodyFont(size, s.it); w += g.measureText(s.s).width; }
   }
   return w;
@@ -1100,12 +1143,25 @@ function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
       if (dry) { cy += lay.lh; continue; }
       let cx = x + off;
       line.forEach((item, idx) => {
+        if (idx && curKw && curKw.mode === 'chip' && item.ch[0]?.kw && line[idx - 1].ch[line[idx - 1].ch.length - 1]?.kw && item.ch[0].pair) {
+          g.save(); g.shadowColor = 'transparent'; g.fillStyle = curKw.color; g.fillRect(cx - 1, base - size * .8, lay.space + 2, size * 1.02); g.restore(); // join two-word keywords
+        }
         if (idx) cx += lay.space;
         for (const s of item.ch) {
           if (s.t === 'sym') {
             const d = size * .8;
             drawSym(g, s.s, cx + size * .03, base - d * .86, d, true);
             cx += d + size * .06;
+          } else if (s.kw && curKw) {
+            const t = s.s.toUpperCase(); g.font = bodyFont(size, false); const tw = g.measureText(t).width;
+            if (curKw.mode === 'chip') {
+              g.save(); g.shadowColor = 'transparent';
+              const ph = size * 1.02, py = base - size * .8;
+              g.beginPath(); g.moveTo(cx + size * .12, py); g.lineTo(cx + tw + size * .36, py); g.lineTo(cx + tw + size * .36, py + ph - size * .12); g.lineTo(cx + tw + size * .24, py + ph); g.lineTo(cx, py + ph); g.lineTo(cx, py + size * .12); g.closePath();
+              g.fillStyle = curKw.color; g.fill(); g.fillStyle = curKw.ink; g.fillText(t, cx + size * .18, base); g.restore();
+              cx += tw + size * .36;
+            } else { g.fillStyle = curKw.color; g.fillText(t, cx, base); cx += tw; }
+            g.fillStyle = color;
           } else {
             g.font = bodyFont(size, s.it); g.fillStyle = color;
             if (paint) paint(s.s, cx, base); else g.fillText(s.s, cx, base);
@@ -1168,6 +1224,21 @@ function fxImage(img, o) {
     for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) d[i + k] = Math.min(255, Math.round(Math.min(255, d[i + k] * 1.08) / step) * step);
     tg.putImageData(id, 0, 0);
     g.imageSmoothingEnabled = false; g.drawImage(t, 0, 0, w, h);
+    if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c;
+  }
+  if (fx === 'fried') { // over-saved meme: crushed down and blown up, colors cranked, grainy, warm
+    const k2 = .18 + (1 - amt) * .3, sw = Math.max(8, Math.round(w * k2)), sh = Math.max(8, Math.round(h * k2));
+    const t = document.createElement('canvas'); t.width = sw; t.height = sh; t.getContext('2d').drawImage(img, 0, 0, sw, sh);
+    g.imageSmoothingEnabled = true; g.drawImage(t, 0, 0, w, h);
+    const id = g.getImageData(0, 0, w, h), d = id.data, sat = 1.8 + amt * 1.4, con = 1.3 + amt * .8, step = 255 / 6;
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i] * 1.12, gg = d[i + 1] * .98, b = d[i + 2] * .8; const l = .299 * r + .587 * gg + .114 * b;
+      r = l + (r - l) * sat; gg = l + (gg - l) * sat; b = l + (b - l) * sat;
+      r = (r - 128) * con + 140; gg = (gg - 128) * con + 128; b = (b - 128) * con + 116;
+      const n = (Math.random() - .5) * 60 * amt;
+      d[i] = Math.round((r + n) / step) * step; d[i + 1] = Math.round((gg + n) / step) * step; d[i + 2] = Math.round((b + n) / step) * step;
+    }
+    g.putImageData(id, 0, 0);
     if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c;
   }
   if (fx === 'glass' || fx === 'woodcut' || fx === 'blueprint' || fx === 'pencil') {
@@ -2212,14 +2283,14 @@ const FONTS = {
 };
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
-  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
+  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', kanji: 'Name in Japanese (basic lands)', stars: 'Level stars (mana value)', atkdef: 'Power / toughness as ATK / DEF', landmana: 'Card color as one mana symbol', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
 };
 const LDEF = {
   src: 'custom', text: '', x: 60, y: 60, w: 630, h: 0, rot: 0, font: 'spectral', size: 40, color: '#ffffff', align: 'left',
   ls: 0, lh: 1.15, upper: false, vert: false, fit: false, italic: false,
   effect: 'shadow', effColor: '#000000', effSize: 1,
   bg: 'none', bgColor: '#000000', bgOp: 0.75, pad: 12, rad: 10, bdW: 0, bdColor: '#ffffff',
-  pip: 'inherit', pipColor: '#ffffff'
+  pip: 'inherit', pipColor: '#ffffff', kw: 'none', kwColor: '#f5e663'
 };
 // Starting designs, in card units (750 × 1050). Later layers draw on top.
 const PRESETS = {
@@ -2352,7 +2423,7 @@ const PRESETS = {
     { src: 'name', x: 134, y: 84, w: 600, size: 128, font: 'bangers', upper: true, color: '#f6d32a', align: 'center', fit: true, lh: .88, ls: 2, effect: 'extrude', effColor: '#c8161d', effSize: 1.2 },
     { src: 'flavor', x: 470, y: 330, w: 240, size: 24, font: 'comic', upper: true, color: '#111111', align: 'center', lh: 1.05, bg: 'balloon', bgColor: '#ffffff', bgOp: 1, pad: 18, bdW: 3, bdColor: '#111111', effect: 'none' },
     { src: 'type', x: 40, y: 700, w: 420, size: 24, font: 'comic', upper: true, italic: true, color: '#c8161d', fit: true, rot: -1, bg: 'box', bgColor: '#fff7d6', bgOp: 1, pad: 10, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
-    { src: 'rules', x: 40, y: 758, w: 520, h: 214, size: 22, font: 'comic', upper: true, color: '#111111', lh: 1.1, bg: 'box', bgColor: '#f6d32a', bgOp: 1, pad: 14, rad: 0, bdW: 3, bdColor: '#111111', pip: 'classic', effect: 'none' },
+    { src: 'rules', x: 40, y: 758, w: 520, h: 214, size: 22, font: 'comic', upper: true, color: '#111111', lh: 1.1, bg: 'box', bgColor: '#f6d32a', bgOp: 1, pad: 14, rad: 0, bdW: 3, bdColor: '#111111', pip: 'classic', kw: 'color', kwColor: '#c8161d', effect: 'none' },
     { src: 'pt', x: 590, y: 868, w: 130, size: 76, font: 'bangers', color: '#f6d32a', align: 'center', rot: -6, effect: 'extrude', effColor: '#111111', effSize: 1 },
     { src: 'credit', x: 40, y: 1004, w: 670, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
   ],
@@ -2459,6 +2530,69 @@ const PRESETS = {
     { src: 'pt', x: 600, y: 920, w: 110, size: 40, font: 'spectral', color: '#1b1b1b', align: 'center', bg: 'box', bgColor: '#f3efe4', bgOp: 1, pad: 10, rad: 8, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
     { src: 'credit', x: 40, y: 1010, w: 540, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
   ],
+  neon: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 540, w: 750, h: 510, bg: 'shade', bgColor: '#05060a', bgOp: .94, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 14, y: 14, w: 722, h: 1022, bg: 'chamfer', bgColor: '#000000', bgOp: 0, pad: 0, rad: 34, bdW: 3, tintBd: 'neon', bdColor: '#29c6ff', effect: 'none' },
+    { src: 'cost', x: 34, y: 34, w: 300, size: 40, align: 'left', bg: 'chamfer', bgColor: '#0a0d14', bgOp: .92, pad: 16, rad: 18, bdW: 3, tintBd: 'neon', bdColor: '#29c6ff', pip: 'classic', effect: 'none' },
+    { src: 'custom', text: 'PROXY', x: 560, y: 40, w: 150, size: 24, font: 'oswald', upper: true, color: '#05060a', align: 'center', ls: 3, bg: 'chamfer', tintBg: 'neon', bgColor: '#29c6ff', bgOp: 1, pad: 8, rad: 12, effect: 'none' },
+    { src: 'name', x: 40, y: 676, w: 660, size: 84, font: 'antonio', upper: true, color: '#ffffff', fit: true, lh: .95, effect: 'shadow', effColor: '#000000', effSize: 1.2 },
+    { src: 'type', x: 42, y: 768, w: 640, size: 26, font: 'plex', upper: true, color: '#d5dbe6', fit: true, ls: 2, effect: 'shadow' },
+    { src: 'rulesflavor', x: 40, y: 816, w: 540, h: 180, size: 25, font: 'plex', color: '#ffffff', lh: 1.22, pip: 'classic', kw: 'chip', tintKw: 'neon', kwColor: '#f5e663', effect: 'shadow', effColor: '#000000', effSize: .8 },
+    { src: 'pt', x: 596, y: 916, w: 122, size: 54, font: 'antonio', color: '#ffffff', align: 'center', bg: 'chamfer', bgColor: '#0a0d14', bgOp: .92, pad: 8, rad: 16, bdW: 3, tintBd: 'neon', bdColor: '#29c6ff', effect: 'none' },
+    { src: 'credit', x: 452, y: 470, w: 500, size: 15, font: 'plex', upper: true, color: '#f5e663', ls: 1, rot: 90, effect: 'shadow' },
+    { src: 'custom', text: 'NC·077', x: 34, y: 1000, w: 110, size: 15, font: 'oswald', color: '#05060a', align: 'center', ls: 2, bg: 'chamfer', bgColor: '#f5e663', bgOp: 1, pad: 5, rad: 8, effect: 'none' },
+  ],
+  macro: () => [
+    { src: 'name', x: 20, y: 22, w: 710, size: 96, font: 'anton', upper: true, color: '#ffffff', align: 'center', fit: true, lh: .95, effect: 'outline', effColor: '#000000', effSize: 1.5 },
+    { src: 'cost', x: 540, y: 140, w: 190, size: 36, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 24, y: 136, w: 160, size: 52, font: 'anton', color: '#ffffff', effect: 'outline', effColor: '#000000', effSize: 1.3 },
+    { src: 'type', x: 30, y: 770, w: 690, size: 28, font: 'anton', upper: true, color: '#ffffff', align: 'center', fit: true, effect: 'outline', effColor: '#000000', effSize: 1 },
+    { src: 'rulesflavor', x: 20, y: 812, w: 710, h: 196, size: 42, font: 'anton', upper: true, color: '#ffffff', align: 'center', vmid: true, lh: 1.02, pip: 'classic', effect: 'outline', effColor: '#000000', effSize: 1.3 },
+    { src: 'credit', x: 30, y: 1014, w: 690, size: 12, font: 'plex', color: '#ffffff', align: 'center', effect: 'shadow' },
+  ],
+  demotiv: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#000000', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 84, y: 84, w: 582, h: 522, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 0, bdW: 3, bdColor: '#ffffff', effect: 'none' },
+    { src: 'art', x: 96, y: 96, w: 558, h: 498, effect: 'none' },
+    { src: 'cost', x: 520, y: 30, w: 200, size: 32, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'name', x: 40, y: 636, w: 670, size: 74, font: 'spectral', upper: true, color: '#ffffff', align: 'center', fit: true, ls: 8, effect: 'none' },
+    { src: 'type', x: 40, y: 732, w: 670, size: 20, font: 'plex', upper: true, color: '#9a9a9a', align: 'center', fit: true, ls: 4, effect: 'none' },
+    { src: 'rulesflavor', x: 70, y: 774, w: 610, h: 180, size: 27, font: 'crimson', color: '#ffffff', align: 'center', vmid: true, pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 600, y: 960, w: 110, size: 32, font: 'spectral', color: '#ffffff', align: 'center', effect: 'none' },
+    { src: 'credit', x: 40, y: 1010, w: 540, size: 12, font: 'plex', color: '#8a8a8a', effect: 'none' },
+  ],
+  kanji: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 900, w: 750, h: 150, bg: 'shade', bgColor: '#000000', bgOp: .6, pad: 0, rad: 0, effect: 'none' },
+    { src: 'kanji', x: 52, y: 52, w: 124, h: 310, size: 96, font: 'notojp', color: '#f6f2e8', align: 'center', vert: true, fit: true, lh: 1.08, bg: 'box', tintBg: 'deep', bgColor: '#4a443c', bgOp: .95, pad: 18, rad: 62, bdW: 5, bdColor: '#e8e2d2', effect: 'none' },
+    { src: 'landmana', x: 52, y: 376, w: 124, h: 124, size: 88, align: 'center', vmid: true, bg: 'box', tintBg: 'deep', bgColor: '#4a443c', bgOp: .95, pad: 12, rad: 28, bdW: 5, bdColor: '#e8e2d2', pip: 'glyph', pipColor: '#f6f2e8', effect: 'none' },
+    { src: 'rulesflavor', x: 200, y: 860, w: 510, h: 100, size: 22, font: 'crimson', color: '#ffffff', align: 'right', vmid: true, pip: 'classic', effect: 'shadow', effColor: '#000000', effSize: 1 },
+    { src: 'pt', x: 40, y: 900, w: 120, size: 38, font: 'spectral', color: '#ffffff', effect: 'shadow' },
+    { src: 'credit', x: 40, y: 1004, w: 670, size: 14, font: 'plex', color: '#f2eee4', effect: 'shadow' },
+  ],
+  monster: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#e9e9ee', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 6, y: 6, w: 738, h: 1038, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 30, bdW: 12, bdColor: '#24242c', effect: 'none' },
+    { src: 'name', x: 52, y: 44, w: 470, size: 52, font: 'notojp', color: '#26262c', fit: true, effect: 'none' },
+    { src: 'cost', x: 520, y: 46, w: 180, size: 34, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'stars', x: 250, y: 118, w: 450, size: 40, font: 'notojp', color: '#26262c', align: 'right', fit: true, ls: 2, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 74, y: 184, w: 602, h: 602, bg: 'bevel', bgColor: '#d4d4da', bgOp: 1, pad: 26, bdColor: '#1a1a1e', effect: 'none' },
+    { src: 'art', x: 100, y: 210, w: 550, h: 550, bg: 'box', effect: 'none' },
+    { src: 'type', x: 74, y: 800, w: 602, size: 26, font: 'notojp', color: '#26262c', align: 'center', fit: true, effect: 'none' },
+    { src: 'rulesflavor', x: 56, y: 846, w: 420, h: 160, size: 22, font: 'plex', color: '#26262c', lh: 1.15, pip: 'classic', effect: 'none' },
+    { src: 'atkdef', x: 470, y: 852, w: 228, size: 42, font: 'notojp', color: '#26262c', align: 'right', lh: 1.25, effect: 'none' },
+    { src: 'credit', x: 56, y: 1008, w: 640, size: 13, font: 'plex', color: '#55555c', align: 'right', effect: 'none' },
+  ],
+  collector: () => [
+    { src: 'custom', text: ' ', x: 0, y: 640, w: 750, h: 410, bg: 'shade', bgColor: '#f3f4f6', bgOp: .9, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: ' ', x: 24, y: 24, w: 702, h: 96, bg: 'box', bgColor: '#eef0f3', bgOp: .9, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: ' ', x: 12, y: 12, w: 726, h: 1026, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 40, bdW: 26, tintBd: 'bright', bdColor: '#f4cf3c', effect: 'none' },
+    { src: 'type', x: 40, y: 40, w: 150, size: 17, font: 'plex', upper: true, italic: true, color: '#26282c', fit: true, align: 'center', bg: 'box', bgColor: '#c9ccd2', bgOp: 1, pad: 8, rad: 16, bdW: 2, bdColor: '#8d939b', effect: 'none' },
+    { src: 'name', x: 204, y: 38, w: 350, size: 46, font: 'rubik', color: '#16171a', fit: true, effect: 'none' },
+    { src: 'cost', x: 540, y: 44, w: 176, size: 40, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'rulesflavor', x: 52, y: 720, w: 646, h: 190, size: 27, font: 'plex', color: '#16171a', lh: 1.15, vmid: true, pip: 'classic', kw: 'color', kwColor: '#16171a', effect: 'none' },
+    { src: 'pt', x: 540, y: 922, w: 180, size: 34, font: 'rubik', color: '#16171a', align: 'center', bg: 'box', bgColor: '#d9dce1', bgOp: 1, pad: 8, rad: 22, bdW: 2, bdColor: '#8d939b', effect: 'none' },
+    { src: 'credit', x: 44, y: 990, w: 470, size: 13, font: 'plex', italic: true, color: '#3a3d42', effect: 'none' },
+  ],
   clean: () => [
     { src: 'name', x: 50, y: 50, w: 420, size: 42, fit: true },
     { src: 'cost', x: 430, y: 56, w: 272, size: 38, align: 'right' },
@@ -2520,6 +2654,23 @@ function layerText(L, o) {
     case 'credit': return [o.info, o.artist && '✎ ' + o.artist].filter(Boolean).join('   ');
     case 'custom': return L.text || '';
     case 'monogram': return (o.name || '').trim().charAt(0).toUpperCase();
+    case 'stars': { // one star per point of mana value
+      const mv = [...(o.cost || '').matchAll(/\{([^}]+)\}/g)].reduce((t, m) => { const c = m[1].split('/')[0]; return t + (/^\d+$/.test(c) ? +c : /^[XYZ]$/i.test(c) ? 0 : 1); }, 0);
+      return '★'.repeat(Math.min(12, mv));
+    }
+    case 'atkdef': {
+      const [pw, tg] = String(o.pt || '').split('/').map(x => x.trim());
+      return pw && tg ? `ATK  ${pw}\nDEF  ${tg}` : o.pt || '';
+    }
+    case 'kanji': { // the land's name in Japanese; any other card keeps its own name
+      const KANJI = { plains: '平地', island: '島', swamp: '沼', mountain: '山', forest: '森', wastes: '荒地' };
+      const n = (o.name || '').toLowerCase().replace(/^snow-covered\s+/, '');
+      return KANJI[n] || o.name || '';
+    }
+    case 'landmana': { // the mana the card makes (lands) or its color, as one big symbol
+      const c = cardColor(o);
+      return /^[WUBRG]$/.test(c) ? `{${c}}` : c === 'L' || c === 'C' || c === 'A' ? '{C}' : '';
+    }
     default: return o[L.src] || '';
   }
 }
@@ -2598,13 +2749,35 @@ function artShape(g, x, y, w, h, arch, rad) {
   else g.roundRect(x, y, w, h, Math.min(rad, w / 2, h / 2));
 }
 // Card-color tints for layers marked tintBg / tintInk: 'main' is a strong color, 'pale' a light one, 'deep' a dark one.
+const NEON = { W: '#fff3c4', U: '#29c6ff', B: '#b45cff', R: '#ff3b47', G: '#2bff88', M: '#ffd21f', A: '#c9d3de', L: '#ffb547', C: '#9aa6b2' };
+const BRIGHT = { W: '#efe3b8', U: '#6fb2ea', B: '#9b86bd', R: '#ef8455', G: '#86c867', M: '#f4cf3c', A: '#c4cad2', L: '#c9a473', C: '#d6d8db' };
 const TINT = { W: '#b8963a', U: '#2f5f9e', B: '#4a3d57', R: '#a8392c', G: '#2f6b5a', M: '#b08a2e', A: '#6f7780', L: '#7a6446', C: '#6f6a60' };
+// The card's frame color as real cards work it out: its mana cost's colors (two or more = gold), else lands by the
+// mana they make, artifacts silver, other colorless cards gray. Without a cost, the frame-color setting is used.
+function cardColor(o) {
+  const cols = new Set([...(o.cost || '').matchAll(/\{([^}]+)\}/g)].flatMap(m => m[1].toUpperCase().split('/')).filter(x => /^[WUBRG]$/.test(x)));
+  const type = o.type || '';
+  if (cols.size > 1) return 'M';
+  if (cols.size === 1) return [...cols][0];
+  if (/(^|[^a-z])land([^a-z]|$)/i.test(type)) {
+    const BASIC = { Plains: 'W', Island: 'U', Swamp: 'B', Mountain: 'R', Forest: 'G' }, made = new Set();
+    for (const [t, c] of Object.entries(BASIC)) if (type.split(/[^A-Za-z]+/).includes(t)) made.add(c);
+    for (const m of (o.rules || '').matchAll(/\{([WUBRG])\}/g)) made.add(m[1]);
+    if (/any color/i.test(o.rules || '')) return 'M';
+    return made.size > 1 ? 'M' : made.size ? [...made][0] : 'L';
+  }
+  if (/(^|[^a-z])artifact([^a-z]|$)/i.test(type)) return 'A';
+  if ((o.cost || '').trim()) return 'C';
+  return /^[WUBRGMALC]$/.test(o.color) ? o.color : 'C';
+}
 function tintOf(o, kind) {
-  const c = TINT[o.color] || TINT.C, [r, g2, b] = hex(c), mix = (t, [r2, g3, b3]) => '#' + [r + (r2 - r) * t, g2 + (g3 - g2) * t, b + (b3 - b) * t].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+  const col = cardColor(o), c = TINT[col] || TINT.C, [r, g2, b] = hex(c), mix = (t, [r2, g3, b3]) => '#' + [r + (r2 - r) * t, g2 + (g3 - g2) * t, b + (b3 - b) * t].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+  if (kind === 'neon') return NEON[col] || NEON.C;
+  if (kind === 'bright') return BRIGHT[col] || BRIGHT.C;
   return kind === 'pale' ? mix(.62, [232, 228, 218]) : kind === 'deep' ? mix(.45, [16, 14, 12]) : c;
 }
 function drawLayer(g, L, o) {
-  if (L.tintBg || L.tintInk || L.tintBd) { L = { ...L }; if (L.tintBg) L.bgColor = tintOf(o, L.tintBg); if (L.tintInk) L.color = tintOf(o, L.tintInk); if (L.tintBd) L.bdColor = tintOf(o, L.tintBd); }
+  if (L.tintBg || L.tintInk || L.tintBd || L.tintKw) { L = { ...L }; if (L.tintBg) L.bgColor = tintOf(o, L.tintBg); if (L.tintInk) L.color = tintOf(o, L.tintInk); if (L.tintBd) L.bdColor = tintOf(o, L.tintBd); if (L.tintKw) L.kwColor = tintOf(o, L.tintKw); }
   if (L.src === 'art') { // the art is drawn under every layer by renderCustom; this only adds an optional frame
     const bx = +L.x, by = +L.y, bw = +L.w, bh = +L.h || 400;
     if (+L.bdW > 0) {
@@ -2684,6 +2857,7 @@ function drawLayer(g, L, o) {
     };
   } else {
     kind = 'rich';
+    curKw = L.kw === 'color' || L.kw === 'chip' ? { mode: L.kw, color: L.kwColor, ink: lum(/^#[0-9a-f]{6}$/i.test(L.kwColor) ? L.kwColor : '#f5e663') > .55 ? '#0a0a0a' : '#ffffff' } : null;
     const up = s => lz(L.upper ? upper(s || '') : (s || ''));
     const paras = L.src === 'rulesflavor'
       ? [...(o.rules ? parseRich(up(o.rules), !!L.italic) : []), ...(o.flavor ? parseRich(up(o.flavor), true) : [])]
@@ -2794,6 +2968,35 @@ function drawLayer(g, L, o) {
     }
     g.restore();
     body(); g.lineWidth = 3; g.strokeStyle = 'rgba(20,16,10,.7)'; g.stroke();
+  }
+  else if (L.bg === 'bevel') { // a picture frame: light top and left, dark bottom and right, thin black lines
+    const k = Math.min(+L.pad || 22, bw / 4, bh / 4), base = L.bgColor || '#cfcfd4';
+    const face = (pts, col) => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fillStyle = col; g.fill(); };
+    const x1 = bx + bw, y1 = by + bh;
+    face([[bx, by], [x1, by], [x1 - k, by + k], [bx + k, by + k]], mixHex(base, '#ffffff', .6));
+    face([[bx, by], [bx + k, by + k], [bx + k, y1 - k], [bx, y1]], mixHex(base, '#ffffff', .3));
+    face([[x1, by], [x1, y1], [x1 - k, y1 - k], [x1 - k, by + k]], mixHex(base, '#000000', .25));
+    face([[bx, y1], [bx + k, y1 - k], [x1 - k, y1 - k], [x1, y1]], mixHex(base, '#000000', .4));
+    g.save(); g.lineWidth = 2; g.strokeStyle = L.bdColor || '#1a1a1e';
+    g.strokeRect(bx, by, bw, bh); g.strokeRect(bx + k, by + k, bw - 2 * k, bh - 2 * k);
+    for (const [ax, ay, cx2, cy2] of [[bx, by, bx + k, by + k], [x1, by, x1 - k, by + k], [bx, y1, bx + k, y1 - k], [x1, y1, x1 - k, y1 - k]]) { g.beginPath(); g.moveTo(ax, ay); g.lineTo(cx2, cy2); g.stroke(); }
+    g.restore();
+  }
+  else if (L.bg === 'chamfer') { // cut top-left and bottom-right corners, a glowing edge
+    const k = Math.min(+L.rad || 14, bw / 2, bh / 2);
+    const path = () => { g.beginPath(); g.moveTo(bx + k, by); g.lineTo(bx + bw, by); g.lineTo(bx + bw, by + bh - k); g.lineTo(bx + bw - k, by + bh); g.lineTo(bx, by + bh); g.lineTo(bx, by + k); g.closePath(); };
+    g.save(); path();
+    if (+L.bgOp > 0) { g.fillStyle = hexA(L.bgColor, +L.bgOp); g.fill(); }
+    if (+L.bdW > 0) {
+      g.lineJoin = 'miter'; g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.shadowColor = L.bdColor; g.shadowBlur = 12; g.stroke();
+      g.shadowBlur = 0; g.lineWidth = Math.max(1, +L.bdW * .35); g.strokeStyle = 'rgba(255,255,255,.55)'; g.stroke();
+    }
+    g.restore();
+  }
+  else if (L.bg === 'shade') { // a dark fade that rises from the bottom of the box
+    const [r0, g0, b0] = hex(L.bgColor), op = +L.bgOp || .9, gr = g.createLinearGradient(0, by, 0, by + bh);
+    gr.addColorStop(0, `rgba(${r0},${g0},${b0},0)`); gr.addColorStop(.35, `rgba(${r0},${g0},${b0},${op * .7})`); gr.addColorStop(1, `rgba(${r0},${g0},${b0},${op})`);
+    g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
   }
   else if (L.bg === 'compass') { // an eight-point compass rose in the box
     const cx0 = bx + bw / 2, cy0 = by + bh / 2, R0 = Math.min(bw, bh) / 2, ink = L.bdColor || '#3a2a14', fill = hexA(L.bgColor, Math.max(.3, +L.bgOp));
@@ -2982,7 +3185,7 @@ function drawLayer(g, L, o) {
   }
   paintAll(bx, by);
   g.restore();
-  curFam = prev.fam; curLH = prev.lh; curPip = prev.pip;
+  curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; curKw = null;
   return { id: L.id, x: bx, y: by, w: bw, h: bh, cx, cy, rot, resizeW: kind === 'rich', resizeH: kind !== 'cost' };
 }
 // A paper sticker behind a layer: drop shadow and sheen; the barcode kind adds a barcode on its left,
@@ -3322,7 +3525,7 @@ $('save').onclick = exportPng;
 const LPROPS = {
   src: 's', text: 's', font: 's', size: 'n', color: 's', align: 's', w: 'n', h: 'n', rot: 'n', ls: 'n', lh: 'n',
   upper: 'b', vert: 'b', fit: 'b', italic: 'b', effect: 's', effColor: 's', effSize: 'n',
-  bg: 's', bgColor: 's', bgOp: 'n', pad: 'n', rad: 'n', bdW: 'n', bdColor: 's', pip: 's', pipColor: 's'
+  bg: 's', bgColor: 's', bgOp: 'n', pad: 'n', rad: 'n', bdW: 'n', bdColor: 's', pip: 's', pipColor: 's', kw: 's', kwColor: 's'
 };
 const optionsHtml = map => Object.entries(map).map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
 $('L-src').innerHTML = optionsHtml(SRC_LABEL);
@@ -3844,6 +4047,14 @@ $('landGo').onclick = async () => {
         let a = null, artist = '';
         try {
           if (mode === 'pd') { a = await findArt([...words].sort(() => Math.random() - .5)); artist = a.artist; }
+          else if (mode === 'own') { a = await ownArt(true); artist = a.artist; }
+          else if (mode === 'photo') {
+            const items = (await ART_SOURCES.photos.more({ q: pick(words), offset: Math.random() < .5 ? 0 : 24 })).filter(x => !usedArt.has(x.key));
+            if (!items.length) throw 0;
+            const it = pick(items); usedArt.add(it.key);
+            const r = await fetch(it.full); if (!r.ok) throw 0;
+            const blob = await r.blob(); a = { img: await loadImage(URL.createObjectURL(blob)), blob }; artist = it.artist;
+          }
           else if (mode === 'official') {
             const card = await sf('/cards/random?q=' + encodeURIComponent(`!"${name}" game:paper`));
             const t = cardText(card); if (t.art) { a = await fetchArt(t.art); artist = t.artist || ''; }
@@ -3896,6 +4107,7 @@ $('deckGo').onclick = async () => {
     const official = !!a;
     let pdArtist = '';
     if (!a && artMode === 'pd') { try { a = await findArt(artWords(fields)); pdArtist = a.artist; } catch (e) { artFail++; } }
+    if (!a && artMode === 'own') { try { a = await ownArt(true); pdArtist = a.artist; } catch (e) { artFail++; } }
     if (!a) a = await placeholderArt(fields.color);
     const form = { ...base, ...fields, artist: official ? artist : pdArtist };
     const e = { id: newId(), kind: 'made', form, img: a.img, blob: a.blob, zoom: 1, ox: 0, oy: 0, copies: Math.min(99, r.n), order: Date.now() + mySeq, seq: mySeq, face };
@@ -4037,7 +4249,7 @@ async function remix(parts, firstVisit = false) {
     let art = null;
     if (parts.includes('art')) {
       const o = { ...readForm(), ...(fields || {}) };
-      try { art = await findArt(artWords(o)); } catch (e) { notes.push(e.message); }
+      try { art = randSrc === 'commons' ? await findArt(artWords(o)) : { ...(await ownArt(true)), own: true }; } catch (e) { notes.push(e.message); }
     }
     if (firstVisit && st.edits !== edits) return; // the visitor started editing; leave their card alone
     if (parts.includes('look')) writeForm(randomLook());
@@ -4047,7 +4259,7 @@ async function remix(parts, firstVisit = false) {
     }
     if (art) {
       st.img = art.img; st.blob = art.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false;
-      $('artist').value = art.artist; $('cardNotice').hidden = true; setCredit(art);
+      $('artist').value = art.artist; $('cardNotice').hidden = true; setCredit(art.own ? null : art);
     } else if (fields && st.sample) $('artist').value = 'Sample art';
     renderLayerList(); saveDraft(); draw();
     const what = parts.length === 3 ? 'Remixed' : 'New ' + parts.map(k => PART_NAME[k]).join(' and ');
@@ -4070,7 +4282,7 @@ function updateFxUI() {
   const fx = $('artFx').value;
   $('wearMore').hidden = $('wear').value === 'none' && $('misprint').value === 'none';
   $('fxAmtWrap').hidden = fx === 'none';
-  $('fxAmtLabel').textContent = { glass: 'Pane size', woodcut: 'Line size', blueprint: 'Detail', pencil: 'Shading', pixel: 'Pixel size', paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
+  $('fxAmtLabel').textContent = { fried: 'Crunch', glass: 'Pane size', woodcut: 'Line size', blueprint: 'Detail', pencil: 'Shading', pixel: 'Pixel size', paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
   $('fxColors').hidden = !(fx === 'duotone' || fx === 'halftone');
   $('fxDarkLabel').firstChild.textContent = fx === 'halftone' ? 'Ink ' : 'Shadows ';
   $('fxLightLabel').firstChild.textContent = fx === 'halftone' ? 'Paper ' : 'Highlights ';
@@ -4096,6 +4308,14 @@ const STYLES = [
   { id: 'retrogame', name: 'Retro game', preset: 'retro', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
   { id: 'modern', name: 'Modern game', preset: 'modern', f: { layout: 'custom', border: 'none', pipStyle: 'flat', pipColor: '#ffffff', gloss: true } },
   { id: 'vhs', name: 'VHS tape', preset: 'vhs', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'worn', gloss: true } },
+  { id: 'macro', name: 'Image macro', preset: 'macro', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'demotiv', name: 'Demotivational', preset: 'demotiv', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'fried', name: 'Deep fried', preset: 'macro', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'fried', fxAmt: '0.6', misprint: 'light' } },
+  { id: 'collector', name: 'Creature collector', preset: 'collector', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'monster', name: 'Monster card', preset: 'monster', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'monsterbw', name: 'Monster (manga)', preset: 'monster', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#26262c', artFx: 'bw', fxAmt: '0.85' } },
+  { id: 'kanji', name: 'Kanji landscape', preset: 'kanji', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#f6f2e8' } },
+  { id: 'neon', name: 'Neon street', preset: 'neon', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'glass', name: 'Stained glass', preset: 'glass', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'glass', fxAmt: '0.45' } },
   { id: 'tarot', name: 'Tarot card', preset: 'tarot', f: { layout: 'custom', border: '#efeadc', pipStyle: 'outline', pipColor: '#2a1d12', wear: 'light' } },
   { id: 'manuscript', name: 'Illuminated', preset: 'manuscript', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
@@ -4128,13 +4348,13 @@ const STYLES = [
 ];
 const STYLE_CAT = {
   classic: 'classic', retro: 'classic', gilded: 'classic', fullart: 'classic', borderless: 'classic', showcase: 'classic', noir: 'classic', oil: 'classic', minimal: 'classic',
-  storybook: 'fantasy', scales: 'fantasy', fantasypb: 'fantasy', glass: 'fantasy', tarot: 'fantasy', manuscript: 'fantasy', atlas: 'fantasy', token: 'classic',
-  retrogame: 'games', modern: 'games', vhs: 'games', pixel: 'games', pack: 'games',
+  kanji: 'fantasy', storybook: 'fantasy', scales: 'fantasy', fantasypb: 'fantasy', glass: 'fantasy', tarot: 'fantasy', manuscript: 'fantasy', atlas: 'fantasy', token: 'classic',
+  retrogame: 'games', collector: 'games', monster: 'games', monsterbw: 'games', modern: 'games', vhs: 'games', pixel: 'games', pack: 'games',
   popart: 'comics', bronze: 'comics', pulp: 'comics', comic: 'comics', poster: 'comics', strips: 'comics', manga: 'comics', zine: 'comics',
-  console: 'scifi', wrist: 'scifi', blueprint: 'scifi', synth: 'scifi',
+  console: 'scifi', wrist: 'scifi', neon: 'scifi', macro: 'memes', demotiv: 'memes', fried: 'memes', blueprint: 'scifi', synth: 'scifi',
   riso: 'print', paperback: 'print', playtest: 'print', misprint: 'print', woodblock: 'print', sketch: 'print', polaroid: 'print',
 };
-const STYLE_TABS = [['all', 'All'], ['classic', 'Classic'], ['fantasy', 'Fantasy'], ['games', 'Retro & games'], ['comics', 'Comics & pulp'], ['scifi', 'Sci-fi'], ['print', 'Print & paper'], ['mine', 'My styles']];
+const STYLE_TABS = [['all', 'All'], ['classic', 'Classic'], ['fantasy', 'Fantasy'], ['games', 'Retro & games'], ['comics', 'Comics & pulp'], ['scifi', 'Sci-fi'], ['print', 'Print & paper'], ['memes', 'Memes'], ['mine', 'My styles']];
 const styleLayers = sty => sty.preset ? PRESETS[sty.preset]().map((l, i) => ({ ...LDEF, ...l, id: 'p' + i }))
   : sty.layers ? sty.layers.map((l, i) => ({ ...LDEF, ...l, id: 'u' + i })) : [];
 let activeStyle = null;
@@ -4196,7 +4416,7 @@ for (const [id, name] of STYLE_TABS) {
 }
 // Your styles: the look fields and the custom layers, saved in this browser.
 const LOOK_KEYS = FIELDS.filter(k => !TEXT_KEYS.includes(k) && k !== 'rarity');
-const LAYER_KEYS = new Set([...Object.keys(LDEF), 'vmid', 'tintBg', 'tintInk', 'tintBd']);
+const LAYER_KEYS = new Set([...Object.keys(LDEF), 'vmid', 'tintBg', 'tintInk', 'tintBd', 'tintKw']);
 function cleanStyle(x) { // only plain, known settings: anything else in an imported file is dropped
   if (!x || typeof x !== 'object' || typeof x.name !== 'string' || !x.name.trim()) return null;
   const prim = v => ['string', 'number', 'boolean'].includes(typeof v);
@@ -4279,7 +4499,7 @@ const libUrls = new Map();
 async function libRender() {
   let items = [];
   try { items = await idb.artAll(); } catch (e) { $('libHint').textContent = 'Your browser blocked saving images here (private window?). You can still use images normally.'; }
-  items.sort((a, b) => b.added - a.added);
+  items = items.filter(x => x.blob); items.sort((a, b) => b.added - a.added);
   $('libCount').textContent = items.length;
   const grid = $('libGrid'); grid.textContent = '';
   for (const it of items) {
@@ -4327,6 +4547,79 @@ $('libSave').onclick = async () => {
   $('artLib').open = true;
 };
 libRender();
+
+// ---------- your own folder ----------
+// Where browsers allow it (Chrome, Edge), the folder is remembered between visits and read again when needed;
+// elsewhere the pictures are read once and kept until the page is closed.
+const IMG_EXT = /\.(jpe?g|png|webp|gif|avif|bmp)$/i;
+const folder = { handle: null, name: '', files: [], bag: [] };
+let randSrc = 'commons';
+try { randSrc = localStorage.getItem('proxyforge.randSrc') || 'commons'; } catch (e) {}
+function showRandSrc() {
+  $('randSrc').value = randSrc; $('folderRow').hidden = randSrc !== 'folder';
+  $('roll-art').title = randSrc === 'folder' ? 'A random picture from your folder' : randSrc === 'library' ? 'A random picture from your art library' : 'Public-domain art from Wikimedia Commons, picked to match the card';
+}
+$('randSrc').addEventListener('change', e => { randSrc = e.target.value; try { localStorage.setItem('proxyforge.randSrc', randSrc); } catch (er) {} showRandSrc(); });
+async function scanHandle(dir, out, depth = 0) {
+  for await (const h of dir.values()) {
+    if (out.length >= 5000) return;
+    if (h.kind === 'file' && IMG_EXT.test(h.name)) out.push(h);
+    else if (h.kind === 'directory' && depth < 3) await scanHandle(h, out, depth + 1);
+  }
+}
+async function folderReady(ask) {
+  if (folder.files.length) return true;
+  if (!folder.handle) return false;
+  let perm = await folder.handle.queryPermission?.({ mode: 'read' });
+  if (perm !== 'granted' && ask) perm = await folder.handle.requestPermission?.({ mode: 'read' });
+  if (perm !== 'granted') { $('folderHint').textContent = `“${folder.name}” needs your OK again: press Choose a folder… or Remix's Art button.`; return false; }
+  const out = []; await scanHandle(folder.handle, out); folder.files = out; folder.bag = [];
+  $('folderHint').textContent = `${out.length} picture${out.length === 1 ? '' : 's'} in “${folder.name}”.`;
+  return out.length > 0;
+}
+$('folderPick').onclick = async () => {
+  if (window.showDirectoryPicker) {
+    try {
+      const h = await showDirectoryPicker({ id: 'proxyforge-art', mode: 'read' });
+      folder.handle = h; folder.name = h.name; folder.files = [];
+      idb.artPut({ id: '__folder', handle: h, name: h.name, added: 0 }).catch(() => {});
+      $('folderHint').textContent = 'Reading the folder…';
+      if (!(await folderReady(true))) $('folderHint').textContent = `No pictures found in “${h.name}”.`;
+    } catch (e) { if (e.name !== 'AbortError') $('folderInput').click(); }
+  } else $('folderInput').click();
+};
+$('folderInput').onchange = e => {
+  const files = [...e.target.files].filter(f => IMG_EXT.test(f.name) || f.type.startsWith('image/'));
+  folder.handle = null; folder.files = files; folder.bag = [];
+  folder.name = (files[0]?.webkitRelativePath || '').split('/')[0] || 'your folder';
+  $('folderHint').textContent = files.length ? `${files.length} picture${files.length === 1 ? '' : 's'} in “${folder.name}” (until you close this page).` : 'No pictures found in that folder.';
+  e.target.value = '';
+};
+// a shuffled bag, so every picture comes up once before any repeats
+function drawFromBag(list, bag) {
+  if (!bag.length) bag.push(...list.map((_, i) => i).sort(() => Math.random() - .5));
+  return list[bag.pop()];
+}
+const libBag = { list: [], bag: [] };
+async function ownArt(ask = true) {
+  if (randSrc === 'folder' || (randSrc !== 'library' && (folder.files.length || folder.handle))) {
+    if (await folderReady(ask)) {
+      const f = drawFromBag(folder.files, folder.bag), file = f.getFile ? await f.getFile() : f;
+      return { img: await loadImage(URL.createObjectURL(file)), blob: file, artist: '', name: file.name };
+    }
+    if (randSrc === 'folder') throw new Error('Choose a folder of pictures first (under Art).');
+  }
+  const items = (await idb.artAll()).filter(x => x.blob);
+  if (!items.length) throw new Error('Your art library is empty. Add some pictures first.');
+  if (items.length !== libBag.list.length) { libBag.list = items; libBag.bag = []; }
+  const it = drawFromBag(libBag.list, libBag.bag);
+  return { img: await loadImage(URL.createObjectURL(it.blob)), blob: it.blob, artist: it.artist || '', name: it.name };
+}
+idb.artAll().then(items => {
+  const f = items.find(x => x.id === '__folder');
+  if (f && f.handle) { folder.handle = f.handle; folder.name = f.name; $('folderHint').textContent = `Using “${f.name}”. It's read when you first need a picture.`; }
+}).catch(() => {});
+showRandSrc();
 for (const k of FIELDS) $(k).addEventListener('input', () => { if (activeStyle) { activeStyle = null; markStyle(); } });
 
 // ---------- art search ----------
@@ -4378,6 +4671,54 @@ const ART_SOURCES = {
           artist: x.source?.contributors?.[0]?.agent?.label || 'Unknown artist', license: lic === 'cc-0' ? 'CC0' : 'public domain',
           page: `https://wellcomecollection.org/works/${x.source?.id}` };
       }).filter(x => x.thumb.startsWith('https://'));
+    },
+  },
+  photos: {
+    name: 'Wikimedia Commons photos',
+    about: 'Searches photographs on <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> (commons.wikimedia.org) that are marked CC0 or public domain: landscapes, nature, cities, animals and old archive photos. Only those two licenses are shown.',
+    async more(S) {
+      const out = [];
+      // CC0 photos first, then ones marked public domain
+      const passes = ['haswbstatement:P275=Q6938433', 'haswbstatement:P6216=Q19652'];
+      for (let tries = 0; tries < 2 && out.length < 8 && S.offset >= 0; tries++) {
+        S.pass = S.pass || 0;
+        const words = S.q.replace(/[^\p{L}\p{N}\s]/gu, ' ').trim();
+        const j = await (await fetch(`${COMMONS}&generator=search&gsrnamespace=6&gsrlimit=24&gsroffset=${S.offset}&gsrsearch=${encodeURIComponent(`${words} filetype:bitmap -"Google Art Project" ${passes[S.pass]}`)}` +
+          '&prop=imageinfo&iiprop=url|size|extmetadata&iiextmetadatafilter=LicenseShortName|Artist&iiurlwidth=320')).json();
+        for (const p of Object.values(j.query?.pages || {}).sort((a, b) => (a.index || 0) - (b.index || 0))) {
+          const i = p.imageinfo?.[0]; if (!i) continue;
+          const lic = i.extmetadata?.LicenseShortName?.value || '';
+          if (!/public domain|cc0|pd/i.test(lic) || Math.min(i.width, i.height) < 700) continue;
+          const w = [1920, 1280].find(x => i.width > x);
+          out.push({ key: p.title, thumb: i.thumburl, full: w ? i.thumburl.replace(/\/\d+px-/, `/${w}px-`) : i.url, title: cleanTitle(p.title),
+            artist: cleanArtist(i.extmetadata?.Artist?.value), license: /cc0/i.test(lic) ? 'CC0' : 'public domain', page: i.descriptionurl });
+        }
+        if (j.continue) S.offset = j.continue.gsroffset;
+        else if (S.pass < passes.length - 1) { S.pass++; S.offset = 0; }
+        else S.offset = -1;
+      }
+      return out;
+    },
+  },
+  nasa: {
+    name: 'NASA Image Library',
+    about: 'Searches the <a href="https://images.nasa.gov" target="_blank" rel="noopener">NASA Image and Video Library</a> (images.nasa.gov): space, planets, nebulae, Earth from orbit, rockets and aircraft. NASA images are generally not copyrighted; check the credit for the rare exception.',
+    async more(S) {
+      S.page = (S.page || 0) + 1;
+      const j = await (await fetch(`https://images-api.nasa.gov/search?q=${encodeURIComponent(S.q)}&media_type=image&page_size=24&page=${S.page}`)).json();
+      const items = j.collection?.items || [];
+      if (!items.length || !(j.collection?.links || []).some(l => l.rel === 'next')) S.offset = -1;
+      return items.map(x => {
+        const d = x.data?.[0] || {}, id = d.nasa_id, thumb = x.links?.find(l => l.render === 'image')?.href || x.links?.[0]?.href;
+        if (!id || !thumb) return null;
+        return { key: id, thumb, full: thumb, title: shorten(d.title || id), artist: d.photographer || d.secondary_creator || ('NASA' + (d.center ? ' / ' + d.center : '')),
+          license: 'public domain (NASA)', page: `https://images.nasa.gov/details/${encodeURIComponent(id)}`,
+          resolve: async () => { // the search only gives a thumbnail; the asset list has the bigger sizes
+            const a = await (await fetch(`https://images-api.nasa.gov/asset/${encodeURIComponent(id)}`)).json();
+            const hrefs = (a.collection?.items || []).map(i => i.href.replace(/^http:/, 'https:').replace(/ /g, '%20'));
+            return hrefs.find(h => /~large\.(jpe?g|png)$/i.test(h)) || hrefs.find(h => /~medium\.(jpe?g|png)$/i.test(h)) || hrefs.find(h => /~orig\.(jpe?g|png)$/i.test(h)) || thumb;
+          } };
+      }).filter(Boolean);
     },
   },
   rijks: {
@@ -4439,7 +4780,7 @@ async function searchArt(more) {
 async function useSearchArt(it, src, q, btn) {
   btn.disabled = true; st.edits++; $('artHint').textContent = `Loading that artwork from ${src.name}…`;
   try {
-    const r = await fetch(it.full); if (!r.ok) throw 0;
+    const r = await fetch(it.resolve ? await it.resolve() : it.full); if (!r.ok) throw 0;
     const blob = await r.blob(), img = await loadImage(URL.createObjectURL(blob));
     let artist = it.artist;
     if (!artist && it.makerUrl) { try { const per = await ldGet(it.makerUrl); artist = (per.identified_by || []).find(x => x.type === 'Name')?.content; } catch (e) {} }
