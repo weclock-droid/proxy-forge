@@ -606,8 +606,9 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 
       <fieldset>
         <legend>Export</legend>
-        <label class="inline"><input type="checkbox" id="bleed"> Add ⅛″ bleed (square corners, for print shops)</label>
-        <label class="inline"><input type="checkbox" id="round" checked> Round corners (when no bleed)</label>
+        <input type="checkbox" id="bleed" checked hidden>
+        <span class="hint">Saved cards always include a ⅛″ bleed with square corners, so they're ready to share or send to a print shop.</span>
+        <label class="inline"><input type="checkbox" id="round" checked> Round corners on the preview</label>
         <p class="hint" style="margin:0">Saves a 1500 × 2100 PNG: 2.5″ × 3.5″ at 600 dpi (1650 × 2250 with bleed). Load it into your print tool like any card image.</p>
       </fieldset>
     </div>
@@ -644,7 +645,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
       <div class="actions">
         <button type="button" class="primary" id="addSheet">Add to print sheet</button>
         <button type="button" id="addNew" hidden>Add as a new card</button>
-        <button type="button" id="save">Save PNG</button>
+        <button type="button" id="save" title="Saves the card at the size you pick, with a ⅛″ bleed edge and square corners">Save PNG</button>
         <button type="button" id="saveBleed" title="800 dpi with ⅛″ of extra art around every edge and square corners: what online print shops ask for">Print-shop PNG (800 dpi + bleed)</button>
         <button type="button" id="pickBleed2" title="Pick a card PNG you already saved and get the same image back with a ⅛″ bleed edge added">Add bleed to a saved PNG…</button>
         <label class="inline" for="exportDpi">Size
@@ -3862,7 +3863,7 @@ function creditOk(o) {
   return confirm('This card has no artist credit. Please add the artist’s name (or tick “AI-generated” and the model) under Card text.\n\nSave anyway?');
 }
 async function exportPng(printShop) {
-  const o = readForm(), bleed = printShop === true || o.bleed, dpi = printShop === true ? 800 : exportDpi();
+  const o = readForm(), bleed = true, dpi = printShop === true ? 800 : exportDpi();
   if (!creditOk(o)) { $('artist').focus(); return; }
   await fontsReadyFor(o);
   const c = cardPng(o, { img: st.img, zoom: st.zoom, ox: st.ox, oy: st.oy }, dpi, bleed);
