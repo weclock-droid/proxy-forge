@@ -10,7 +10,7 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Card text with mana symbols.** Type `{T}`, `{W}`, `{U}`, `{B}`, `{R}`, `{G}`, `{C}`, `{X}`, `{3}` or hybrids like `{W/U}`. Text in (parentheses) turns italic like reminder text, and `*asterisks*` make anything italic.
 - **Four looks:** full art with a fade, full art with a text panel, a classic frame in any color, or a **custom layout**.
 - **Custom layout:** every piece of text is a layer you can drag, resize and rotate, with 20 fonts, outlines, shadows, 3D lettering, vertical text, and box or torn-strip backgrounds. Start from a ready-made design (comic cover, torn strips, poster, vertical title, handwritten) and change anything. Two color pickers (and eight color pairs) recolor every box, strip and its text at once.
-- **Mana symbol styles:** classic, flat, outline, solid color or symbol only, in any color, for the whole card or one layer.
+- **Mana symbol styles:** classic, flat, outline, solid color, symbol only or pixel, in any color, for the whole card or one layer.
 - **Your own symbols:** upload an image for any symbol code. Replace a built-in one like `{B}`, or make a new one like `{HEART}`.
 - **Set symbol and rarity:** common, uncommon, rare or mythic. Upload your own set symbol and it's colored by rarity automatically, or upload a separate image for each rarity.
 - **One-click styles:** over twenty ready-made looks, including classic, borderless, comic, noir, pop art, risograph, oil painting, starship console, modern game case, VHS tape, playtest misprint, worn paperback, pulp comic and retro game box, each previewed with your own card.
@@ -19,8 +19,8 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Vintage pack:** a retro packaging design with a big condensed name, a pinstriped lower half and a framed art window. Great for basic lands.
 - **Comic cover:** a 1970s comic-book cover with a price box, a publisher box, a "presents" banner, a huge 3D title, the flavor text in a speech balloon and the rules in yellow caption boxes.
 - **Fantasy paperback:** an old paperback cover with tinted art, the artist's name as the author, a blackletter title and a price strip down the spine with the mana cost.
-- **Scales & scroll:** a parchment scroll for the name, a dark type bar, a parchment rules panel and dragon scales down both sides.
-- **Pixel hero:** pixel-art art (a new filter) with chunky game-style text boxes in a pixel font.
+- **Scales & scroll:** the name on a smoky, flame-edged plume of dragon breath that turns down into the dragon's neck; its scaled body coils down the right side while another loop comes in from off the left edge and back out. The type line sits on an ornate pointed plaque over a parchment rules panel.
+- **Pixel hero:** pixel-art art (a new filter), pixel mana symbols, and chunky game-style text boxes in a pixel font.
 - **Playtest cards:** a plain cream card with black serif text, the mana cost written as letters (`2W`, `TAP`), and photocopied art in a pasted-in window, like a homemade playtest card.
 - **Print errors:** toner specks like a photocopy, a color misprint (some text and art printed in magenta or cyan, a yellow ghost of the card, color-bar stripes) or a bad print run with a miscut. Works with any style.
 - **Art window:** in the custom layout, an art window layer puts the picture in a box you can move and resize. Drag inside it to move the picture, or drag its edge to move the window.
