@@ -597,6 +597,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
             <select id="rarity"><option value="">None (no set symbol)</option><option value="C">Common</option><option value="U">Uncommon</option><option value="R">Rare</option><option value="M">Mythic rare</option></select>
           </label>
         </div>
+        <label for="setCode">Official set symbol (set code) <input type="text" id="setCode" maxlength="8" placeholder="e.g. MH3, LTR, DSK" autocomplete="off" spellcheck="false"></label>
+        <span class="hint" id="setCodeHint" style="margin-top:-6px">Filled in automatically when you look up a card. Uses the symbol from <a href="https://scryfall.com/sets" target="_blank" rel="noopener">Scryfall</a> instead of your own. Clear it to use your own symbol.</span>
         <label class="inline"><input type="checkbox" id="setTint" checked> Color my set symbol by rarity (black, silver, gold, orange)</label>
         <div class="slots" id="setSlots"></div>
         <span class="hint">The set symbol shows at the right end of the type line. In a custom layout, add a “Set symbol (rarity)” layer to place it anywhere.</span>
@@ -669,6 +671,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <button type="button" id="deckOpen">Add a deck list…</button>
         <button type="button" id="landOpen">Make basic lands…</button>
         <button type="button" id="pickFinished">Add finished card images…</button>
+        <button type="button" id="pickBleed" title="Adds a ⅛″ bleed edge to card images you already saved, by mirroring their outer edges. Saves 800 dpi PNGs.">Add bleed to images…</button>
+        <input type="file" id="bleedFiles" accept="image/*" multiple hidden>
         <input type="file" id="finished" accept="image/*" multiple hidden>
         <button type="button" id="saveZip" disabled title="Every card on the sheet as its own 800 dpi PNG with ⅛″ bleed, in one zip: ready to upload to a print shop">Save all as print-shop PNGs (zip)</button>
         <button type="button" class="primary" id="savePdf" disabled>Save PDF</button>
@@ -687,6 +691,10 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <option value="#00b7eb">Cyan</option><option value="none">Off</option>
         </select>
       </label>
+      <label for="cardBack">Card back (print-shop zip)
+        <select id="cardBack"><option value="none">None</option><option value="plain">Plain playtest back</option><option value="mine">My own image…</option></select>
+      </label>
+      <input type="file" id="cardBackFile" accept="image/*" hidden>
       <label for="cornerColor">Corner crosshairs (between cards)
         <select id="cornerColor">
           <option value="#ff00ff">Magenta</option><option value="#00b7eb">Cyan</option><option value="#39d353">Green</option>
@@ -772,7 +780,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label','aiArt','aiModel'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label','aiArt','aiModel','setCode'];
 const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
@@ -782,7 +790,7 @@ const SAMPLE = {
   pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Playtest card — not for sale',
   layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
   pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true,
-  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none', label: 'design', aiArt: false, aiModel: ''
+  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none', label: 'design', aiArt: false, aiModel: '', setCode: ''
 };
 // Original example cards used for the random first-visit card.
 const EXAMPLES = [
@@ -1069,13 +1077,34 @@ function builtinSetShape() { // a simple faceted gem, used until the user upload
   return c;
 }
 const rarityCache = new Map();
-function rarityImage(r, tint) {
+// Official set symbols, fetched from Scryfall by set code and kept for the visit.
+const setIcons = new Map();
+function setIcon(code) {
+  code = String(code || '').trim().toLowerCase(); if (!/^[a-z0-9]{2,6}$/.test(code)) return null;
+  const got = setIcons.get(code);
+  if (got) return got.img && got.img.naturalWidth ? got.img : null;
+  setIcons.set(code, { loading: true });
+  (async () => {
+    try {
+      const j = await sf('/sets/' + code), svg = await (await fetch(j.icon_svg_uri)).text();
+      const img = await loadImage('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.replace('<svg ', '<svg width="400" height="400" preserveAspectRatio="xMidYMid meet" ')));
+      setIcons.set(code, { img }); rarityCache.clear(); symVersion++; draw();
+      if ($('setCode').value.trim().toLowerCase() === code) $('setCodeHint').textContent = `Using the ${j.name} set symbol from Scryfall. Clear the code to use your own.`;
+    } catch (e) {
+      setIcons.set(code, { failed: true });
+      if ($('setCode').value.trim().toLowerCase() === code) $('setCodeHint').textContent = `No set “${code.toUpperCase()}” found on Scryfall. Check the code, or clear it to use your own symbol.`;
+    }
+  })();
+  return null;
+}
+function rarityImage(r, tint, code) {
   if (!RARITY[r]) return null;
-  const own = symLib.get('SET:' + r);
+  const icon = code ? setIcon(code) : null;
+  const own = icon ? null : symLib.get('SET:' + r);
   if (own && own.img.naturalWidth) return own.img;
-  const base = symLib.get('SET'), src = base && base.img.naturalWidth ? base.img : null;
+  const base = symLib.get('SET'), src = icon || (base && base.img.naturalWidth ? base.img : null);
   if (src && !tint) return src;
-  const key = r + '|' + (src ? symVersion : 'builtin');
+  const key = r + '|' + (icon ? 'set:' + code.toLowerCase() : src ? symVersion : 'builtin');
   if (rarityCache.has(key)) return rarityCache.get(key);
   const shape = src || builtinSetShape();
   const sw = shape.naturalWidth || shape.width, sh = shape.naturalHeight || shape.height;
@@ -1097,7 +1126,7 @@ function rarityImage(r, tint) {
 }
 // Draws the set symbol right-aligned at `right`, centered on cy, `h` tall. Returns its width (0 if none).
 function drawRarity(g, o, right, cy, h) {
-  const img = rarityImage(o.rarity, o.setTint); if (!img) return 0;
+  const img = rarityImage(o.rarity, o.setTint, o.setCode); if (!img) return 0;
   const w = h * (img.naturalWidth || img.width) / (img.naturalHeight || img.height);
   g.drawImage(img, right - w, cy - h / 2, w, h); return w;
 }
@@ -3181,7 +3210,7 @@ function drawLayer(g, L, o) {
   let bw, bh, paintAll, kind, lay = null, avail = 0, hugX = 0;
   if (L.src === 'rarity') {
     kind = 'cost';
-    const img = rarityImage(o.rarity, o.setTint);
+    const img = rarityImage(o.rarity, o.setTint, o.setCode);
     if (!img) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; return null; }
     const ih = size, iw = ih * img.width / img.height;
     bw = Math.max(+L.w, iw + 2 * pad); bh = ih + 2 * pad;
@@ -3771,7 +3800,9 @@ function cardPng(o, art, dpi, bleed) {
   const k = dpi / 300, m = bleed ? BLEED : 0, c = document.createElement('canvas');
   c.width = Math.round((W + m * 2) * k); c.height = Math.round((H + m * 2) * k);
   const g = c.getContext('2d'); g.setTransform(k, 0, 0, k, m * k, m * k);
+  if (art.finished && bleed && !art.hasBleed) { g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(mirrorBleed(art.img, k), 0, 0); return c; }
   if (art.finished) { // a finished card image: fill the card (and its bleed) edge to edge
+    if (art.hasBleed && !bleed) { const iw = art.img.naturalWidth, ih = art.img.naturalHeight, bx = iw * (.125 / 2.75), by = ih * (.125 / 3.75); g.drawImage(art.img, bx, by, iw - 2 * bx, ih - 2 * by, 0, 0, W, H); return c; }
     const s0 = Math.max((W + m * 2) / art.img.naturalWidth, (H + m * 2) / art.img.naturalHeight), w = art.img.naturalWidth * s0, h = art.img.naturalHeight * s0;
     g.fillStyle = '#000'; g.fillRect(-m, -m, W + m * 2, H + m * 2); g.drawImage(art.img, (W - w) / 2, (H - h) / 2, w, h);
     return c;
@@ -3987,6 +4018,7 @@ $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
 $('guides').onchange = draw;
 $('resetArt').onclick = () => { st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; draw(); };
 $('save').onclick = () => exportPng(false);
+$('setCode').addEventListener('input', () => { $('setCodeHint').textContent = 'Uses the symbol from Scryfall instead of your own. Clear it to use your own symbol.'; });
 const syncAi = () => { $('aiModel').disabled = !$('aiArt').checked; };
 $('aiArt').addEventListener('input', syncAi); syncAi();
 $('saveBleed').onclick = () => exportPng(true);
@@ -4140,8 +4172,13 @@ function cardCanvas(e, res) {
     try { render(g, { ...e.form, round: false }, false); } finally { Object.assign(st, saved); }
   } else {
     g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
-    const s = Math.max(W / e.img.naturalWidth, H / e.img.naturalHeight), w = e.img.naturalWidth * s, h = e.img.naturalHeight * s;
-    g.drawImage(e.img, (W - w) / 2, (H - h) / 2, w, h);
+    if (e.hasBleed) { // trim the bleed: the card is the middle 2.5 x 3.5 in of the 2.75 x 3.75 in image
+      const iw = e.img.naturalWidth, ih = e.img.naturalHeight, bx = iw * (.125 / 2.75), by = ih * (.125 / 3.75);
+      g.drawImage(e.img, bx, by, iw - 2 * bx, ih - 2 * by, 0, 0, W, H);
+    } else {
+      const s = Math.max(W / e.img.naturalWidth, H / e.img.naturalHeight), w = e.img.naturalWidth * s, h = e.img.naturalHeight * s;
+      g.drawImage(e.img, (W - w) / 2, (H - h) / 2, w, h);
+    }
   }
   return c;
 }
@@ -4174,16 +4211,19 @@ function loadImage(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
 }
 async function addFinished(files) {
-  let n = 0;
+  let n = 0, bled = 0;
   for (const f of files) {
     if (!f.type.startsWith('image/')) continue;
     try {
       const img = await loadImage(URL.createObjectURL(f));
-      const e = { id: newId(), kind: 'image', form: { name: f.name.replace(/\.[^.]+$/, '') }, img, blob: f, zoom: 1, ox: 0, oy: 0, copies: 1, order: Date.now() + n };
+      // a print-shop render has an extra 1/8" all round: 2.75 x 3.75 in instead of 2.5 x 3.5
+      const ratio = img.naturalWidth / img.naturalHeight, hasBleed = Math.abs(ratio - 2.75 / 3.75) < .006;
+      if (hasBleed) bled++;
+      const e = { id: newId(), kind: 'image', form: { name: f.name.replace(/\.[^.]+$/, '').replace(/\s*\(bleed\).*$/i, '') }, img, blob: f, zoom: 1, ox: 0, oy: 0, copies: 1, order: Date.now() + n, hasBleed };
       makeThumb(e); sheet.push(e); persist(e); n++;
     } catch (err) {}
   }
-  sheetStatus().textContent = n ? `Added ${n} card image${n > 1 ? 's' : ''} to the print sheet.` : 'None of those files could be read as images.';
+  sheetStatus().textContent = n ? `Added ${n} card image${n > 1 ? 's' : ''} to the print sheet.` + (bled ? ` ${bled} had a ⅛″ bleed edge; it's trimmed off for printing at home and kept for print-shop zips.` : '') : 'None of those files could be read as images.';
   renderSheet();
 }
 function editEntry(id) {
@@ -4237,12 +4277,14 @@ async function saveZip() {
     for (let i = 0; i < sheet.length; i++) {
       const e = sheet[i]; status.textContent = `Rendering card ${i + 1} of ${sheet.length}…`;
       if (e.kind === 'made') { await fontsReadyFor(e.form); if (!(e.form.artist || '').trim() && !e.form.aiArt) missing.push(e.form.name || 'Untitled'); }
-      const c = e.kind === 'made' ? cardPng(e.form, { img: e.img, zoom: e.zoom, ox: e.ox, oy: e.oy }, 800, true) : cardPng({}, { img: e.img, finished: true }, 800, true);
+      const c = e.kind === 'made' ? cardPng(e.form, { img: e.img, zoom: e.zoom, ox: e.ox, oy: e.oy }, 800, true) : cardPng({}, { img: e.img, finished: true, hasBleed: e.hasBleed }, 800, true);
       const blob = await new Promise(r => c.toBlob(r, 'image/png'));
       let base = fileBase(e.form && e.form.name); const n = (used.get(base) || 0) + 1; used.set(base, n);
       zip.file(`${base}${n > 1 ? ' ' + n : ''}${e.copies > 1 ? ` (x${e.copies})` : ''}.png`, blob);
       await new Promise(r => setTimeout(r, 0));
     }
+    const back = backPng(800 / 300);
+    if (back) zip.file('back.png', await new Promise(r => back.toBlob(r, 'image/png')));
     status.textContent = 'Zipping…';
     const out = await zip.generateAsync({ type: 'blob' });
     await saveBlob(out, 'proxy-sheet-800dpi-bleed.zip', status);
@@ -4251,6 +4293,83 @@ async function saveZip() {
   btn.disabled = !sheet.length;
 }
 $('saveZip').onclick = saveZip;
+// Adds a 1/8" bleed to a finished card image (no bleed yet): the card fills the middle, and each edge strip
+// is mirrored outward into the bleed, the usual way print-shop files are extended.
+function mirrorBleed(img, k) {
+  const M = Math.round(BLEED * k), cw = Math.round(W * k), ch = Math.round(H * k);
+  const card = document.createElement('canvas'); card.width = cw; card.height = ch;
+  const cg = card.getContext('2d'), s0 = Math.max(cw / img.naturalWidth, ch / img.naturalHeight), iw = img.naturalWidth * s0, ih = img.naturalHeight * s0;
+  cg.drawImage(img, (cw - iw) / 2, (ch - ih) / 2, iw, ih);
+  const c = document.createElement('canvas'); c.width = cw + 2 * M; c.height = ch + 2 * M;
+  const g = c.getContext('2d');
+  g.drawImage(card, M, M);
+  const flip = (sx, sy, sw, sh, dx, dy, fx, fy) => { g.save(); g.translate(dx + (fx ? sw : 0), dy + (fy ? sh : 0)); g.scale(fx ? -1 : 1, fy ? -1 : 1); g.drawImage(card, sx, sy, sw, sh, 0, 0, sw, sh); g.restore(); };
+  flip(0, 0, M, ch, 0, M, true, false);                 // left
+  flip(cw - M, 0, M, ch, M + cw, M, true, false);       // right
+  flip(0, 0, cw, M, M, 0, false, true);                 // top
+  flip(0, ch - M, cw, M, M, M + ch, false, true);       // bottom
+  flip(0, 0, M, M, 0, 0, true, true);                   // corners
+  flip(cw - M, 0, M, M, M + cw, 0, true, true);
+  flip(0, ch - M, M, M, 0, M + ch, true, true);
+  flip(cw - M, ch - M, M, M, M + cw, M + ch, true, true);
+  return c;
+}
+$('pickBleed').onclick = () => $('bleedFiles').click();
+$('bleedFiles').onchange = async e => {
+  const files = [...e.target.files].filter(f => f.type.startsWith('image/')); e.target.value = '';
+  const status = sheetStatus(); if (!files.length) return;
+  const k = 800 / 300, out = [];
+  for (let i = 0; i < files.length; i++) {
+    status.textContent = `Adding bleed to ${i + 1} of ${files.length}…`;
+    try {
+      const img = await loadImage(URL.createObjectURL(files[i]));
+      if (Math.abs(img.naturalWidth / img.naturalHeight - 2.75 / 3.75) < .006) { out.push({ name: files[i].name, skip: true }); continue; }
+      const c = mirrorBleed(img, k);
+      out.push({ name: fileBase(files[i].name.replace(/\.[^.]+$/, '')) + ' (bleed) 800dpi.png', blob: await new Promise(r => c.toBlob(r, 'image/png')) });
+    } catch (err) { out.push({ name: files[i].name, bad: true }); }
+  }
+  const ok = out.filter(x => x.blob), skipped = out.filter(x => x.skip).length, bad = out.filter(x => x.bad).length;
+  if (ok.length === 1) await saveBlob(ok[0].blob, ok[0].name, status);
+  else if (ok.length > 1) {
+    if (!window.JSZip) { status.textContent = 'The zip builder didn’t load. Check your connection, or add bleed to one image at a time.'; return; }
+    const zip = new window.JSZip(); ok.forEach(x => zip.file(x.name, x.blob));
+    await saveBlob(await zip.generateAsync({ type: 'blob' }), 'cards-with-bleed.zip', status);
+  } else status.textContent = '';
+  const notes = [];
+  if (skipped) notes.push(`${skipped} already had a bleed edge and ${skipped > 1 ? 'were' : 'was'} skipped`);
+  if (bad) notes.push(`${bad} couldn’t be read`);
+  if (notes.length) status.textContent = (status.textContent ? status.textContent + ' · ' : '') + notes.join(', ') + '.';
+};
+// Card back for print-shop zips: a plain design, or the user's own image (kept in this browser).
+let backImg = null;
+function plainBack(k) {
+  const m = BLEED, c = document.createElement('canvas'); c.width = Math.round((W + m * 2) * k); c.height = Math.round((H + m * 2) * k);
+  const g = c.getContext('2d'); g.setTransform(k, 0, 0, k, m * k, m * k);
+  const gr = g.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, H * .7); gr.addColorStop(0, '#5b3a22'); gr.addColorStop(1, '#1e120a');
+  g.fillStyle = gr; g.fillRect(-m, -m, W + m * 2, H + m * 2);
+  g.strokeStyle = '#c9a25e'; g.lineWidth = 10; g.beginPath(); g.roundRect(40, 40, W - 80, H - 80, 30); g.stroke();
+  g.lineWidth = 4; g.beginPath(); g.ellipse(W / 2, H / 2, 250, 360, 0, 0, Math.PI * 2); g.stroke();
+  g.fillStyle = '#e9d3a2'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `700 74px ${FONTS.cinzel.f}`; g.fillText(swapLabel('PLAYTEST', readForm().label), W / 2, H / 2 - 30);
+  g.font = `700 34px ${FONTS.cinzel.f}`; g.fillText('NOT FOR SALE', W / 2, H / 2 + 50);
+  return c;
+}
+function backPng(k) {
+  if ($('cardBack').value === 'plain') return plainBack(k);
+  if ($('cardBack').value === 'mine' && backImg) return cardPng({}, { img: backImg, finished: true, hasBleed: Math.abs(backImg.naturalWidth / backImg.naturalHeight - 2.75 / 3.75) < .006 }, k * 300, true);
+  return null;
+}
+$('cardBack').addEventListener('change', () => {
+  try { localStorage.setItem('proxyforge.cardBack', $('cardBack').value); } catch (e) {}
+  if ($('cardBack').value === 'mine' && !backImg) $('cardBackFile').click();
+});
+$('cardBackFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) { if (!backImg) $('cardBack').value = 'none'; return; }
+  try { backImg = await loadImage(URL.createObjectURL(f)); await idb.artPut({ id: '__back', blob: f, name: f.name, added: 0 }); sheetStatus().textContent = `Card back set to “${f.name}”.`; }
+  catch (err) { $('cardBack').value = 'none'; sheetStatus().textContent = 'That card back couldn’t be read.'; }
+};
+try { const v = localStorage.getItem('proxyforge.cardBack'); if (v) $('cardBack').value = v; } catch (e) {}
+idb.artAll().then(items => { const b = items.find(x => x.id === '__back'); if (b) loadImage(URL.createObjectURL(b.blob)).then(i => { backImg = i; }); }).catch(() => {});
 async function savePdf() {
   const status = sheetStatus();
   if (!window.jspdf) { status.textContent = 'The PDF builder didn’t load. Check your internet connection and reload the page.'; return; }
@@ -4390,7 +4509,7 @@ function cardText(card, i = 0) {
   return {
     name: pick('name') || '', cost: pick('mana_cost') || '', type, rules: pick('oracle_text') || '', flavor: pick('flavor_text') || '', pt: String(pt),
     info: [card.collector_number, (card.set || '').toUpperCase(), (card.lang || 'en').toUpperCase()].filter(Boolean).join(' · '),
-    rarity: RARITY_CODE[card.rarity] || '', color, artist: pick('artist') || '',
+    rarity: RARITY_CODE[card.rarity] || '', setCode: (card.set || '').toUpperCase(), color, artist: pick('artist') || '',
     art: (f.image_uris || card.image_uris || {}).art_crop || '',
   };
 }
