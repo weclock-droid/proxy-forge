@@ -329,6 +329,11 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="pixel">Pixel art</option>
               <option value="glass">Stained glass</option>
               <option value="woodcut">Woodcut</option>
+              <option value="lino">Linocut in the card's color</option>
+              <option value="stencil">Stencil (black & white)</option>
+              <option value="linedraw">Neon outlines in the card's color</option>
+              <option value="pixtone">Glowing pixels in the card's color</option>
+              <option value="xray">X-ray</option>
               <option value="blueprint">Blueprint</option>
               <option value="pencil">Pencil sketch</option>
               <option value="fried">Deep fried</option>
@@ -549,7 +554,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="crt">Old TV screen, 4:3 (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="chamfer">Neon box (cut corners)</option><option value="bevel">Beveled picture frame</option><option value="shade">Dark fade (for text over art)</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="crt">Old TV screen, 4:3 (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="chamfer">Neon box (cut corners)</option><option value="bevel">Beveled picture frame</option><option value="drip">Paint drips</option><option value="raised">Raised button (90s computer)</option><option value="sunken">Sunken panel (90s computer)</option><option value="titlebar">Window title bar</option><option value="knotpanel">Game menu panel</option><option value="rays">Sunburst rays</option><option value="linofill">Carved color block</option><option value="shade">Dark fade (for text over art)</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -1271,8 +1276,10 @@ const CARDTONE = { W: ['#3a2f1a', '#f3e3b2'], U: ['#0e3436', '#a6dcd2'], B: ['#1
   M: ['#3a2a08', '#f1d47c'], A: ['#25282c', '#d4d8dc'], L: ['#2e2414', '#e0cca4'], C: ['#2a2a2a', '#dcd8cc'] };
 function fxImage(img, o) {
   let fx = o && o.artFx; if (!fx || fx === 'none') return img;
+  if (fx === 'lino') { const [d] = CARDTONE[cardColor(o)] || CARDTONE.C; o = { ...o, fxDark: TINT[cardColor(o)] || d }; }
+  if (fx === 'linedraw' || fx === 'pixtone') o = { ...o, fxDark: NEON[cardColor(o)] || NEON.C, fxLight: '#fff1c4' };
   if (fx === 'cardtone') { const [d, l] = CARDTONE[cardColor(o)] || CARDTONE.C; o = { ...o, fxDark: d, fxLight: l }; fx = 'duotone'; }
-  const amt = Math.max(0, Math.min(1, +o.fxAmt || 0)), key = [fx, o.fxDark, o.fxLight, amt].join('|');
+  const amt = Math.max(0, Math.min(1, +o.fxAmt || 0)), key = [fx, /^(lino|linedraw|pixtone)$/.test(fx) ? cardColor(o) : '', o.fxDark, o.fxLight, amt].join('|');
   let m = fxCache.get(img); if (!m) fxCache.set(img, m = new Map());
   if (m.has(key)) return m.get(key);
   const iw = img.naturalWidth, ih = img.naturalHeight, k = Math.min(1, 1800 / Math.max(iw, ih));
@@ -1304,8 +1311,8 @@ function fxImage(img, o) {
     g.putImageData(id, 0, 0);
     if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c;
   }
-  if (fx === 'glass' || fx === 'woodcut' || fx === 'blueprint' || fx === 'pencil') {
-    craftFx(c, g, img, iw, ih, amt, fx);
+  if (/^(glass|woodcut|blueprint|pencil|lino|stencil|linedraw|pixtone|xray)$/.test(fx)) {
+    craftFx(c, g, img, iw, ih, amt, fx, o.fxDark, o.fxLight);
     if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c;
   }
   if (fx === 'paint') { oilPaint(c, g, img, iw, ih, amt); if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c; }
@@ -1342,7 +1349,7 @@ function fxImage(img, o) {
 // woodcut = carved ink lines that thicken in the shadows, on cream paper;
 // blueprint = the picture's edges as white lines on blue, over a grid;
 // pencil = graphite outlines and cross-hatching on sketchbook paper.
-function craftFx(c, g, img, iw, ih, amt, fx) {
+function craftFx(c, g, img, iw, ih, amt, fx, inkHex, lightHex) {
   const k = Math.min(1, 1100 / Math.max(iw, ih)), w = Math.max(1, Math.round(iw * k)), h = Math.max(1, Math.round(ih * k));
   c.width = w; c.height = h; g.drawImage(img, 0, 0, w, h);
   const src = g.getImageData(0, 0, w, h), d = src.data, n = w * h, out = g.createImageData(w, h), o = out.data;
@@ -1384,13 +1391,50 @@ function craftFx(c, g, img, iw, ih, amt, fx) {
       const glow = 1.18 - Math.min(1, dist[p] / cell) * .4, grain = .94 + hash(p % w, p / w | 0) * .1;
       set(p, Math.min(255, r * glow * grain), Math.min(255, g2 * glow * grain), Math.min(255, b * glow * grain));
     }
-  } else if (fx === 'woodcut') {
+  } else if (fx === 'stencil') { // two flat colors, like a spray-paint stencil or photocopied poster
+    const thr = .32 + amt * .36;
+    for (let p = 0; p < n; p++) { const nz = (hash(p % w, p / w | 0) - .5) * .08; if (L[p] + nz > thr) set(p, 244, 244, 240); else set(p, 20, 20, 24); }
+  } else if (fx === 'linedraw') { // the picture's main outlines as thick colored strokes on black
+    const k2 = Math.max(2, Math.round(w / 260)), sw = Math.ceil(w / k2), sh = Math.ceil(h / k2);
+    const t = document.createElement('canvas'); t.width = sw; t.height = sh; const tg = t.getContext('2d', { willReadFrequently: true });
+    tg.filter = 'blur(1.4px)'; tg.drawImage(img, 0, 0, sw, sh);
+    const d2 = tg.getImageData(0, 0, sw, sh).data, S = new Float32Array(sw * sh);
+    for (let q = 0, i = 0; q < S.length; q++, i += 4) S[q] = (0.299 * d2[i] + 0.587 * d2[i + 1] + 0.114 * d2[i + 2]) / 255;
+    const [ar, ag, ab] = hex(inkHex || '#29c6ff'), [lr, lg, lb] = hex(lightHex || '#fff1c4'), thr = .2 - amt * .12;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const sx = Math.min(sw - 2, Math.max(1, x / k2 | 0)), sy = Math.min(sh - 2, Math.max(1, y / k2 | 0)), q = sy * sw + sx;
+      const e = Math.hypot(S[q + 1] - S[q - 1], S[q + sw] - S[q - sw]);
+      const p = y * w + x;
+      if (e > thr) { const top = y < h * (.35 + hash(x >> 5, 3) * .1); if (top) set(p, ar, ag, ab); else set(p, lr, lg, lb); }
+      else set(p, 6, 6, 8);
+    }
+  } else if (fx === 'pixtone') { // chunky pixels in shades of the card's color on a dark ground
+    const cols = Math.round(110 - amt * 70), cell = w / cols, rows = Math.ceil(h / cell);
+    const t = document.createElement('canvas'); t.width = cols; t.height = rows; const tg = t.getContext('2d', { willReadFrequently: true });
+    tg.drawImage(img, 0, 0, cols, rows);
+    const d2 = tg.getImageData(0, 0, cols, rows).data, [ar, ag, ab] = hex(inkHex || '#29c6ff'), bg = [30, 26, 36];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const q = ((y / cell | 0) * cols + (x / cell | 0)) * 4, l = (0.299 * d2[q] + 0.587 * d2[q + 1] + 0.114 * d2[q + 2]) / 255;
+      const lv = Math.round(Math.max(0, (l - .25) / .75) * 4) / 4, p = y * w + x;
+      if (lv <= 0) set(p, ...bg); else set(p, bg[0] + (ar - bg[0]) * lv + (lv === 1 ? 40 : 0), bg[1] + (ag - bg[1]) * lv + (lv === 1 ? 40 : 0), bg[2] + (ab - bg[2]) * lv + (lv === 1 ? 40 : 0));
+    }
+  } else if (fx === 'xray') { // inverted, lavender, grainy, like film on a light box
+    const E = edge(), con = .8 + amt * 1.2;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const p = y * w + x, inv = 1 - L[p];
+      let v = Math.max(0, Math.min(1, E[p] * 2 * con + Math.pow(inv, 3) * .3 + L[p] * .12 + .04));
+      v = Math.max(0, Math.min(1, v + (hash(x, y) - .5) * .12));
+      if (hash(x >> 2, y * 7) > .9992) v = 1;
+      set(p, 18 + v * 210, 16 + v * 200, 28 + v * 222);
+    }
+  } else if (fx === 'woodcut' || fx === 'lino') {
+    const [ir, ig, ib] = fx === 'lino' ? hex(inkHex || '#2f5f9e') : [26, 20, 16], [pr, pg, pb] = fx === 'lino' ? [250, 250, 246] : [239, 230, 210];
     const freq = (.9 - amt * .55) * w / 1100;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const p = y * w + x, t = Math.max(0, Math.min(1, (L[p] - .5) * 1.5 + .5));
       const wave = .5 + .5 * Math.sin((y + Math.sin(x * .013) * 9 + Math.sin(x * .041 + y * .01) * 3) * freq);
       const ink = t < .12 || (t < .9 && wave > t * 1.05);
-      if (ink) set(p, 26, 20, 16); else set(p, 239, 230, 210);
+      if (ink) set(p, ir, ig, ib); else set(p, pr, pg, pb);
     }
   } else if (fx === 'blueprint') {
     const E = edge(), thr = .32 - amt * .22, grid = Math.round(44 * w / 1100);
@@ -2401,7 +2445,7 @@ const FONTS = {
 };
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
-  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', kanji: 'Name in Japanese (basic lands)', stars: 'Level stars (mana value)', atkdef: 'Power / toughness as ATK / DEF', landmana: 'Card color as one mana symbol', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
+  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', kanji: 'Name in Japanese (basic lands)', stars: 'Level stars (mana value)', mv: 'Mana value (number)', subtype: 'Subtypes (after the dash)', typeleft: 'Card type (before the dash)', rulesx: 'Rules + flavor (blank for basics)', paymv: '“PAY” and the mana value', maintype: 'Main card type (BASIC LAND, CREATURE…)', illus: '“Illustrated by” the artist', dialog: 'Rules, or “Tap for 1 mana?” for basics', atkdef: 'Power / toughness as ATK / DEF', landmana: 'Card color as one mana symbol', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
 };
 const LDEF = {
   src: 'custom', text: '', x: 60, y: 60, w: 630, h: 0, rot: 0, font: 'spectral', size: 40, color: '#ffffff', align: 'left',
@@ -2714,6 +2758,164 @@ const PRESETS = {
     { src: 'pt', x: 540, y: 922, w: 180, size: 34, font: 'rubik', color: '#16171a', align: 'center', bg: 'box', bgColor: '#d9dce1', bgOp: 1, pad: 8, rad: 22, bdW: 2, bdColor: '#8d939b', effect: 'none' },
     { src: 'credit', x: 44, y: 990, w: 470, size: 13, font: 'plex', italic: true, color: '#3a3d42', effect: 'none' },
   ],
+  desktop: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#008080', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 40, y: 46, w: 670, h: 912, bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, pad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 50, y: 56, w: 650, h: 54, bg: 'titlebar', bgColor: '#000080', bgOp: 1, pad: 0, effect: 'none' },
+    { src: 'name', x: 62, y: 64, w: 400, size: 34, font: 'plex', color: '#ffffff', fit: true, effect: 'none' },
+    { src: 'cost', x: 430, y: 64, w: 120, size: 32, align: 'right', pip: 'pixel', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 72, y: 126, w: 606, h: 576, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, pad: 0, effect: 'none' },
+    { src: 'art', x: 80, y: 134, w: 590, h: 560, bg: 'box', effect: 'none' },
+    { src: 'landmana', x: 82, y: 724, w: 150, h: 150, size: 128, align: 'center', vmid: true, pip: 'pixel', effect: 'none' },
+    { src: 'dialog', x: 250, y: 716, w: 430, h: 110, size: 34, font: 'plex', color: '#111111', align: 'center', vmid: true, lh: 1.1, pip: 'pixel', effect: 'none' },
+    { src: 'custom', text: 'OK', x: 262, y: 840, w: 186, size: 30, font: 'plex', color: '#111111', align: 'center', bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, pad: 12, effect: 'none' },
+    { src: 'custom', text: 'Cancel', x: 476, y: 840, w: 196, size: 30, font: 'plex', color: '#111111', align: 'center', bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, pad: 12, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 52, y: 906, w: 646, h: 40, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, pad: 0, effect: 'none' },
+    { src: 'type', x: 64, y: 912, w: 470, size: 20, font: 'plex', color: '#111111', fit: true, effect: 'none' },
+    { src: 'pt', x: 560, y: 912, w: 126, size: 20, font: 'plex', color: '#111111', align: 'right', effect: 'none' },
+    { src: 'credit', x: 50, y: 976, w: 650, size: 18, font: 'plex', color: '#e8f6f6', effect: 'none' },
+  ],
+  rpgitem: () => [
+    { src: 'cost', x: 520, y: 40, w: 190, size: 50, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 14, y: 548, w: 722, h: 400, bg: 'knotpanel', bgColor: '#2a2c30', bgOp: .84, pad: 0, bdColor: '#c9ccd0', effect: 'none' },
+    { src: 'type', x: 70, y: 572, w: 420, size: 30, font: 'antonio', color: '#c9ccd0', fit: true, effect: 'shadow', effColor: '#000000', effSize: .8 },
+    { src: 'name', x: 70, y: 610, w: 610, size: 70, font: 'antonio', upper: true, color: '#ffffff', align: 'center', fit: true, effect: 'shadow', effColor: '#000000', effSize: 1.2 },
+    { src: 'custom', text: '\u00a0', x: 90, y: 700, w: 570, h: 3, bg: 'box', bgColor: '#c9ccd0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: 'MANA', x: 100, y: 722, w: 110, size: 36, font: 'antonio', color: '#bfc2c6', effect: 'shadow' },
+    { src: 'cost', x: 200, y: 718, w: 200, size: 40, align: 'left', pip: 'classic', effect: 'none' },
+    { src: 'custom', text: 'MANA VALUE', x: 380, y: 722, w: 230, size: 36, font: 'antonio', color: '#bfc2c6', align: 'right', effect: 'shadow' },
+    { src: 'mv', x: 620, y: 712, w: 70, size: 54, font: 'antonio', color: '#ffffff', effect: 'shadow', effColor: '#000000', effSize: 1 },
+    { src: 'rulesflavor', x: 70, y: 790, w: 610, h: 140, size: 34, font: 'antonio', color: '#e6e8ea', align: 'center', vmid: true, lh: 1.15, pip: 'classic', kw: 'color', kwColor: '#ffffff', effect: 'shadow', effColor: '#000000', effSize: .8 },
+    { src: 'pt', x: 600, y: 890, w: 100, size: 36, font: 'antonio', color: '#ffffff', align: 'right', effect: 'shadow' },
+    { src: 'custom', text: '\u00a0', x: 0, y: 962, w: 750, h: 88, bg: 'box', bgColor: '#000000', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'credit', x: 40, y: 994, w: 560, size: 16, font: 'plex', color: '#f2f2f2', effect: 'none' },
+  ],
+  boardgame: () => [
+    { src: 'custom', text: '\u00a0', x: 30, y: 30, w: 690, h: 990, bg: 'box', tintBg: 'pastel', bgColor: '#cfe3dc', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'paymv', x: 40, y: 82, w: 670, size: 46, font: 'plex', upper: true, color: '#151515', align: 'center', ls: 4, effect: 'none' },
+    { src: 'name', x: 40, y: 142, w: 670, size: 90, font: 'plex', upper: true, color: '#151515', align: 'center', fit: true, ls: 3, effect: 'none' },
+    { src: 'art', x: 150, y: 300, w: 450, h: 450, bg: 'box', effect: 'none' },
+    { src: 'rulesflavor', x: 60, y: 790, w: 630, h: 190, size: 40, font: 'plex', upper: true, color: '#151515', align: 'center', vmid: true, ls: 2, pip: 'outline', pipColor: '#151515', effect: 'none' },
+    { src: 'pt', x: 600, y: 960, w: 110, size: 32, font: 'plex', color: '#151515', align: 'right', effect: 'none' },
+    { src: 'credit', x: 40, y: 1026, w: 670, size: 11, font: 'plex', color: '#6a6a6a', align: 'center', effect: 'none' },
+  ],
+  album: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', tintBg: 'pastel', bgColor: '#bdeeee', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 100, y: 250, w: 570, h: 620, bdW: 3, bdColor: '#333338', effect: 'none' },
+    { src: 'maintype', x: 100, y: 22, w: 510, size: 160, font: 'antonio', upper: true, color: '#3c3c40', fit: true, lh: .88, effect: 'extrude', effColor: '#a8a8ac', effSize: 1.2 },
+    { src: 'illus', x: 230, y: 206, w: 390, size: 22, font: 'plex', upper: true, color: '#333338', align: 'center', fit: true, effect: 'none' },
+    { src: 'landmana', x: 540, y: 50, w: 210, h: 210, size: 200, align: 'center', vmid: true, pip: 'glyph', tintPip: 'main', pipColor: '#3a7bd5', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 100, y: 890, w: 570, h: 8, bg: 'box', tintBg: 'main', bgColor: '#3a7bd5', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'name', x: 100, y: 902, w: 570, size: 82, font: 'plex', upper: true, tintInk: 'deep', color: '#2a3a6a', align: 'center', fit: true, ls: 24, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 100, y: 990, w: 570, h: 8, bg: 'box', tintBg: 'main', bgColor: '#3a7bd5', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '& OTHER FANTASY STORIES', x: 100, y: 1010, w: 570, size: 18, font: 'plex', upper: true, color: '#333338', align: 'center', effect: 'none' },
+    { src: 'credit', x: -200, y: 330, w: 480, size: 14, font: 'plex', upper: true, color: '#333338', rot: 90, effect: 'none' },
+    { src: 'rulesflavor', x: 120, y: 770, w: 530, h: 90, size: 22, font: 'plex', color: '#ffffff', align: 'center', vmid: true, bg: 'box', bgColor: '#000000', bgOp: .55, pad: 10, rad: 4, pip: 'classic', effect: 'none' },
+  ],
+  sports: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#efe4c6', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 40, y: 40, w: 670, h: 820, rad: 34, bdW: 4, bdColor: '#141414', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 40, y: 830, w: 670, h: 180, bg: 'box', bgColor: '#f5d33a', bgOp: 1, pad: 0, rad: 30, bdW: 4, bdColor: '#141414', effect: 'none' },
+    { src: 'name', x: 60, y: 846, w: 240, h: 150, size: 70, font: 'anton', upper: true, color: '#141414', lh: .95, vmid: true, fit: true, effect: 'none' },
+    { src: 'custom', text: '/', x: 288, y: 834, w: 60, size: 150, font: 'antonio', color: '#141414', align: 'center', effect: 'none' },
+    { src: 'type', x: 350, y: 850, w: 340, size: 30, font: 'oswald', upper: true, color: '#141414', fit: true, effect: 'none' },
+    { src: 'rulesflavor', x: 350, y: 892, w: 345, h: 112, size: 22, font: 'oswald', upper: true, color: '#141414', lh: 1.05, pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 64, y: 752, w: 160, size: 62, font: 'plex', color: '#141414', effect: 'none' },
+    { src: 'cost', x: 540, y: 64, w: 150, size: 80, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'credit', x: 40, y: 1018, w: 670, size: 12, font: 'plex', color: '#5a4a2a', align: 'center', effect: 'none' },
+  ],
+  altered: () => [
+    { src: 'custom', text: '\u00a0', x: 26, y: 26, w: 698, h: 998, bg: 'box', bgColor: '#4a4b50', bgOp: 1, pad: 0, rad: 10, bdW: 3, bdColor: '#1a1a1c', effect: 'none' },
+    { src: 'art', x: 66, y: 76, w: 618, h: 560, bdW: 6, bdColor: '#141416', effect: 'none' },
+    { src: 'cost', x: 560, y: 34, w: 140, size: 34, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'name', x: 60, y: 82, w: 630, size: 104, font: 'fraktur', color: '#f490b8', align: 'center', fit: true, lh: .92, effect: 'outline', effColor: '#26101c', effSize: 1.4 },
+    { src: 'custom', text: '\u00a0', x: 66, y: 664, w: 618, h: 330, bg: 'box', bgColor: '#141416', bgOp: 1, pad: 0, rad: 12, bdW: 5, bdColor: '#66676c', effect: 'none' },
+    { src: 'rules', x: 90, y: 684, w: 570, h: 220, size: 32, font: 'marker', upper: true, color: '#f6f6f2', lh: 1.15, vmid: true, pip: 'classic', effect: 'none' },
+    { src: 'type', x: 90, y: 920, w: 420, size: 42, font: 'caveat', color: '#f6f6f2', effect: 'none' },
+    { src: 'pt', x: 540, y: 924, w: 130, size: 42, font: 'marker', color: '#f490b8', align: 'right', effect: 'none' },
+    { src: 'credit', x: 40, y: 1028, w: 670, size: 11, font: 'plex', color: '#9a9aa0', effect: 'none' },
+  ],
+  linocut: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#2b2b6e', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 22, y: 22, w: 706, h: 1006, bg: 'linofill', tintBg: 'main', bgColor: '#2f9fc2', bgOp: 1, pad: 0, rad: 8, effect: 'none' },
+    { src: 'name', x: 56, y: 46, w: 638, size: 52, font: 'medieval', tintInk: 'main', color: '#2f9fc2', fit: true, bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 14, rad: 34, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', effect: 'none' },
+    { src: 'art', x: 56, y: 142, w: 638, h: 470, rad: 18, bdW: 5, bdColor: '#fbfbf7', effect: 'none' },
+    { src: 'type', x: 56, y: 632, w: 638, size: 34, font: 'medieval', tintInk: 'main', color: '#2f9fc2', fit: true, bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 12, rad: 34, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 56, y: 712, w: 638, h: 290, bg: 'rays', bgColor: '#fbfbf7', bgOp: 1, pad: 0, rad: 18, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', effect: 'none' },
+    { src: 'landmana', x: 285, y: 767, w: 180, h: 180, size: 140, align: 'center', vmid: true, bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 0, rad: 90, bdW: 4, tintBd: 'main', bdColor: '#2f9fc2', pip: 'glyph', tintPip: 'main', pipColor: '#2f9fc2', effect: 'none' },
+    { src: 'rulesflavor', x: 76, y: 724, w: 200, h: 266, size: 20, font: 'medieval', tintInk: 'main', color: '#2f9fc2', vmid: true, pip: 'outline', tintPip: 'main', pipColor: '#2f9fc2', bg: 'box', bgColor: '#fbfbf7', bgOp: .9, pad: 10, rad: 12, effect: 'none' },
+    { src: 'pt', x: 560, y: 940, w: 120, size: 34, font: 'medieval', tintInk: 'main', color: '#2f9fc2', align: 'center', bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 8, rad: 20, effect: 'none' },
+  ],
+  handdrawn: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#f6f5f0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 10, y: 10, w: 730, h: 1030, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 46, bdW: 10, bdColor: '#151515', effect: 'none' },
+    { src: 'name', x: 40, y: 34, w: 600, size: 64, font: 'shadows', upper: true, color: '#3a3a3c', align: 'center', fit: true, effect: 'none' },
+    { src: 'cost', x: 600, y: 44, w: 110, size: 34, align: 'right', pip: 'outline', pipColor: '#3a3a3c', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 26, y: 128, w: 698, h: 3, bg: 'box', bgColor: '#2a2a2c', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 26, y: 132, w: 698, h: 560, bg: 'box', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 26, y: 692, w: 698, h: 3, bg: 'box', bgColor: '#2a2a2c', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'rulesflavor', x: 60, y: 712, w: 630, h: 160, size: 44, font: 'shadows', upper: true, color: '#2a2a2c', align: 'center', vmid: true, pip: 'outline', pipColor: '#2a2a2c', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 26, y: 890, w: 698, h: 3, bg: 'box', bgColor: '#2a2a2c', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'type', x: 50, y: 908, w: 450, h: 110, size: 36, font: 'shadows', upper: true, color: '#2a2a2c', lh: 1.4, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 540, y: 870, w: 260, h: 260, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 130, bdW: 3, bdColor: '#2a2a2c', effect: 'none' },
+    { src: 'pt', x: 580, y: 930, w: 140, size: 66, font: 'shadows', color: '#2a2a2c', align: 'center', effect: 'none' },
+  ],
+  splatter: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#0e0e12', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 110, y: 0, w: 640, h: 1050, bg: 'box', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 150, h: 1050, bg: 'drip', bgColor: '#c8161d', bgOp: 1, pad: 0, effect: 'none' },
+    { src: 'cost', x: 24, y: 36, w: 90, size: 46, vert: true, pip: 'solid', pipColor: '#141418', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 160, y: 30, w: 560, h: 200, bg: 'box', bgColor: '#0e0e12', bgOp: .72, pad: 0, rad: 6, effect: 'none' },
+    { src: 'type', x: 180, y: 40, w: 520, size: 32, font: 'pirata', color: '#f4f4f0', align: 'center', fit: true, effect: 'none' },
+    { src: 'name', x: 180, y: 80, w: 520, size: 86, font: 'pirata', upper: true, color: '#e01b24', align: 'center', fit: true, lh: .95, effect: 'outline', effColor: '#000000', effSize: 1 },
+    { src: 'custom', text: '\u00a0', x: 200, y: 182, w: 480, h: 4, bg: 'box', bgColor: '#f4f4f0', bgOp: 1, pad: 0, rad: 2, effect: 'none' },
+    { src: 'rulesflavor', x: 180, y: 760, w: 530, h: 230, size: 26, font: 'crimson', color: '#f4f4f0', align: 'center', vmid: true, bg: 'box', bgColor: '#0e0e12', bgOp: .8, pad: 16, rad: 6, pip: 'solid', pipColor: '#e9e9e9', kw: 'color', kwColor: '#e01b24', effect: 'none' },
+    { src: 'pt', x: 590, y: 952, w: 130, size: 52, font: 'pirata', color: '#e01b24', align: 'right', effect: 'outline', effColor: '#000000', effSize: 1 },
+    { src: 'credit', x: 180, y: 1018, w: 520, size: 12, font: 'plex', color: '#f4f4f0', effect: 'none' },
+  ],
+  pixglow: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#1e1a24', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 40, y: 40, w: 670, h: 970, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 6, bdW: 6, tintBd: 'neon', bdColor: '#29c6ff', effect: 'none' },
+    { src: 'cost', x: 500, y: 62, w: 190, size: 34, align: 'right', pip: 'pixel', effect: 'none' },
+    { src: 'art', x: 90, y: 116, w: 570, h: 600, bg: 'box', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 245, y: 752, w: 260, h: 8, bg: 'box', tintBg: 'neon', bgColor: '#29c6ff', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'name', x: 60, y: 782, w: 630, size: 52, font: 'pixel', color: '#f6c9a4', align: 'center', fit: true, effect: 'none' },
+    { src: 'type', x: 60, y: 858, w: 630, size: 18, font: 'pixel', color: '#9d8fb0', align: 'center', fit: true, effect: 'none' },
+    { src: 'rulesx', x: 80, y: 894, w: 590, h: 96, size: 28, font: 'terminal', color: '#d8cfe6', align: 'center', vmid: true, lh: 1, pip: 'pixel', effect: 'none' },
+    { src: 'pt', x: 570, y: 946, w: 120, size: 24, font: 'pixel', color: '#f6c9a4', align: 'right', effect: 'none' },
+    { src: 'credit', x: 40, y: 1020, w: 670, size: 12, font: 'plex', color: '#6e6480', align: 'center', effect: 'none' },
+  ],
+  glowline: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#050506', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 0, y: 190, w: 750, h: 640, bg: 'box', effect: 'none' },
+    { src: 'name', x: 70, y: 40, w: 520, size: 104, font: 'caveat', color: '#ffb52e', fit: true, effect: 'none' },
+    { src: 'cost', x: 560, y: 70, w: 150, size: 40, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'type', x: 66, y: 836, w: 620, size: 66, font: 'caveat', color: '#ffb52e', fit: true, effect: 'none' },
+    { src: 'rulesflavor', x: 66, y: 910, w: 520, h: 96, size: 46, font: 'caveat', color: '#ffffff', lh: 1, vmid: true, pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 590, y: 920, w: 120, size: 60, font: 'caveat', color: '#ffffff', align: 'right', effect: 'none' },
+    { src: 'credit', x: 66, y: 1012, w: 620, size: 13, font: 'plex', upper: true, color: '#ffb52e', effect: 'none' },
+  ],
+  retroposter: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', tintBg: 'pastel', bgColor: '#a6d6ae', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 52, y: 120, w: 646, h: 760, rad: 34, bdW: 16, tintBd: 'main', bdColor: '#2f6b5a', effect: 'none' },
+    { src: 'name', x: 34, y: 14, w: 682, size: 170, font: 'righteous', upper: true, tintInk: 'main', color: '#2f6b5a', align: 'center', fit: true, lh: .9, effect: 'outline', effColor: '#fff6dc', effSize: 2.2 },
+    { src: 'landmana', x: 300, y: 806, w: 150, h: 150, size: 96, align: 'center', vmid: true, bg: 'box', tintBg: 'pale', bgColor: '#e3eccb', bgOp: 1, pad: 0, rad: 75, bdW: 12, tintBd: 'main', bdColor: '#2f6b5a', pip: 'glyph', tintPip: 'main', pipColor: '#2f6b5a', effect: 'none' },
+    { src: 'typeleft', x: 60, y: 900, w: 240, size: 34, font: 'righteous', tintInk: 'main', color: '#2f6b5a', fit: true, effect: 'none' },
+    { src: 'subtype', x: 450, y: 900, w: 240, size: 34, font: 'righteous', tintInk: 'main', color: '#2f6b5a', align: 'right', fit: true, effect: 'none' },
+    { src: 'rulesx', x: 90, y: 640, w: 570, h: 150, size: 24, font: 'crimson', color: '#2a2a2a', align: 'center', vmid: true, bg: 'box', bgColor: '#fffaf0', bgOp: .92, pad: 14, rad: 18, pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 590, y: 960, w: 110, size: 40, font: 'righteous', tintInk: 'main', color: '#2f6b5a', align: 'right', effect: 'none' },
+    { src: 'credit', x: 200, y: 976, w: 350, size: 15, font: 'crimson', color: '#fffaf0', align: 'center', bg: 'box', tintBg: 'main', bgColor: '#2f6b5a', bgOp: 1, pad: 10, rad: 16, effect: 'none' },
+  ],
+  xray: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 400, rot: 180, bg: 'shade', bgColor: '#08080c', bgOp: .7, pad: 0, rad: 0, effect: 'none' },
+    { src: 'name', x: 46, y: 38, w: 660, size: 96, font: 'antonio', upper: true, color: '#e8e6f2', fit: true, ls: 6, effect: 'none' },
+    { src: 'type', x: 50, y: 150, w: 420, size: 40, font: 'typewriter', upper: true, color: '#c9c3dc', fit: true, effect: 'none' },
+    { src: 'cost', x: 50, y: 202, w: 300, size: 34, align: 'left', pip: 'solid', pipColor: '#c9c3dc', effect: 'none' },
+    { src: 'rules', x: 300, y: 250, w: 410, h: 420, size: 44, font: 'caveat', color: '#ffffff', lh: 1.15, pip: 'solid', pipColor: '#c9c3dc', effect: 'shadow', effColor: '#000000', effSize: .6 },
+    { src: 'flavor', x: 300, y: 820, w: 410, h: 170, size: 26, font: 'typewriter', upper: true, color: '#e8e6f2', align: 'right', vmid: true, lh: 1.25, effect: 'shadow', effColor: '#000000', effSize: .6 },
+    { src: 'pt', x: 46, y: 940, w: 200, size: 60, font: 'antonio', color: '#e8e6f2', effect: 'none' },
+    { src: 'credit', x: 46, y: 1016, w: 660, size: 13, font: 'typewriter', upper: true, color: '#a9a3bc', align: 'right', effect: 'none' },
+  ],
   clean: () => [
     { src: 'name', x: 50, y: 50, w: 420, size: 42, fit: true },
     { src: 'cost', x: 430, y: 56, w: 272, size: 38, align: 'right' },
@@ -2775,6 +2977,20 @@ function layerText(L, o) {
     case 'credit': return [o.info, o.artist && '✎ ' + o.artist].filter(Boolean).join('   ');
     case 'custom': return swapLabel(L.text || '', o.label);
     case 'monogram': return (o.name || '').trim().charAt(0).toUpperCase();
+    case 'mv': return String(manaValue(o));
+    case 'subtype': return ((o.type || '').split(/[—-]/)[1] || '').trim();
+    case 'typeleft': return (o.type || '').split(/[—-]/)[0].trim();
+    case 'rulesx': { // rules and flavor, but nothing for a basic land's plain mana reminder
+      const r = /^\s*\(?\{T\}: Add \{[WUBRGC]\}\.\)?\s*$/.test(o.rules || '') && /basic/i.test(o.type || '') ? '' : o.rules;
+      return [r, o.flavor].filter(Boolean).join('\n');
+    }
+    case 'paymv': return (o.cost || '').trim() ? 'PAY ' + manaValue(o) : '';
+    case 'maintype': { // the card type before the dash; basic lands read BASIC LAND
+      const t = (o.type || '').split(/[—-]/)[0].trim();
+      return /basic/i.test(t) && /land/i.test(t) ? 'BASIC LAND' : t.replace(/^Legendary /i, '').toUpperCase();
+    }
+    case 'illus': return o.artist ? 'ILLUSTRATED BY ' + o.artist.toUpperCase() : 'A PROXY COLLECTION';
+    case 'dialog': return /basic/i.test(o.type || '') && /land/i.test(o.type || '') ? 'Tap for 1 mana?' : [o.rules, o.flavor].filter(Boolean).join('\n');
     case 'stars': { // one star per point of mana value
       const mv = [...(o.cost || '').matchAll(/\{([^}]+)\}/g)].reduce((t, m) => { const c = m[1].split('/')[0]; return t + (/^\d+$/.test(c) ? +c : /^[XYZ]$/i.test(c) ? 0 : 1); }, 0);
       return '★'.repeat(Math.min(12, mv));
@@ -2888,6 +3104,7 @@ function artShape(g, x, y, w, h, arch, rad, crt) {
 }
 // Card-color tints for layers marked tintBg / tintInk: 'main' is a strong color, 'pale' a light one, 'deep' a dark one.
 const NEON = { W: '#fff3c4', U: '#29c6ff', B: '#b45cff', R: '#ff3b47', G: '#2bff88', M: '#ffd21f', A: '#c9d3de', L: '#ffb547', C: '#9aa6b2' };
+const PASTEL = { W: '#e2e690', U: '#bdeeee', B: '#e0c8e6', R: '#e8a892', G: '#a6d6ae', M: '#f1d98e', A: '#d4d8dc', L: '#e2cfae', C: '#dcd9cf' };
 const BRIGHT = { W: '#efe3b8', U: '#6fb2ea', B: '#9b86bd', R: '#ef8455', G: '#86c867', M: '#f4cf3c', A: '#c4cad2', L: '#c9a473', C: '#d6d8db' };
 const TINT = { W: '#b8963a', U: '#2f5f9e', B: '#4a3d57', R: '#a8392c', G: '#2f6b5a', M: '#b08a2e', A: '#6f7780', L: '#7a6446', C: '#6f6a60' };
 // The card's frame color as real cards work it out: its mana cost's colors (two or more = gold), else lands by the
@@ -2912,10 +3129,11 @@ function tintOf(o, kind) {
   const col = cardColor(o), c = TINT[col] || TINT.C, [r, g2, b] = hex(c), mix = (t, [r2, g3, b3]) => '#' + [r + (r2 - r) * t, g2 + (g3 - g2) * t, b + (b3 - b) * t].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
   if (kind === 'neon') return NEON[col] || NEON.C;
   if (kind === 'bright') return BRIGHT[col] || BRIGHT.C;
+  if (kind === 'pastel') return PASTEL[col] || PASTEL.C;
   return kind === 'pale' ? mix(.62, [232, 228, 218]) : kind === 'deep' ? mix(.45, [16, 14, 12]) : c;
 }
 function drawLayer(g, L, o) {
-  if (L.tintBg || L.tintInk || L.tintBd || L.tintKw) { L = { ...L }; if (L.tintBg) L.bgColor = tintOf(o, L.tintBg); if (L.tintInk) L.color = tintOf(o, L.tintInk); if (L.tintBd) L.bdColor = tintOf(o, L.tintBd); if (L.tintKw) L.kwColor = tintOf(o, L.tintKw); }
+  if (L.tintBg || L.tintInk || L.tintBd || L.tintKw || L.tintPip) { L = { ...L }; if (L.tintPip) { L.pipColor = tintOf(o, L.tintPip); if (L.pip === 'inherit') L.pip = 'glyph'; } if (L.tintBg) L.bgColor = tintOf(o, L.tintBg); if (L.tintInk) L.color = tintOf(o, L.tintInk); if (L.tintBd) L.bdColor = tintOf(o, L.tintBd); if (L.tintKw) L.kwColor = tintOf(o, L.tintKw); }
   if (L.src === 'art') { // the art is drawn under every layer by renderCustom; this only adds an optional frame
     const bx = +L.x, by = +L.y, bw = +L.w, bh = +L.h || 400;
     if (+L.bdW > 0) {
@@ -3106,6 +3324,69 @@ function drawLayer(g, L, o) {
     }
     g.restore();
     body(); g.lineWidth = 3; g.strokeStyle = 'rgba(20,16,10,.7)'; g.stroke();
+  }
+  else if (L.bg === 'drip') { // a band of paint at the top that runs down in drips
+    g.save(); g.fillStyle = hexA(L.bgColor, +L.bgOp || 1); const R = rng(Math.round(bx * 13 + bw + bh));
+    const top = bh * .3; g.fillRect(bx, by, bw, top);
+    for (let x = bx; x < bx + bw;) {
+      const dw = 6 + R() * Math.min(40, bw * .3), len = top + R() * (bh - top) * (R() < .35 ? 1 : .45);
+      g.beginPath(); g.moveTo(x, by + top - 2); g.lineTo(x, by + len - dw / 2); g.arc(x + dw / 2, by + len - dw / 2, dw / 2, Math.PI, 0, true); g.lineTo(x + dw, by + top - 2); g.closePath(); g.fill();
+      x += dw + R() * 6 - 3;
+    }
+    for (let k = 0; k < 40; k++) { g.beginPath(); g.arc(bx + R() * bw * 1.4 - bw * .2, by + R() * bh, .8 + R() * 4, 0, 7); g.fill(); }
+    g.restore();
+  }
+  else if (L.bg === 'raised' || L.bg === 'sunken') { // classic 3D edges: light top-left, dark bottom-right (or the other way round)
+    const up = L.bg === 'raised', lt = '#ffffff', dk = '#404040', md = '#808080';
+    g.save(); g.fillStyle = hexA(L.bgColor || '#c0c0c0', +L.bgOp || 1); g.fillRect(bx, by, bw, bh);
+    const edge = (a, b, w0) => { g.fillStyle = a; g.fillRect(bx, by, bw, w0); g.fillRect(bx, by, w0, bh); g.fillStyle = b; g.fillRect(bx, by + bh - w0, bw, w0); g.fillRect(bx + bw - w0, by, w0, bh); };
+    edge(up ? lt : dk, up ? dk : lt, 3); g.save(); g.translate(3, 3); bw -= 6; bh -= 6; edge(up ? '#dfdfdf' : md, up ? md : '#dfdfdf', 3); bw += 6; bh += 6; g.restore();
+    g.restore();
+  }
+  else if (L.bg === 'titlebar') { // a window title bar with minimise, maximise and close buttons
+    g.save(); const gr = g.createLinearGradient(bx, 0, bx + bw, 0); gr.addColorStop(0, '#000080'); gr.addColorStop(1, '#1084d0');
+    g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
+    const s0 = bh - 14, y0 = by + 7;
+    [['min', bw - 3 * s0 - 18], ['max', bw - 2 * s0 - 14], ['x', bw - s0 - 6]].forEach(([k, xo]) => {
+      const x0 = bx + xo; g.fillStyle = '#c0c0c0'; g.fillRect(x0, y0, s0, s0);
+      g.fillStyle = '#fff'; g.fillRect(x0, y0, s0, 2); g.fillRect(x0, y0, 2, s0); g.fillStyle = '#404040'; g.fillRect(x0, y0 + s0 - 2, s0, 2); g.fillRect(x0 + s0 - 2, y0, 2, s0);
+      g.strokeStyle = '#000'; g.lineWidth = 3; g.beginPath();
+      if (k === 'min') { g.moveTo(x0 + s0 * .25, y0 + s0 * .72); g.lineTo(x0 + s0 * .6, y0 + s0 * .72); }
+      else if (k === 'max') { g.rect(x0 + s0 * .22, y0 + s0 * .22, s0 * .56, s0 * .52); g.moveTo(x0 + s0 * .22, y0 + s0 * .3); g.lineTo(x0 + s0 * .78, y0 + s0 * .3); }
+      else { g.moveTo(x0 + s0 * .27, y0 + s0 * .27); g.lineTo(x0 + s0 * .73, y0 + s0 * .73); g.moveTo(x0 + s0 * .73, y0 + s0 * .27); g.lineTo(x0 + s0 * .27, y0 + s0 * .73); }
+      g.stroke();
+    });
+    g.restore();
+  }
+  else if (L.bg === 'knotpanel') { // a game menu panel: dark glass, a double line border and knotted corners
+    g.save(); g.fillStyle = hexA(L.bgColor || '#2a2c30', +L.bgOp || .8); g.fillRect(bx, by, bw, bh);
+    const c = L.bdColor || '#c9ccd0'; g.strokeStyle = c; g.lineWidth = 3; g.strokeRect(bx + 14, by + 14, bw - 28, bh - 28);
+    g.lineWidth = 1.5; g.strokeStyle = hexA(c, .55); g.strokeRect(bx + 22, by + 22, bw - 44, bh - 44);
+    for (const [cx0, cy0, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+      g.save(); g.translate(cx0, cy0); g.scale(sx, sy); g.strokeStyle = c; g.lineWidth = 3;
+      g.strokeRect(4, 4, 46, 46); g.strokeRect(12, 12, 30, 30);
+      g.beginPath(); g.moveTo(4, 27); g.lineTo(27, 27); g.lineTo(27, 4); g.moveTo(12, 34); g.lineTo(34, 34); g.lineTo(34, 12); g.stroke();
+      g.fillStyle = hexA(L.bgColor || '#2a2c30', 1); g.fillRect(16, 16, 8, 8); g.restore();
+    }
+    g.restore();
+  }
+  else if (L.bg === 'rays') { // a sunburst: lines fanning out from the middle of the box
+    g.save(); g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2));
+    g.fillStyle = hexA(L.bgColor || '#ffffff', +L.bgOp || 1); g.fill(); g.clip();
+    const cx0 = bx + bw / 2, cy0 = by + bh / 2, R0 = Math.hypot(bw, bh); g.strokeStyle = L.bdColor; g.lineWidth = 4;
+    for (let k = 0; k < 72; k++) { const a = k / 72 * Math.PI * 2; g.beginPath(); g.moveTo(cx0 + Math.cos(a) * bh * .36, cy0 + Math.sin(a) * bh * .36); g.lineTo(cx0 + Math.cos(a) * R0, cy0 + Math.sin(a) * R0); g.stroke(); }
+    g.restore();
+    if (+L.bdW > 0) { g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
+  }
+  else if (L.bg === 'linofill') { // a block of printed color with carved white gouges, like a linocut
+    g.save(); g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); g.fillStyle = L.bgColor; g.fill(); g.clip();
+    const R = rng(Math.round(bx + by * 3 + bw)); g.strokeStyle = '#fbfbf7'; g.lineCap = 'round';
+    for (let k = 0; k < 90; k++) {
+      const x0 = bx + R() * bw, y0 = by + R() * bh, len = 20 + R() * 90, a = R() * Math.PI * 2; g.lineWidth = 2 + R() * 7;
+      g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(x0 + Math.cos(a + .6) * len * .6, y0 + Math.sin(a + .6) * len * .6, x0 + Math.cos(a) * len, y0 + Math.sin(a) * len); g.stroke();
+    }
+    g.globalAlpha = .25; for (let k = 0; k < 600; k++) { g.fillStyle = R() < .5 ? '#ffffff' : '#000000'; g.fillRect(bx + R() * bw, by + R() * bh, 2, 2); }
+    g.restore();
   }
   else if (L.bg === 'bevel') { // a picture frame: light top and left, dark bottom and right, thin black lines
     const k = Math.min(+L.pad || 22, bw / 4, bh / 4), base = L.bgColor || '#cfcfd4';
@@ -4468,6 +4749,9 @@ function showSign() {
   const z = signOf($('mcBirth').value);
   $('mcSign').textContent = z ? `${z[1]} ${z[0]}, a ${z[2]} sign` : '';
 }
+function manaValue(o) {
+  return [...(o.cost || '').matchAll(/\{([^}]+)\}/g)].reduce((t, m) => { const c = m[1].split('/')[0]; return t + (/^\d+$/.test(c) ? +c : /^[XYZ]$/i.test(c) ? 0 : 1); }, 0);
+}
 function seedOf(str) { let h = 2166136261; for (const ch of str) h = Math.imul(h ^ ch.codePointAt(0), 16777619); return h >>> 0; }
 async function showMyCard() {
   const birth = $('mcBirth').value;
@@ -4535,7 +4819,7 @@ function updateFxUI() {
   const fx = $('artFx').value;
   $('wearMore').hidden = $('wear').value === 'none' && $('misprint').value === 'none';
   $('fxAmtWrap').hidden = fx === 'none';
-  $('fxAmtLabel').textContent = { fried: 'Crunch', glass: 'Pane size', woodcut: 'Line size', blueprint: 'Detail', pencil: 'Shading', pixel: 'Pixel size', paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
+  $('fxAmtLabel').textContent = { stencil: 'Threshold', linedraw: 'Detail', pixtone: 'Pixel size', xray: 'Contrast', fried: 'Crunch', glass: 'Pane size', woodcut: 'Line size', blueprint: 'Detail', pencil: 'Shading', pixel: 'Pixel size', paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
   $('fxColors').hidden = !(fx === 'duotone' || fx === 'halftone');
   $('fxDarkLabel').firstChild.textContent = fx === 'halftone' ? 'Ink ' : 'Shadows ';
   $('fxLightLabel').firstChild.textContent = fx === 'halftone' ? 'Paper ' : 'Highlights ';
@@ -4564,6 +4848,19 @@ const STYLES = [
   { id: 'macro', name: 'Image macro', preset: 'macro', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'demotiv', name: 'Demotivational', preset: 'demotiv', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'fried', name: 'Deep fried', preset: 'macro', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'fried', fxAmt: '0.6', misprint: 'light' } },
+  { id: 'splatter', name: 'Blood drip', preset: 'splatter', f: { layout: 'custom', border: 'none', pipStyle: 'solid', pipColor: '#141418', artFx: 'stencil', fxAmt: '0.5' } },
+  { id: 'pixglow', name: 'Pixel glow', preset: 'pixglow', f: { layout: 'custom', border: 'none', pipStyle: 'pixel', pipColor: '#ffffff', artFx: 'pixtone', fxAmt: '0.5' } },
+  { id: 'glowline', name: 'Neon line art', preset: 'glowline', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'linedraw', fxAmt: '0.5' } },
+  { id: 'retroposter', name: 'Retro poster', preset: 'retroposter', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
+  { id: 'xray', name: 'X-ray', preset: 'xray', f: { layout: 'custom', border: 'none', pipStyle: 'solid', pipColor: '#c9c3dc', artFx: 'xray', fxAmt: '0.5' } },
+  { id: 'desktop', name: 'Desktop dialog', preset: 'desktop', f: { layout: 'custom', border: 'none', pipStyle: 'pixel', pipColor: '#ffffff' } },
+  { id: 'rpgitem', name: 'RPG item screen', preset: 'rpgitem', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'boardgame', name: 'Board game card', preset: 'boardgame', f: { layout: 'custom', border: '#f3f1ec', pipStyle: 'outline', pipColor: '#151515' } },
+  { id: 'album', name: 'Fantasy album', preset: 'album', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
+  { id: 'sports', name: 'Vintage sports card', preset: 'sports', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', wear: 'worn' } },
+  { id: 'altered', name: 'Altered (paint pen)', preset: 'altered', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'linocut', name: 'Linocut print', preset: 'linocut', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#ffffff', artFx: 'lino', fxAmt: '0.5' } },
+  { id: 'handdrawn', name: 'Hand-drawn', preset: 'handdrawn', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#2a2a2c' } },
   { id: 'collector', name: 'Creature collector', preset: 'collector', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'monster', name: 'Monster card', preset: 'monster', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'monsterbw', name: 'Monster (manga)', preset: 'monster', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#26262c', artFx: 'bw', fxAmt: '0.85' } },
@@ -4602,10 +4899,10 @@ const STYLES = [
 const STYLE_CAT = {
   classic: 'classic', retro: 'classic', gilded: 'classic', fullart: 'classic', borderless: 'classic', showcase: 'classic', noir: 'classic', oil: 'classic', minimal: 'classic',
   kanji: 'fantasy', storybook: 'fantasy', scales: 'fantasy', fantasypb: 'fantasy', glass: 'fantasy', tarot: 'fantasy', manuscript: 'fantasy', atlas: 'fantasy', token: 'classic',
-  retrogame: 'games', collector: 'games', monster: 'games', monsterbw: 'games', modern: 'games', vhs: 'games', pixel: 'games', pack: 'games',
+  retrogame: 'games', pixglow: 'games', collector: 'games', desktop: 'games', rpgitem: 'games', boardgame: 'games', sports: 'games', monster: 'games', monsterbw: 'games', modern: 'games', vhs: 'games', pixel: 'games', pack: 'games',
   popart: 'comics', bronze: 'comics', pulp: 'comics', comic: 'comics', poster: 'comics', strips: 'comics', manga: 'comics', zine: 'comics',
   console: 'scifi', wrist: 'scifi', neon: 'scifi', macro: 'memes', demotiv: 'memes', fried: 'memes', blueprint: 'scifi', synth: 'scifi',
-  riso: 'print', paperback: 'print', playtest: 'print', misprint: 'print', woodblock: 'print', sketch: 'print', polaroid: 'print',
+  riso: 'print', splatter: 'print', glowline: 'print', retroposter: 'print', xray: 'print', album: 'print', altered: 'print', linocut: 'print', handdrawn: 'print', paperback: 'print', playtest: 'print', misprint: 'print', woodblock: 'print', sketch: 'print', polaroid: 'print',
 };
 const STYLE_TABS = [['all', 'All'], ['classic', 'Classic'], ['fantasy', 'Fantasy'], ['games', 'Retro & games'], ['comics', 'Comics & pulp'], ['scifi', 'Sci-fi'], ['print', 'Print & paper'], ['memes', 'Memes'], ['mine', 'My styles']];
 const styleLayers = sty => sty.preset ? PRESETS[sty.preset]().map((l, i) => ({ ...LDEF, ...l, id: 'p' + i }))
@@ -4681,7 +4978,7 @@ for (const [id, name] of STYLE_TABS) {
 }
 // Your styles: the look fields and the custom layers, saved in this browser.
 const LOOK_KEYS = FIELDS.filter(k => !TEXT_KEYS.includes(k) && k !== 'rarity');
-const LAYER_KEYS = new Set([...Object.keys(LDEF), 'vmid', 'tintBg', 'tintInk', 'tintBd', 'tintKw']);
+const LAYER_KEYS = new Set([...Object.keys(LDEF), 'vmid', 'tintBg', 'tintInk', 'tintBd', 'tintKw', 'tintPip']);
 function cleanStyle(x) { // only plain, known settings: anything else in an imported file is dropped
   if (!x || typeof x !== 'object' || typeof x.name !== 'string' || !x.name.trim()) return null;
   const prim = v => ['string', 'number', 'boolean'].includes(typeof v);

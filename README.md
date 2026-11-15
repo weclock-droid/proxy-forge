@@ -25,6 +25,20 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Print errors:** toner specks like a photocopy, a color misprint (some text and art printed in magenta or cyan, a yellow ghost of the card, color-bar stripes) or a bad print run with a miscut. Works with any style.
 - **Art window:** in the custom layout, an art window layer puts the picture in a box you can move and resize. Drag inside it to move the picture, or drag its edge to move the window.
 - **Neon street:** full-bleed art under a thin glowing frame with cut corners in the card's color, a cut-corner cost badge, a big condensed name low on the card, the artist credit running up the right edge and a dark fade behind the rules.
+- **Fan-favorite homemade looks:**
+  - **Desktop dialog:** a 90s computer window. Basic lands ask "Tap for 1 mana?" with OK and Cancel buttons.
+  - **RPG item screen:** a game inventory panel with MANA and MANA VALUE stats.
+  - **Board game card:** "PAY 1", a big name and simple art on a pastel card.
+  - **Fantasy album:** BASIC LAND in big shadowed letters, a giant mana symbol and pastel paper in the land's color.
+  - **Vintage sports card:** a rounded photo, a yellow name panel and worn edges.
+  - **Altered (paint pen):** pink blackletter and white marker lettering over the art.
+  - **Linocut print:** carved color blocks, linocut art in the card's color and a sunburst mana symbol.
+  - **Hand-drawn:** pencil lettering on paper with ruled boxes.
+  - **Blood drip:** stencil-cut black and white art, a red paint-drip strip down the side and a red blackletter name.
+  - **Pixel glow:** a dark card with the art turned into glowing pixels in the card's color, a thin colored frame and a pixel-font name.
+  - **Neon line art:** the art reduced to bright colored outlines on black, with chunky handwritten lettering.
+  - **Retro poster:** a groovy 70s title over a rounded window, a big mana circle and pastel paper in the card's color.
+  - **X-ray:** the art glowing like film on a light box, a thin tall name and handwritten rules.
 - **Creature collector:** full art inside a thick rounded border in the card's color, a light header with a small type tag, a bold name and the cost, rules on a soft light fade, and power/toughness in a silver pill.
 - **Monster card:** a silver late-90s monster card with the name at the top, a row of level stars (one per point of mana value), the art in a beveled picture frame and big ATK / DEF numbers from power and toughness. There's also a black-and-white manga version.
 - **Kanji landscape:** lands with the art filling the whole card and the land's name in Japanese (平地, 島, 沼, 山, 森) on a tall rounded plaque and its mana symbol below, colored to match. Pair it with **Make basic lands…** for a whole set.
@@ -38,7 +52,7 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Your art library:** every image you add is kept in your browser, with a thumbnail, so you can reuse it on other cards. Save searched art there too, and remove anything you don't want.
 - **Starship console layout:** a retro-futuristic computer-panel frame with pastel elbow bars and orange capitals, colored to match the card. Lands get a tall art window with their mana colors in the corner.
 - **Saga cards:** chapter lines like `I — …` or `II, III — …` get numbered chapter badges and dividers in every layout.
-- **Art filters:** black & white, sepia, duotone, duotone in the card's color, halftone dots, color halftone (pop art), posterize, film grain, oil painting, photocopy, pixel art, stained glass, woodcut, blueprint and pencil sketch, with color pairs to pick from. Your own pictures start with no filter, even in styles that use one, so you choose whether to add one.
+- **Art filters:** black & white, sepia, duotone, duotone in the card's color, halftone dots, color halftone (pop art), posterize, film grain, oil painting, photocopy, pixel art, stained glass, woodcut, linocut in the card's color, stencil, neon outlines, glowing pixels, x-ray, blueprint and pencil sketch, with color pairs to pick from. Your own pictures start with no filter, even in styles that use one, so you choose whether to add one.
 - **Proxy or playtest:** the two words mean the same thing here. A **Card wording** setting puts either one on every label (like PLAYTEST ✦ 16-BIT ✦ CARD SYSTEM) and on the bottom note, or keeps each style's own wording.
 - **Wear & aging:** four levels, from lightly used to falling apart, so a card looks like a well-read paperback or an old comic: yellowed paper, rubbed-off ink, a cracked spine, creases, chipped edges, frayed corners, tears, a folded corner, crinkled laminate and old price-sticker residue. Shuffle damage for a different pattern.
 - **Stickers:** put any text on a paper sticker, a barcode sticker or a crossed-out "sale price" sticker.
