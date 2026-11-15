@@ -646,6 +646,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <button type="button" id="addNew" hidden>Add as a new card</button>
         <button type="button" id="save">Save PNG</button>
         <button type="button" id="saveBleed" title="800 dpi with ⅛″ of extra art around every edge and square corners: what online print shops ask for">Print-shop PNG (800 dpi + bleed)</button>
+        <button type="button" id="pickBleed2" title="Pick a card PNG you already saved and get the same image back with a ⅛″ bleed edge added">Add bleed to a saved PNG…</button>
         <label class="inline" for="exportDpi">Size
           <select id="exportDpi">
             <option value="600">600 dpi</option>
@@ -671,7 +672,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <button type="button" id="deckOpen">Add a deck list…</button>
         <button type="button" id="landOpen">Make basic lands…</button>
         <button type="button" id="pickFinished">Add finished card images…</button>
-        <button type="button" id="pickBleed" title="Adds a ⅛″ bleed edge to card images you already saved, by mirroring their outer edges. Saves 800 dpi PNGs.">Add bleed to images…</button>
+        <button type="button" id="pickBleed" title="Pick a card PNG you already saved and get the same image back with a ⅛″ bleed edge added (same resolution): borders are stretched outward, full art is mirrored, rounded corners are squared.">Add bleed to images…</button>
         <input type="file" id="bleedFiles" accept="image/*" multiple hidden>
         <input type="file" id="finished" accept="image/*" multiple hidden>
         <button type="button" id="saveZip" disabled title="Every card on the sheet as its own 800 dpi PNG with ⅛″ bleed, in one zip: ready to upload to a print shop">Save all as print-shop PNGs (zip)</button>
@@ -817,6 +818,7 @@ function writeForm(o) {
   for (const k of FIELDS) { const el = $(k); if (!(k in o)) continue; if (el.type === 'checkbox') el.checked = !!o[k]; else el.value = o[k]; }
   if (Array.isArray(o.layers)) {
     st.layers = o.layers.map(l => ({ ...LDEF, ...l }));
+    st.blank = !st.layers.length && $('layout').value === 'custom'; // a blank template: keep it empty
     if (!st.layers.some(l => l.id === st.sel)) st.sel = st.layers.length ? st.layers[st.layers.length - 1].id : null;
   }
   updateLook();
@@ -1853,6 +1855,7 @@ function drawMisprint(g, o, bleed) {
       // split into ink plates
       const K = new Uint8Array(n), C = new Uint8Array(n), M = new Uint8Array(n), Y = new Uint8Array(n);
       for (let p = 0, q = 0; p < n; p++, q += 4) {
+        if (d[q + 3] < 128) continue; // see-through (rounded corners): no ink, not black ink
         const r = d[q], gg = d[q + 1], b = d[q + 2], mx = Math.max(r, gg, b), k = 255 - mx;
         K[p] = k;
         if (mx > 0) { C[p] = (mx - r) * 255 / mx; M[p] = (mx - gg) * 255 / mx; Y[p] = (mx - b) * 255 / mx; }
@@ -3689,6 +3692,8 @@ function renderCustom(g, o, bleed) {
   g.save();
   if (ar.win) {
     // drawn with its layer below
+  } else if (o.border === 'none' && !st.img && !(o.layers || []).length) { // blank template: plain white, edge to edge
+    g.fillStyle = '#ffffff'; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2);
   } else if (o.border === 'none') {
     drawArt(g, ar, st.img);
     if (bleed) { g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#0b0b0c'; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2); }
@@ -4048,7 +4053,7 @@ function updateLook() {
   const custom = $('layout').value === 'custom';
   $('customSet').hidden = !custom;
   document.querySelectorAll('.fixedOnly').forEach(el => { el.hidden = custom; });
-  if (custom && !st.layers.length) applyPreset('clean', true);
+  if (custom && !st.layers.length && !st.blank) applyPreset('clean', true);
   renderLayerList(); syncEditor();
 }
 function renderLayerList() {
@@ -4078,6 +4083,7 @@ function syncEditor() {
 function selectLayer(id) { st.sel = id; renderLayerList(); syncEditor(); draw(); }
 function layersChanged() { renderLayerList(); syncEditor(); draw(); saveDraft(); if (typeof syncDesignColors === 'function') syncDesignColors(); }
 function applyPreset(name, quiet) {
+  st.blank = false;
   st.layers = (PRESETS[name] || PRESETS.clean)().map(l => ({ ...LDEF, ...l, id: newLid() }));
   st.sel = st.layers.find(l => l.src === 'name')?.id || st.layers[0].id;
   if (!quiet) layersChanged();
@@ -4122,11 +4128,13 @@ $('delLayer').onclick = () => {
   st.layers.splice(i, 1);
   st.sel = st.layers.length ? st.layers[Math.min(i, st.layers.length - 1)].id : null; layersChanged();
 };
-$('layout').addEventListener('input', updateLook);
+$('layout').addEventListener('input', () => { st.blank = false; updateLook(); });
 for (const k of [...TEXT_KEYS, 'rarity']) $(k).addEventListener('input', renderLayerList);
 
-$('clear').onclick = () => { // clears the card text but keeps the look (layout, layers, symbols)
-  writeForm(Object.fromEntries(TEXT_KEYS.map(k => [k, '']))); st.img = null; st.blob = null; st.sample = false; st.editingId = null;
+$('clear').onclick = () => { // a completely blank template: no text, layers, border, art or effects
+  writeForm({ ...Object.fromEntries(TEXT_KEYS.map(k => [k, ''])), layout: 'custom', border: 'none', round: false, bleed: false, rarity: '', setCode: '',
+    artFx: 'none', wear: 'none', misprint: 'none', gloss: false, aiArt: false, aiModel: '', layers: [] });
+  st.sel = null; st.img = null; st.blob = null; st.sample = false; st.editingId = null;
   st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
   saveDraft(); updateSheetButtons(); renderSheet(); draw(); $('name').focus();
 };
@@ -4293,39 +4301,92 @@ async function saveZip() {
   btn.disabled = !sheet.length;
 }
 $('saveZip').onclick = saveZip;
-// Adds a 1/8" bleed to a finished card image (no bleed yet): the card fills the middle, and each edge strip
-// is mirrored outward into the bleed, the usual way print-shop files are extended.
-function mirrorBleed(img, k) {
-  const M = Math.round(BLEED * k), cw = Math.round(W * k), ch = Math.round(H * k);
-  const card = document.createElement('canvas'); card.width = cw; card.height = ch;
-  const cg = card.getContext('2d'), s0 = Math.max(cw / img.naturalWidth, ch / img.naturalHeight), iw = img.naturalWidth * s0, ih = img.naturalHeight * s0;
-  cg.drawImage(img, (cw - iw) / 2, (ch - ih) / 2, iw, ih);
-  const c = document.createElement('canvas'); c.width = cw + 2 * M; c.height = ch + 2 * M;
-  const g = c.getContext('2d');
-  g.drawImage(card, M, M);
-  const flip = (sx, sy, sw, sh, dx, dy, fx, fy) => { g.save(); g.translate(dx + (fx ? sw : 0), dy + (fy ? sh : 0)); g.scale(fx ? -1 : 1, fy ? -1 : 1); g.drawImage(card, sx, sy, sw, sh, 0, 0, sw, sh); g.restore(); };
-  flip(0, 0, M, ch, 0, M, true, false);                 // left
-  flip(cw - M, 0, M, ch, M + cw, M, true, false);       // right
-  flip(0, 0, cw, M, M, 0, false, true);                 // top
-  flip(0, ch - M, cw, M, M, M + ch, false, true);       // bottom
-  flip(0, 0, M, M, 0, 0, true, true);                   // corners
-  flip(cw - M, 0, M, M, M + cw, 0, true, true);
-  flip(0, ch - M, M, M, 0, M + ch, true, true);
-  flip(cw - M, ch - M, M, M, M + cw, M + ch, true, true);
+// Adds a 1/8" bleed to a finished card image that has none, at the image's own resolution (its pixels are kept
+// exactly; only the edge is added). Rounded corners (transparent, or on a plain background) are squared off first
+// by carrying the straight border next to them into the corner. Then a card with a solid border has that border
+// stretched outward; full-art cards have their edges mirrored outward, the usual print-shop trick.
+function addBleed(img) {
+  const w = img.naturalWidth, h = img.naturalHeight, Mx = Math.round(w * .125 / 2.5), My = Math.round(h * .125 / 3.5);
+  const src = document.createElement('canvas'); src.width = w; src.height = h;
+  const sg = src.getContext('2d', { willReadFrequently: true }); sg.drawImage(img, 0, 0);
+  const a = sg.getImageData(0, 0, w, h).data, N = w * h;
+  const rgb = new Uint8ClampedArray(N * 3);
+  for (let p = 0; p < N; p++) { rgb[p * 3] = a[p * 4]; rgb[p * 3 + 1] = a[p * 4 + 1]; rgb[p * 3 + 2] = a[p * 4 + 2]; }
+  const near = (p, q) => Math.abs(rgb[p * 3] - rgb[q * 3]) + Math.abs(rgb[p * 3 + 1] - rgb[q * 3 + 1]) + Math.abs(rgb[p * 3 + 2] - rgb[q * 3 + 2]);
+  // corner mask: transparent pixels, or (for cards saved on a plain background) pixels matching the corner's color
+  let m = new Uint8Array(N), R = Math.round(w * .02);
+  for (const [cx, cy] of [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1]]) {
+    const c0 = cy * w + cx, clear = a[c0 * 4 + 3] < 250, box = Math.round(Math.min(w, h) * .12), sx = cx ? -1 : 1, sy = cy ? -1 : 1;
+    const inside = q => clear ? a[q * 4 + 3] < 250 : near(q, c0) < 90;
+    // only a corner if it differs from the border a little way in (otherwise the card is already square)
+    const probe = (cy + sy * Math.round(box * .6)) * w + cx + sx * Math.round(box * .6);
+    if (!clear && near(probe, c0) < 60) continue;
+    const seen = new Uint8Array(box * box), stack = [0, 0];
+    while (stack.length) {
+      const y = stack.pop(), x = stack.pop(); if (x < 0 || y < 0 || x >= box || y >= box || seen[y * box + x]) continue;
+      seen[y * box + x] = 1; const q = (cy + sy * y) * w + cx + sx * x;
+      if (!inside(q)) continue;
+      m[q] = 1; R = Math.max(R, x + 8, y + 8); stack.push(x + 1, y, x - 1, y, x, y + 1, x, y - 1);
+    }
+  }
+  for (let pass = 0; pass < 4; pass++) { // grow the mask over the curve's soft, colored edge
+    const g2 = m.slice();
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const p = y * w + x; if (!m[p]) continue; if (x) g2[p - 1] = 1; if (x < w - 1) g2[p + 1] = 1; if (y) g2[p - w] = 1; if (y < h - 1) g2[p + w] = 1; }
+    m = g2;
+  }
+  // square the corners: copy the straight border (past the curve) along the row or column into the corner
+  const out = rgb.slice();
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const p = y * w + x; if (!m[p]) continue;
+    const horiz = Math.min(y, h - 1 - y) < Math.min(x, w - 1 - x);
+    const q = horiz ? y * w + (x < R ? R : x >= w - R ? w - 1 - R : x) : (y < R ? R : y >= h - R ? h - 1 - R : y) * w + x;
+    out[p * 3] = rgb[q * 3]; out[p * 3 + 1] = rgb[q * 3 + 1]; out[p * 3 + 2] = rgb[q * 3 + 2];
+  }
+  // is there a solid border? (an even color a few pixels in, all the way round)
+  const d = Math.max(2, Math.round(w * .004)), ring = [];
+  for (let t = .1; t < .9; t += .02) ring.push(d * w + Math.round(w * t), (h - 1 - d) * w + Math.round(w * t), Math.round(h * t) * w + d, Math.round(h * t) * w + w - 1 - d);
+  const mean = [0, 1, 2].map(c => ring.reduce((s, p) => s + out[p * 3 + c], 0) / ring.length);
+  const solid = ring.reduce((s, p) => s + Math.abs(out[p * 3] - mean[0]) + Math.abs(out[p * 3 + 1] - mean[1]) + Math.abs(out[p * 3 + 2] - mean[2]), 0) / ring.length < 30;
+  const OW = w + 2 * Mx, OH = h + 2 * My, res = new ImageData(OW, OH), o = res.data;
+  const clampX = x => x < R ? R : x >= w - R ? w - 1 - R : x, clampY = y => y < R ? R : y >= h - R ? h - 1 - R : y;
+  for (let Y = 0; Y < OH; Y++) for (let X = 0; X < OW; X++) {
+    let x = X - Mx, y = Y - My, p;
+    if (solid) {
+      if (x >= d && y >= d && x < w - d && y < h - d) p = y * w + x;
+      else { // nearest edge's line, d pixels in (past any glow on the very edge)
+        const dt = y, db = h - 1 - y, dl = x, dr = w - 1 - x, mn = Math.min(dt, db, dl, dr);
+        p = mn === dt ? d * w + clampX(Math.min(Math.max(x, 0), w - 1)) : mn === db ? (h - 1 - d) * w + clampX(Math.min(Math.max(x, 0), w - 1))
+          : mn === dl ? clampY(Math.min(Math.max(y, 0), h - 1)) * w + d : clampY(Math.min(Math.max(y, 0), h - 1)) * w + w - 1 - d;
+      }
+    } else { // mirror
+      if (x < 0) x = -1 - x; else if (x >= w) x = 2 * w - 1 - x;
+      if (y < 0) y = -1 - y; else if (y >= h) y = 2 * h - 1 - y;
+      p = y * w + x;
+    }
+    const q = (Y * OW + X) * 4; o[q] = out[p * 3]; o[q + 1] = out[p * 3 + 1]; o[q + 2] = out[p * 3 + 2]; o[q + 3] = 255;
+  }
+  const c = document.createElement('canvas'); c.width = OW; c.height = OH; c.getContext('2d').putImageData(res, 0, 0);
   return c;
 }
-$('pickBleed').onclick = () => $('bleedFiles').click();
+// The same, scaled to a card at k times card units (for print-shop zips).
+function mirrorBleed(img, k) {
+  const b = addBleed(img), c = document.createElement('canvas'); c.width = Math.round((W + 2 * BLEED) * k); c.height = Math.round((H + 2 * BLEED) * k);
+  c.getContext('2d').drawImage(b, 0, 0, c.width, c.height); return c;
+}
+let bleedStatus = null; // report where the button was pressed
+$('pickBleed').onclick = () => { bleedStatus = sheetStatus(); $('bleedFiles').click(); };
+$('pickBleed2').onclick = () => { bleedStatus = $('status'); $('bleedFiles').click(); };
 $('bleedFiles').onchange = async e => {
   const files = [...e.target.files].filter(f => f.type.startsWith('image/')); e.target.value = '';
-  const status = sheetStatus(); if (!files.length) return;
-  const k = 800 / 300, out = [];
+  const status = bleedStatus || sheetStatus(); if (!files.length) return;
+  const out = [];
   for (let i = 0; i < files.length; i++) {
     status.textContent = `Adding bleed to ${i + 1} of ${files.length}…`;
     try {
       const img = await loadImage(URL.createObjectURL(files[i]));
       if (Math.abs(img.naturalWidth / img.naturalHeight - 2.75 / 3.75) < .006) { out.push({ name: files[i].name, skip: true }); continue; }
-      const c = mirrorBleed(img, k);
-      out.push({ name: fileBase(files[i].name.replace(/\.[^.]+$/, '')) + ' (bleed) 800dpi.png', blob: await new Promise(r => c.toBlob(r, 'image/png')) });
+      const c = addBleed(img);
+      out.push({ name: fileBase(files[i].name.replace(/\.[^.]+$/, '')) + ' (bleed).png', blob: await new Promise(r => c.toBlob(r, 'image/png')) });
     } catch (err) { out.push({ name: files[i].name, bad: true }); }
   }
   const ok = out.filter(x => x.blob), skipped = out.filter(x => x.skip).length, bad = out.filter(x => x.bad).length;
