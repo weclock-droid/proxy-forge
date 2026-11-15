@@ -4,7 +4,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bebas+Neue&family=Bungee&family=Caveat:wght@700&family=Cinzel:wght@700&family=Comic+Neue:ital,wght@0,700;1,700&family=Cormorant+SC:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IM+Fell+English+SC&family=Noto+Sans+JP:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Pirata+One&family=Rubik:wght@800&family=Special+Elite&family=Spectral:wght@600;700;800&family=Yellowtail&family=Uncial+Antiqua&family=MedievalSharp&family=Almendra:wght@700&family=Cinzel+Decorative:wght@700&family=Eagle+Lake&family=UnifrakturMaguntia&family=Grenze+Gotisch:wght@700&family=New+Rocker&family=Creepster&family=Nosifer&family=Orbitron:wght@800&family=Audiowide&family=Russo+One&family=Monoton&family=Press+Start+2P&family=VT323&family=Playfair+Display:ital,wght@0,800;1,800&family=Abril+Fatface&family=Righteous&family=Dela+Gothic+One&family=Rock+Salt&family=Shadows+Into+Light&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Bebas+Neue&family=Bungee&family=Caveat:wght@700&family=Cinzel:wght@700&family=Comic+Neue:ital,wght@0,700;1,700&family=Cormorant+SC:wght@700&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IM+Fell+English+SC&family=Noto+Sans+JP:wght@700&family=Oswald:wght@600&family=Pacifico&family=Permanent+Marker&family=Pirata+One&family=Rubik:wght@800&family=Special+Elite&family=Spectral:wght@600;700;800&family=Yellowtail&family=Uncial+Antiqua&family=MedievalSharp&family=Almendra:wght@700&family=Cinzel+Decorative:wght@700&family=Eagle+Lake&family=UnifrakturMaguntia&family=Grenze+Gotisch:wght@700&family=New+Rocker&family=Creepster&family=Nosifer&family=Orbitron:wght@800&family=Audiowide&family=Russo+One&family=Monoton&family=Press+Start+2P&family=VT323&family=Playfair+Display:ital,wght@0,800;1,800&family=Abril+Fatface&family=Righteous&family=Dela+Gothic+One&family=Rock+Salt&family=Shadows+Into+Light&family=Antonio:wght@400;600;700&display=swap">
 <style>
 /* Layout: workbench — scrolling control column on the left, sticky card proof on the right; stacks on phones */
 :root {
@@ -123,6 +123,13 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .styles button[aria-pressed=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .fxpal { display: flex; gap: 6px; flex-wrap: wrap; }
 .fxpal button { width: 34px; height: 26px; padding: 0; border-radius: 6px; }
+.artsearch { display: grid; gap: 8px; }
+.artsearch .go { display: flex; gap: 8px; align-items: end; }
+.artsearch .go label { flex: 1; }
+.artgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.artgrid:empty { display: none; }
+.artgrid button { padding: 0; border-radius: 6px; overflow: hidden; aspect-ratio: 3 / 4; background: #000; }
+.artgrid img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .notice.intro { border-color: var(--line); background: var(--panel); }
 .notice p { margin: 0; font-size: 13px; line-height: 1.5; }
 .quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
@@ -210,6 +217,24 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <span class="hint touch">Pick a photo or a saved image.<br>Drag the card to move the art; pinch it to zoom.</span>
           <input type="file" id="file" accept="image/*" hidden>
         </div>
+        <div class="artsearch">
+          <div class="go" style="flex-wrap:wrap">
+            <label for="artSrc" style="flex:0 1 190px">Source
+              <select id="artSrc">
+                <option value="commons">Wikimedia Commons</option>
+                <option value="wellcome">Wellcome Collection</option>
+                <option value="rijks">Rijksmuseum</option>
+              </select>
+            </label>
+          </div>
+          <div class="go">
+            <label for="artQ">Search for public-domain art <input type="text" id="artQ" placeholder="dragon, storm at sea, knight…" autocomplete="off"></label>
+            <button type="button" id="artGo">Search</button>
+          </div>
+          <p class="hint" style="margin:0" id="artAbout"></p>
+          <div class="artgrid" id="artGrid" role="list" aria-label="Art results"></div>
+          <div class="actions"><button type="button" id="artMore" hidden>More results</button><span class="hint" id="artHint"></span></div>
+        </div>
         <div class="row">
           <label for="zoom">Zoom <input type="range" id="zoom" min="0.3" max="4" step="0.01" value="1"></label>
           <div class="actions" style="align-self:end"><button type="button" id="resetArt">Recenter art</button></div>
@@ -225,6 +250,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="pop">Color halftone (pop art)</option>
               <option value="posterize">Posterize</option>
               <option value="grain">Film grain</option>
+              <option value="paint">Oil painting</option>
             </select>
           </label>
           <label for="fxAmt" id="fxAmtWrap" hidden><span id="fxAmtLabel">Strength</span> <input type="range" id="fxAmt" min="0" max="1" step="0.01" value="0.5"></label>
@@ -299,12 +325,14 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <span class="hint">Every card wears differently. Shuffle for new tears, creases and chips.</span>
         </div>
         <input type="hidden" id="wearSeed" value="0">
+        <label class="inline"><input type="checkbox" id="gloss"> Plastic case glare (like a tape in its clamshell case)</label>
         <div class="row">
           <label for="layout">Layout
             <select id="layout">
               <option value="fade">Full art · fade</option>
               <option value="panel">Full art · text panel</option>
               <option value="framed">Classic frame</option>
+              <option value="console">Starship console</option>
               <option value="custom">Custom (place text anywhere)</option>
             </select>
           </label>
@@ -358,7 +386,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="pulp">Pulp comic with stickers</option>
               <option value="paperback">Worn paperback with stickers</option>
               <option value="retro">Retro video game box</option>
-              <option value="saga">Saga (chapters on the left)</option>
+              <option value="vhs">VHS tape sleeve</option>
+              <option value="modern">Modern game case</option>
               <option value="strips">Torn paper strips</option>
               <option value="poster">Bold poster</option>
               <option value="vertical">Vertical title</option>
@@ -368,6 +397,12 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <div class="actions" style="align-self:end"><button type="button" id="applyPreset">Use this design</button></div>
         </div>
         <span class="hint" style="margin-top:-6px">Using a design replaces your layers. Your card text stays.</span>
+        <div class="row">
+          <label for="dsBg">Box &amp; strip color <input type="color" id="dsBg" value="#b0281e"></label>
+          <label for="dsInk">Text color <input type="color" id="dsInk" value="#efe6d2"></label>
+        </div>
+        <div class="fxpal" id="dsPal" role="group" aria-label="Color pairs for boxes and text"></div>
+        <span class="hint" style="margin-top:-4px">Recolors every box and strip, and the text on and around them, in one go. Stickers keep their paper colors. Change a single layer below.</span>
         <div class="layers" id="layerList" aria-label="Layers, bottom to top"></div>
         <div class="actions">
           <select id="newSrc" aria-label="What the new layer shows" style="width:auto;flex:1 1 160px"></select>
@@ -414,7 +449,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -537,7 +572,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss'];
 const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
@@ -547,7 +582,7 @@ const SAMPLE = {
   pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Proxy — not for sale',
   layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
   pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true,
-  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0'
+  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false
 };
 // Original example cards used for the random first-visit card.
 const EXAMPLES = [
@@ -962,6 +997,7 @@ function fxImage(img, o) {
   const w = Math.max(1, Math.round(iw * k)), h = Math.max(1, Math.round(ih * k));
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const g = c.getContext('2d', { willReadFrequently: true });
+  if (fx === 'paint') { oilPaint(c, g, img, iw, ih, amt); if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c; }
   if (fx === 'halftone' || fx === 'pop') halftone(g, img, w, h, amt, fx === 'pop', hex(o.fxDark), o.fxLight);
   else {
     g.drawImage(img, 0, 0, w, h);
@@ -982,6 +1018,43 @@ function fxImage(img, o) {
   }
   if (m.size > 6) m.delete(m.keys().next().value);
   m.set(key, c); return c;
+}
+// Oil painting: a Kuwahara filter (each pixel takes the average of its calmest neighbouring square,
+// which flattens detail into brush-like patches while keeping edges), richer color, and a canvas weave.
+// Worked at up to 1100 px for speed; `amt` is the brush size.
+function oilPaint(c, g, img, iw, ih, amt) {
+  const k = Math.min(1, 1100 / Math.max(iw, ih)), w = Math.max(1, Math.round(iw * k)), h = Math.max(1, Math.round(ih * k));
+  c.width = w; c.height = h; g.drawImage(img, 0, 0, w, h);
+  const id = g.getImageData(0, 0, w, h), d = id.data, W1 = w + 1, n = W1 * (h + 1);
+  const sR = new Int32Array(n), sG = new Int32Array(n), sB = new Int32Array(n), sL = new Float64Array(n), sQ = new Float64Array(n);
+  for (let y = 0; y < h; y++) {
+    let rr = 0, gg = 0, bb = 0, ll = 0, qq = 0;
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4, L = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      rr += d[i]; gg += d[i + 1]; bb += d[i + 2]; ll += L; qq += L * L;
+      const j = (y + 1) * W1 + x + 1, u = y * W1 + x + 1;
+      sR[j] = sR[u] + rr; sG[j] = sG[u] + gg; sB[j] = sB[u] + bb; sL[j] = sL[u] + ll; sQ[j] = sQ[u] + qq;
+    }
+  }
+  const r = Math.max(2, Math.round((2 + amt * 7) * Math.max(w, h) / 1100)), out = g.createImageData(w, h), o = out.data;
+  const box = (a, x0, y0, x1, y1) => a[y1 * W1 + x1] - a[y0 * W1 + x1] - a[y1 * W1 + x0] + a[y0 * W1 + x0];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    let best = Infinity, br = 0, bg = 0, bb = 0;
+    for (let q = 0; q < 4; q++) {
+      const x0 = Math.max(0, q & 1 ? x : x - r), x1 = Math.min(w, (q & 1 ? x + r : x) + 1);
+      const y0 = Math.max(0, q & 2 ? y : y - r), y1 = Math.min(h, (q & 2 ? y + r : y) + 1);
+      const cnt = (x1 - x0) * (y1 - y0), mL = box(sL, x0, y0, x1, y1) / cnt, v = box(sQ, x0, y0, x1, y1) / cnt - mL * mL;
+      if (v < best) { best = v; br = box(sR, x0, y0, x1, y1) / cnt; bg = box(sG, x0, y0, x1, y1) / cnt; bb = box(sB, x0, y0, x1, y1) / cnt; }
+    }
+    const i = (y * w + x) * 4, L = 0.299 * br + 0.587 * bg + 0.114 * bb, sat = 1.18;
+    o[i] = L + (br - L) * sat; o[i + 1] = L + (bg - L) * sat; o[i + 2] = L + (bb - L) * sat; o[i + 3] = 255;
+  }
+  g.putImageData(out, 0, 0);
+  // canvas weave
+  const t = document.createElement('canvas'); t.width = t.height = 6;
+  const tg = t.getContext('2d'); tg.fillStyle = '#fff'; tg.fillRect(0, 0, 6, 6); tg.fillStyle = '#d8d0c0'; tg.fillRect(0, 0, 6, 1); tg.fillRect(0, 3, 1, 3); tg.fillRect(3, 0, 1, 3);
+  g.globalCompositeOperation = 'multiply'; g.globalAlpha = .55; g.fillStyle = g.createPattern(t, 'repeat'); g.fillRect(0, 0, w, h);
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
 }
 // Dots on a 45° screen; darker areas get bigger dots. `amt` is the dot size.
 function halftone(g, img, w, h, amt, color, ink, paper) {
@@ -1008,6 +1081,7 @@ function halftone(g, img, w, h, amt, color, ink, paper) {
 
 function artRect(o) {
   if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
+  if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 132, w: 690, h: o.rules ? 616 : 718 } : { x: 30, y: 132, w: 690, h: 410 };
   if (o.border === 'none') return { x: 0, y: 0, w: W, h: H };
   return { x: 30, y: 30, w: W - 60, h: H - 60 };
 }
@@ -1030,10 +1104,34 @@ function render(g, o, bleed) {
   curPip = { kind: o.pipStyle || 'classic', color: o.pipColor || '#ffffff' };
   curFx = o;
   if (o.layout === 'framed') renderFramed(g, o, size, borderCol);
+  else if (o.layout === 'console') renderConsole(g, o, size);
   else if (o.layout === 'custom') renderCustom(g, o, bleed);
   else renderFullArt(g, o, shade, size, bleed);
   drawWear(g, o);
+  if (o.gloss) drawGloss(g);
   g.restore();
+  g.restore();
+}
+// Light catching a clear plastic case: two soft diagonal sheens, a bright edge and a few scuffs in the plastic.
+function drawGloss(g) {
+  g.save();
+  g.globalCompositeOperation = 'screen';
+  const band = (x0, w, a) => {
+    const gr = g.createLinearGradient(x0, 0, x0 + w, w * .6);
+    gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(.5, `rgba(255,255,255,${a})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.beginPath(); g.moveTo(x0, 0); g.lineTo(x0 + w, 0); g.lineTo(x0 + w - H * .55, H); g.lineTo(x0 - H * .55, H); g.closePath(); g.fill();
+  };
+  band(W * .42, 190, .16); band(W * .78, 70, .12);
+  const top = g.createLinearGradient(0, 0, 0, H * .3); top.addColorStop(0, 'rgba(255,255,255,.1)'); top.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = top; g.fillRect(0, 0, W, H * .3);
+  g.globalCompositeOperation = 'source-over';
+  g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 3; g.beginPath(); g.roundRect(7, 7, W - 14, H - 14, 30); g.stroke();
+  const R = rng(4242); g.lineCap = 'round';
+  for (let i = 0; i < 26; i++) {
+    const x = R() * W, y = R() * H, l = 10 + R() * 70, an = -.5 + R() * .3;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(an) * l, y + Math.sin(an) * l);
+    g.strokeStyle = `rgba(255,255,255,${.06 + R() * .1})`; g.lineWidth = .6 + R(); g.stroke();
+  }
   g.restore();
 }
 
@@ -1338,6 +1436,135 @@ function renderFullArt(g, o, shade, size, bleed) {
   drawFooter(g, o, '#e8e4de', 1005);
 }
 
+// ---------- starship console layout ----------
+// A retro-futuristic computer-panel frame: rounded elbow bars in pastel colors, black panels,
+// condensed orange capitals and small panel numbers. Lands get a tall art window.
+const CONSOLE = {
+  W: ['#f3d488', '#d9a85f', '#c9a6dc'], U: ['#9cc3f5', '#c4a2e0', '#7fa8d8'], B: ['#b994dc', '#8e74c4', '#d8a2c6'],
+  R: ['#ff9f8c', '#ee7d70', '#f2c46e'], G: ['#a3e0c8', '#78c4ae', '#c9e89c'], M: ['#f2c46e', '#ff9f8c', '#9cc3f5'],
+  A: ['#bcd8e8', '#c9b9a7', '#9db4c4'], L: ['#c4a2e0', '#ff9f8c', '#9cc3f5'], C: ['#d2d8dd', '#a9b4bd', '#e2cba6'],
+};
+const CON_TEXT = '#ffa040';
+const consoleLand = o => /\bLand\b/.test(o.type || '') && !/\bCreature\b/.test(o.type || '');
+function conFont(px, wt = 600) { return `${wt} ${px}px "Antonio", "Arial Narrow", sans-serif`; }
+function renderConsole(g, o, size) {
+  ensureFont(FONTS.antonio, (o.name || '') + (o.type || '') + (o.rules || ''));
+  const pal = CONSOLE[o.color] || CONSOLE.C, [c1, c2, c3] = pal, land = consoleLand(o);
+  let hsh = 7; for (const ch of o.name || 'x') hsh = Math.imul(hsh ^ ch.charCodeAt(0), 16777619);
+  const num = k => String(Math.abs(hsh * (k + 3) % 99999)).padStart(5, '0');
+  const tiny = (t, x, y, col = '#000', al = 'left') => { g.font = conFont(11, 600); g.fillStyle = col; g.textAlign = al; g.fillText(t, x, y); };
+  g.save();
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+  const ar = artRect(o);
+  g.save(); g.beginPath(); g.rect(ar.x, ar.y, ar.w, ar.h); g.clip(); drawArt(g, ar, st.img); g.restore();
+  // art window frame: thin pastel lines with short colored segments
+  const segLine = (x, y, w, h, cols) => { let cx = x; const parts = [.42, .2, .08, .3]; cols.forEach((c, i) => { const ww = w * parts[i % parts.length]; g.fillStyle = c; g.fillRect(cx, y, ww - 3, h); cx += ww; }); };
+  segLine(18, ar.y - 10, W - 36, 5, [c1, c3, c2, c1]);
+  segLine(18, ar.y + ar.h + 5, W - 36, 5, [c2, c1, c3, c2]);
+  g.fillStyle = c1; g.fillRect(18, ar.y - 10, 5, ar.h + 20); g.fillRect(W - 23, ar.y - 10, 5, ar.h + 20);
+  tiny(String(hsh >>> 0).slice(-3), ar.x + ar.w - 8, ar.y + 16, '#fff', 'right');
+  tiny(num(4).slice(0, 6), ar.x + ar.w - 8, ar.y + ar.h - 8, '#fff', 'right');
+
+  // header: an elbow on the left, a thin bar along the top, the name and cost in the black panel
+  const elbow = (x, y, w, h, barH, barW, r, col, down = true) => {
+    g.beginPath();
+    if (down) { // vertical bar at x..x+w going down from y, bar to the right along the top
+      g.moveTo(x, y + h); g.lineTo(x, y + r); g.arcTo(x, y, x + r, y, r); g.lineTo(x + barW, y); g.lineTo(x + barW, y + barH);
+      g.lineTo(x + w + 14, y + barH); g.arcTo(x + w, y + barH, x + w, y + barH + 14, 14); g.lineTo(x + w, y + h);
+    } else { // vertical bar going up to y+h, bar along the bottom
+      g.moveTo(x, y); g.lineTo(x, y + h - r); g.arcTo(x, y + h, x + r, y + h, r); g.lineTo(x + barW, y + h); g.lineTo(x + barW, y + h - barH);
+      g.lineTo(x + w + 14, y + h - barH); g.arcTo(x + w, y + h - barH, x + w, y + h - barH - 14, 14); g.lineTo(x + w, y);
+    }
+    g.closePath(); g.fillStyle = col; g.fill();
+  };
+  elbow(18, 18, 74, 96, 12, W - 36, 36, c1);
+  g.fillStyle = c2; g.fillRect(18, 74, 74, 4); // a dividing notch in the elbow
+  g.fillStyle = '#000'; g.fillRect(18, 74, 74, 3);
+  tiny('PNL ' + num(1), 24, 64); tiny('01-' + num(2), 24, 94);
+  g.fillStyle = c3; g.fillRect(W - 30, 18, 12, 96);
+  segLine(92, 104, W - 140, 6, [c2, c3, c1, c2]);
+  // cost on the right, name filling the rest
+  const syms = parseCost(o.cost), d = 40;
+  const costLeft = syms.length ? drawCostRight(g, syms, W - 42, 64, d) : W - 42;
+  g.fillStyle = CON_TEXT; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, 20, costLeft - 110 - 14);
+  g.fillText(upper(o.name || ''), 108, 84);
+
+  const bottomLine = () => {
+    g.textBaseline = 'alphabetic';
+    const info = [o.info, o.artist ? '✎ ' + o.artist : ''].filter(Boolean).join('   ');
+    g.font = conFont(15, 600); g.fillStyle = '#e9e6df'; g.textAlign = 'left'; g.fillText(upper(info), 34, H - 22);
+    if (o.note) { g.textAlign = 'right'; g.fillText(o.note, W - 34, H - 22); }
+  };
+  if (land) {
+    // lands: a short elbow at the bottom with the mana symbols, the type in big orange letters
+    const h = 120, y0 = H - 52 - h;
+    elbow(18, y0, 92, h, 12, W - 36, 34, c2, false);
+    g.fillStyle = c3; g.fillRect(W - 30, y0, 12, h);
+    if (o.rules) { // rules in the black band between the art and the bottom elbow
+      curFam = FONTS.antonio; curLH = 1.08;
+      const top = ar.y + ar.h + 20, room = y0 - 12 - top, paras = parseRich(upper(o.rules), false);
+      let fs = 24, lay;
+      for (; fs >= 11; fs--) { lay = layoutRich(g, paras, fs, W - 84); if (lay.h <= room) break; }
+      drawRich(g, lay, fs, 42, top + Math.max(0, (room - lay.h) / 2), CON_TEXT);
+      curFam = { f: BODY, wt: 400 }; curLH = 1.16;
+    }
+    // the colors the land makes: from its cost, its basic land types, or the mana its rules add
+    const BASIC = { Plains: 'W', Island: 'U', Swamp: 'B', Mountain: 'R', Forest: 'G' };
+    let ps = syms.filter(x => /^[WUBRGC]$/.test(x));
+    if (!ps.length) ps = Object.entries(BASIC).filter(([t]) => (o.type || '').split(/[^A-Za-z]+/).includes(t)).map(([, c]) => c);
+    if (!ps.length) ps = [...new Set([...(o.rules || '').matchAll(/\{([WUBRGC])\}/g)].map(m => m[1]))];
+    ps.slice(0, 3).forEach((sy, i, a) => drawSym(g, sy, 40, y0 + (h - 12 - a.length * 36) / 2 + i * 36, 32, true));
+    g.fillStyle = CON_TEXT; g.textAlign = 'left'; g.textBaseline = 'middle';
+    const rw = drawRarity(g, o, W - 46, y0 + h / 2, 30);
+    fitText(g, upper(o.type || ''), px => conFont(px, 700), 46, 18, W - 46 - (rw ? rw + 16 : 0) - 130);
+    g.fillText(upper(o.type || ''), 128, y0 + h / 2 + 2);
+    g.textBaseline = 'alphabetic';
+    bottomLine(); g.restore(); return;
+  }
+  // text section: a tall elbow on the left, the type line on a pale tab, rules in orange capitals
+  const ty = ar.y + ar.h + 22, bottom = H - 50;
+  elbow(18, ty, 74, bottom - ty, 12, W - 36, 40, c2);
+  g.fillStyle = '#000';
+  for (const f of [.3, .62, .8]) g.fillRect(18, ty + (bottom - ty) * f, 74, 4);
+  tiny('02-' + num(5), 24, ty + 58); tiny('03-' + num(6), 24, ty + (bottom - ty) * .62 - 8); tiny('04-' + num(7), 24, ty + (bottom - ty) * .8 + 20);
+  // bottom bar
+  g.fillStyle = c3; g.fillRect(92, bottom - 12, W - 110 - (o.pt ? 140 : 0), 12);
+  g.fillStyle = c1; g.fillRect(W - 30, ty, 12, bottom - ty - (o.pt ? 70 : 0));
+  // type tab
+  const tabY = ty + 24, tabH = 46;
+  g.beginPath(); g.roundRect(108, tabY, W - 108 - 42, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
+  g.textBaseline = 'middle';
+  const rw = drawRarity(g, o, W - 56, tabY + tabH / 2, 28);
+  g.fillStyle = '#1a1a1a'; g.textAlign = 'left';
+  fitText(g, upper(o.type || ''), px => conFont(px, 600), 30, 14, W - 42 - 130 - (rw ? rw + 12 : 0));
+  g.fillText(upper(o.type || ''), 130, tabY + tabH / 2 + 2);
+  g.textBaseline = 'alphabetic';
+  // rules and flavor
+  curFam = FONTS.antonio; curLH = 1.12;
+  const tx = 116, tw = W - tx - 54, top = tabY + tabH + 18, avail = bottom - 22 - top - (o.pt ? 40 : 0);
+  const rules = parseRich(upper(o.rules || ''), false), flav = parseRich(upper(o.flavor || ''), true);
+  let fs = Math.round(size * 1.05), lr, lf, hh;
+  for (; fs >= 13; fs--) {
+    lr = layoutRich(g, rules, fs, tw); lf = layoutRich(g, flav, fs, tw);
+    hh = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? fs * .7 : 0) + lf.h : 0);
+    if (hh <= avail) break;
+  }
+  let y = top + Math.max(0, (avail - hh) / 2);
+  if (o.rules) y = drawRich(g, lr, fs, tx, y, CON_TEXT);
+  if (o.flavor) { if (o.rules) y += fs * .7; drawRich(g, lf, fs, tx, y, '#ffc58a'); }
+  curFam = { f: BODY, wt: 400 }; curLH = 1.16;
+  // power/toughness tab
+  if (o.pt) {
+    const px = W - 42 - 128, py = bottom - 34;
+    g.beginPath(); g.roundRect(px, py, 128, 50, [25, 6, 6, 25]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
+    g.fillStyle = '#1a1a1a'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    fitText(g, o.pt, p2 => conFont(p2, 700), 40, 16, 110); g.fillText(o.pt, px + 64, py + 27);
+    g.textBaseline = 'alphabetic';
+  }
+  bottomLine();
+  g.restore();
+}
 function renderFramed(g, o, size, borderCol) {
   const [frame, box] = FRAMES[o.color] || FRAMES.B;
   const inner = { x: 30, y: 30, w: W - 60, h: H - 60 };
@@ -1452,6 +1679,7 @@ const FONTS = {
   dela: { label: 'Dela Gothic One (bold JP)', f: '"Dela Gothic One", Georgia, serif', wt: 400, g: 'Display' },
   rocksalt: { label: 'Rock Salt (scrawl)', f: '"Rock Salt", Georgia, serif', wt: 400, g: 'Handwritten' },
   shadows: { label: 'Shadows Into Light (pen)', f: '"Shadows Into Light", Georgia, serif', wt: 400, g: 'Handwritten' },
+  antonio: { label: 'Antonio (console caps)', f: '"Antonio", "Arial Narrow", sans-serif', wt: 600, g: 'Sci-fi & retro' },
   notojp: { label: 'Noto Sans JP (Japanese)', f: '"Noto Sans JP", system-ui, sans-serif', wt: 700, g: 'Display' },
 };
 const SRC_LABEL = {
@@ -1467,6 +1695,30 @@ const LDEF = {
 };
 // Starting designs, in card units (750 × 1050). Later layers draw on top.
 const PRESETS = {
+  modern: () => [
+    { src: 'custom', text: ' ', x: 0, y: 0, w: 750, h: 74, size: 20, bg: 'box', bgColor: '#1f5fd1', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: 'PROXY  ✦  CARD EDITION', x: 40, y: 22, w: 420, size: 24, font: 'oswald', upper: true, color: '#ffffff', ls: 3, effect: 'none' },
+    { src: 'cost', x: 430, y: 17, w: 280, size: 38, align: 'right', effect: 'none' },
+    { src: 'name', x: 36, y: 548, w: 678, size: 104, font: 'bebas', upper: true, color: '#ffffff', align: 'center', fit: true, lh: .9, ls: 2, effect: 'shadow', effColor: '#000000', effSize: 1.6 },
+    { src: 'type', x: 60, y: 664, w: 630, size: 24, font: 'oswald', upper: true, color: '#e6ecff', align: 'center', fit: true, ls: 4, effect: 'shadow' },
+    { src: 'rulesflavor', x: 40, y: 742, w: 670, h: 184, size: 23, font: 'plex', color: '#f2f4f8', bg: 'box', bgColor: '#0b0e14', bgOp: .74, pad: 18, rad: 14, effect: 'none' },
+    { src: 'pt', x: 40, y: 944, w: 84, size: 32, font: 'oswald', color: '#111111', align: 'center', bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 9, rad: 4, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'credit', x: 150, y: 984, w: 560, size: 13, font: 'plex', color: '#e6ecff', align: 'right', effect: 'shadow' },
+  ],
+  vhs: () => [
+    { src: 'custom', text: '\u00a0', x: 30, y: 30, w: 690, h: 200, size: 20, bg: 'box', bgColor: '#0d0d0d', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 30, y: 30, w: 690, h: 44, size: 20, bg: 'bands', bgColor: '#ff7a1a', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'name', x: 44, y: 84, w: 662, size: 92, font: 'bangers', upper: true, color: '#f4f1e8', align: 'center', fit: true, lh: .92, ls: 2, effect: 'extrude', effColor: '#ff7a1a' },
+    { src: 'cost', x: 406, y: 184, w: 300, size: 30, align: 'right', bg: 'box', bgColor: '#0d0d0d', bgOp: 1, pad: 7, rad: 30, bdW: 3, bdColor: '#f4f1e8', effect: 'none' },
+    { src: 'custom', text: 'BE KIND\nREWIND', x: 566, y: 640, w: 130, size: 24, font: 'oswald', upper: true, color: '#151515', align: 'center', lh: 1, rot: 9, bg: 'sticker', bgColor: '#ffd84a', bgOp: 1, pad: 9, rad: 6, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 30, y: 772, w: 690, h: 248, size: 20, bg: 'box', bgColor: '#0d0d0d', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'type', x: 44, y: 786, w: 520, size: 28, font: 'oswald', upper: true, color: '#ff7a1a', fit: true, ls: 1, effect: 'none' },
+    { src: 'rulesflavor', x: 44, y: 828, w: 528, h: 132, size: 21, font: 'oswald', color: '#f4f1e8', effect: 'none' },
+    { src: 'pt', x: 594, y: 826, w: 112, size: 40, font: 'russo', color: '#f4f1e8', align: 'center', bg: 'box', bgColor: '#0d0d0d', bgOp: 1, pad: 10, rad: 6, bdW: 3, bdColor: '#f4f1e8', effect: 'none' },
+    { src: 'custom', text: 'HI-FI · STEREO\nCOLOR · SP', x: 588, y: 912, w: 124, size: 13, font: 'plex', upper: true, color: '#f4f1e8', align: 'center', lh: 1.25, ls: 1, effect: 'none' },
+    { src: 'credit', x: 44, y: 962, w: 528, size: 13, font: 'plex', color: '#bdb7ad', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 30, y: 986, w: 690, h: 34, size: 20, bg: 'bands', bgColor: '#ff7a1a', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+  ],
   saga: () => [
     { src: 'name', x: 40, y: 40, w: 670, size: 40, fit: true, bg: 'box', bgOp: .85, pad: 12, rad: 10, effect: 'none' },
     { src: 'cost', x: 440, y: 50, w: 260, size: 34, align: 'right', effect: 'none' },
@@ -1619,6 +1871,16 @@ function makePaint(g, L, size) {
   };
   return (t, x, y) => { g.fillStyle = col; g.fillText(t, x, y); };
 }
+function hueShift(hexc, deg) {
+  const [r, g2, b] = hex(/^#[0-9a-f]{6}$/i.test(hexc) ? hexc : '#ff7a1a').map(v => v / 255);
+  const mx = Math.max(r, g2, b), mn = Math.min(r, g2, b), l = (mx + mn) / 2, d = mx - mn;
+  let h = 0, sat = 0;
+  if (d) { sat = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g2 - b) / d) % 6 : mx === g2 ? (b - r) / d + 2 : (r - g2) / d + 4; h *= 60; }
+  h = (h + deg + 360) % 360;
+  const c = (1 - Math.abs(2 * l - 1)) * sat, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+  const [r1, g1, b1] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return `rgb(${Math.round((r1 + m) * 255)},${Math.round((g1 + m) * 255)},${Math.round((b1 + m) * 255)})`;
+}
 function mixHex(a, b, t) {
   const [r1, g1, b1] = hex(/^#[0-9a-f]{6}$/i.test(a) ? a : '#888888'), [r2, g2, b2] = hex(b);
   return `rgb(${Math.round(r1 + (r2 - r1) * t)},${Math.round(g1 + (g2 - g1) * t)},${Math.round(b1 + (b2 - b1) * t)})`;
@@ -1626,7 +1888,9 @@ function mixHex(a, b, t) {
 // Draws one layer and returns its box (for selecting and dragging), or null when it has no text.
 function drawLayer(g, L, o) {
   let text = layerText(L, o);
-  if (!text || !String(text).trim()) return null;
+  // a custom layer with no text but a background and a set height is a plain panel or stripe band
+  const panel = L.src === 'custom' && L.bg && L.bg !== 'none' && +L.h > 0;
+  if (!text || !String(text).trim()) { if (!panel) return null; text = ' '; }
   const fam = FONTS[L.font] || FONTS.spectral;
   ensureFont(fam, text);
   const pad = +L.pad || 0, rot = +L.rot || 0;
@@ -1725,6 +1989,10 @@ function drawLayer(g, L, o) {
   } else if (L.bg === 'box' || L.bg === 'strips') {
     g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); fillStroke();
   } else if (L.bg === 'sticker' || L.bg === 'barcode' || L.bg === 'price') drawSticker(g, L, bx, by, bw, bh, size);
+  else if (L.bg === 'bands') { // stacked stripes: the background color and three neighbouring hues
+    const n = 4;
+    for (let i = 0; i < n; i++) { g.fillStyle = hueShift(L.bgColor, i * 22); g.fillRect(bx, by + (bh / n) * i, bw, bh / n + .6); }
+  }
   else if (L.bg === 'burst') {
     const cx0 = bx + bw / 2, cy0 = by + bh / 2, ro = Math.max(bw, bh) / 2 * 1.22, sy = Math.min(1, (bh + 40) / bw * 1.1), spikes = 18;
     g.save(); g.beginPath();
@@ -2107,9 +2375,10 @@ function syncEditor() {
     if (t === 'b') el.checked = !!L[k]; else el.value = L[k];
   }
   $('L-textWrap').hidden = L.src !== 'custom';
+  try { syncDesignColors(); } catch (e) {}
 }
 function selectLayer(id) { st.sel = id; renderLayerList(); syncEditor(); draw(); }
-function layersChanged() { renderLayerList(); syncEditor(); draw(); saveDraft(); }
+function layersChanged() { renderLayerList(); syncEditor(); draw(); saveDraft(); if (typeof syncDesignColors === 'function') syncDesignColors(); }
 function applyPreset(name, quiet) {
   st.layers = (PRESETS[name] || PRESETS.clean)().map(l => ({ ...LDEF, ...l, id: newLid() }));
   st.sel = st.layers.find(l => l.src === 'name')?.id || st.layers[0].id;
@@ -2359,7 +2628,7 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 let lastLook = '';
 function randomLook() {
   let lk;
-  do lk = pick([['fade'], ['panel'], ['framed'], ...Object.keys(PRESETS).map(p => ['custom', p])]); while (lk.join() === lastLook);
+  do lk = pick([['fade'], ['panel'], ['framed'], ['console'], ...Object.keys(PRESETS).map(p => ['custom', p])]); while (lk.join() === lastLook);
   lastLook = lk.join();
   st.layers = [];
   if (lk[0] === 'custom') applyPreset(lk[1], true);
@@ -2368,7 +2637,7 @@ function randomLook() {
     layout: lk[0],
     border: lk[0] === 'custom' && Math.random() < .5 ? 'none' : pick(['#0b0b0c', '#0b0b0c', '#0b0b0c', '#f3f1ec', '#a9abae', '#b8964c', 'none']),
     titleFont: Math.random() < .6 ? pick(['Spectral', 'Cinzel', 'Cormorant SC', 'IM Fell English SC']) : famOf(pick(Object.values(FONTS).filter(f => f.g !== 'Handwritten' || Math.random() < .3))),
-    ...(Math.random() < .35 ? (() => { const [a, b] = pick(FX_PAIRS); return { artFx: pick(['duotone', 'duotone', 'halftone', 'pop', 'bw', 'posterize', 'grain']), fxDark: a, fxLight: b, fxAmt: String(Math.round((0.3 + Math.random() * 0.4) * 100) / 100) }; })() : { artFx: 'none' }),
+    ...(Math.random() < .35 ? (() => { const [a, b] = pick(FX_PAIRS); return { artFx: pick(['duotone', 'duotone', 'halftone', 'pop', 'bw', 'posterize', 'grain', 'paint']), fxDark: a, fxLight: b, fxAmt: String(Math.round((0.3 + Math.random() * 0.4) * 100) / 100) }; })() : { artFx: 'none' }),
     shade: String(Math.round((0.6 + Math.random() * 0.3) * 100) / 100),
     wear: Math.random() < .3 ? pick(['light', 'worn', 'worn', 'beat', 'wrecked']) : 'none', wearSeed: String(Math.floor(Math.random() * 1e6)),
     pipStyle: bold ? pick(['outline', 'solid', 'glyph']) : pick(['classic', 'classic', 'flat', 'outline', 'solid', 'glyph']),
@@ -2680,7 +2949,7 @@ function setCredit(a) {
   const el = $('artCredit'); el.textContent = '';
   if (!a) { el.hidden = true; return; }
   const link = document.createElement('a'); link.href = a.url; link.target = '_blank'; link.rel = 'noopener'; link.textContent = a.title;
-  el.append('Art: ', link, ` · ${a.artist} · public domain, from Wikimedia Commons (searched for “${a.word}”). Put your own art on it any time.`);
+  el.append('Art: ', link, ` · ${a.artist} · ${a.license || 'public domain'}, from ${a.source || 'Wikimedia Commons'} (searched for “${a.word}”). Search for something else above, or put your own art on it.`);
   el.hidden = false;
 }
 let remixing = false;
@@ -2733,7 +3002,7 @@ function updateFxUI() {
   const fx = $('artFx').value;
   $('wearMore').hidden = $('wear').value === 'none';
   $('fxAmtWrap').hidden = fx === 'none';
-  $('fxAmtLabel').textContent = { halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
+  $('fxAmtLabel').textContent = { paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
   $('fxColors').hidden = !(fx === 'duotone' || fx === 'halftone');
   $('fxDarkLabel').firstChild.textContent = fx === 'halftone' ? 'Ink ' : 'Shadows ';
   $('fxLightLabel').firstChild.textContent = fx === 'halftone' ? 'Paper ' : 'Highlights ';
@@ -2756,7 +3025,10 @@ const STYLES = [
   { id: 'popart', name: 'Pop art', preset: 'comic', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'outline', pipColor: '#ffffff', artFx: 'pop', fxAmt: '0.45' } },
   { id: 'riso', name: 'Risograph', f: { layout: 'panel', border: '#f3f1ec', titleFont: 'Righteous', shade: '0.8', pipStyle: 'solid', pipColor: '#ff6b4a', artFx: 'duotone', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.55' } },
   { id: 'retro', name: 'Retro game', preset: 'retro', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
-  { id: 'saga', name: 'Saga', preset: 'saga', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'modern', name: 'Modern game', preset: 'modern', f: { layout: 'custom', border: 'none', pipStyle: 'flat', pipColor: '#ffffff', gloss: true } },
+  { id: 'vhs', name: 'VHS tape', preset: 'vhs', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'worn', gloss: true } },
+  { id: 'console', name: 'Starship console', f: { layout: 'console', border: '#0b0b0c', pipStyle: 'flat', pipColor: '#ffffff' } },
+  { id: 'oil', name: 'Oil painting', f: { layout: 'framed', border: '#0b0b0c', titleFont: 'Cormorant SC', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'paint', fxAmt: '0.45' } },
   { id: 'paperback', name: 'Worn paperback', preset: 'paperback', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'glyph', pipColor: '#ece6da', wear: 'worn' } },
   { id: 'pulp', name: 'Pulp comic', preset: 'pulp', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#ffffff', wear: 'worn' } },
   { id: 'minimal', name: 'Minimal', preset: 'clean', f: { layout: 'custom', border: 'none', pipStyle: 'glyph', pipColor: '#ffffff' } },
@@ -2778,7 +3050,7 @@ function buildStyles() {
   }
 }
 function applyStyle(sty) {
-  writeForm({ artFx: 'none', wear: 'none', ...sty.f });
+  writeForm({ artFx: 'none', wear: 'none', gloss: false, ...sty.f });
   if (sty.preset) { applyPreset(sty.preset, true); updateLook(); }
   activeStyle = sty.id; markStyle();
   $('randomNote').hidden = true;
@@ -2796,12 +3068,175 @@ function refreshStyles() {
     STYLES.forEach((sty, i) => {
       const c = $('styles').children[i]?.querySelector('canvas'); if (!c) return;
       const g = c.getContext('2d'); g.setTransform(0.24, 0, 0, 0.24, 0, 0);
-      try { render(g, { ...o, artFx: 'none', wear: 'none', ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
+      try { render(g, { ...o, artFx: 'none', wear: 'none', gloss: false, ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
     });
   }, styleFontsAsked ? 600 : 0);
 }
 buildStyles();
 for (const k of FIELDS) $(k).addEventListener('input', () => { if (activeStyle) { activeStyle = null; markStyle(); } });
+
+// ---------- art search ----------
+// Search public-domain art by your own words in one of three open collections and pick from the results.
+// Each source returns items { key, thumb, full, title, artist, license, page }; only the words you type are sent.
+const cleanArtist = html => { let a = plain(html); if (!a || /unknown/i.test(a)) a = 'Unknown artist'; return a.length > 48 ? a.slice(0, 46).trim() + '…' : a; };
+const cleanTitle = t => t.replace(/^File:/, '').replace(/\.[a-z0-9]+$/i, '').replace(/\s*-\s*Google Art Project.*$/i, '').replace(/_/g, ' ');
+const shorten = (t, n = 90) => (t || 'Untitled').length > n ? t.slice(0, n - 1).trim() + '…' : (t || 'Untitled');
+const ldGet = async u => { const r = await fetch(u, { headers: { Accept: 'application/ld+json' } }); if (!r.ok) throw new Error('lookup'); return r.json(); };
+const ART_SOURCES = {
+  commons: {
+    name: 'Wikimedia Commons',
+    about: 'Searches <a href="https://commons.wikimedia.org/wiki/Category:Google_Art_Project_works" target="_blank" rel="noopener">Wikimedia Commons</a> (commons.wikimedia.org) for museum paintings scanned by the Google Art Project, and shows only images Commons marks as public domain. Remix’s <b>Art</b> button searches here too.',
+    async more(S) {
+      const out = [];
+      for (let pass = 0; pass < 2 && out.length < 8 && S.offset >= 0; pass++) {
+        // first artworks with the words in their title, then anywhere in their description
+        const words = S.q.replace(/[^\p{L}\p{N}\s]/gu, ' ').trim();
+        const query = S.plain ? `${words} "Google Art Project" filetype:bitmap` : `${words.split(/\s+/).map(w => 'intitle:' + w).join(' ')} "Google Art Project" filetype:bitmap`;
+        const j = await (await fetch(`${COMMONS}&generator=search&gsrnamespace=6&gsrlimit=24&gsroffset=${S.offset}&gsrsearch=${encodeURIComponent(query)}` +
+          '&prop=imageinfo&iiprop=url|size|extmetadata&iiextmetadatafilter=LicenseShortName|Artist&iiurlwidth=320')).json();
+        for (const p of Object.values(j.query?.pages || {}).sort((a, b) => (a.index || 0) - (b.index || 0))) {
+          const i = p.imageinfo?.[0]; if (!i) continue;
+          const lic = i.extmetadata?.LicenseShortName?.value || '';
+          if (!/public domain|cc0|pd/i.test(lic) || Math.min(i.width, i.height) < 700) continue;
+          const w = [1920, 1280].find(x => i.width > x); // Commons only serves certain widths
+          out.push({ key: p.title, thumb: i.thumburl, full: w ? i.thumburl.replace(/\/\d+px-/, `/${w}px-`) : i.url, title: cleanTitle(p.title),
+            artist: cleanArtist(i.extmetadata?.Artist?.value), license: 'public domain', page: i.descriptionurl });
+        }
+        if (j.continue) S.offset = j.continue.gsroffset;
+        else if (!S.plain) { S.plain = true; S.offset = 0; }
+        else S.offset = -1;
+      }
+      return out;
+    },
+  },
+  wellcome: {
+    name: 'Wellcome Collection',
+    about: 'Searches the <a href="https://wellcomecollection.org/search/images" target="_blank" rel="noopener">Wellcome Collection</a> (wellcomecollection.org), a London museum and library: old prints, drawings and paintings of medicine, alchemy, magic, monsters and more. Only images marked public domain or CC0 are shown.',
+    async more(S) {
+      S.page = (S.page || 0) + 1;
+      const j = await (await fetch(`https://api.wellcomecollection.org/catalogue/v2/images?query=${encodeURIComponent(S.q)}&pageSize=24&page=${S.page}` +
+        '&locations.license=pdm,cc-0&include=source.contributors')).json();
+      if (!j.totalPages || S.page >= j.totalPages) S.offset = -1;
+      return (j.results || []).map(x => {
+        const base = (x.thumbnail?.url || x.locations?.[0]?.url || '').replace(/\/info\.json$/, '');
+        const lic = x.locations?.[0]?.license?.id;
+        return { key: x.id, thumb: base + '/full/320,/0/default.jpg', full: base + '/full/!1600,1600/0/default.jpg', title: shorten(x.source?.title),
+          artist: x.source?.contributors?.[0]?.agent?.label || 'Unknown artist', license: lic === 'cc-0' ? 'CC0' : 'public domain',
+          page: `https://wellcomecollection.org/works/${x.source?.id}` };
+      }).filter(x => x.thumb.startsWith('https://'));
+    },
+  },
+  rijks: {
+    name: 'Rijksmuseum',
+    about: 'Searches the <a href="https://www.rijksmuseum.nl/en/rijksstudio" target="_blank" rel="noopener">Rijksmuseum</a> in Amsterdam (rijksmuseum.nl): Dutch paintings, prints and objects, all free to use (CC0). It matches object descriptions; Dutch words often find more (draak = dragon, schip = ship).',
+    async more(S) {
+      if (!S.ids) { // the search returns object ids; each needs three small lookups to reach its image
+        let j = await (await fetch(`https://data.rijksmuseum.nl/search/collection?description=${encodeURIComponent(S.q)}&imageAvailable=true`)).json();
+        if (!j.orderedItems?.length) j = await (await fetch(`https://data.rijksmuseum.nl/search/collection?title=${encodeURIComponent(S.q)}&imageAvailable=true`)).json();
+        S.ids = (j.orderedItems || []).map(x => x.id); S.next = j.next?.id || null;
+      }
+      if (!S.ids.length && S.next) { const j = await (await fetch(S.next)).json(); S.ids = (j.orderedItems || []).map(x => x.id); S.next = j.next?.id || null; }
+      const batch = S.ids.splice(0, 12);
+      if (!S.ids.length && !S.next) S.offset = -1;
+      const got = await Promise.allSettled(batch.map(async id => {
+        const o = await ldGet(id), vi = await ldGet(o.shows[0].id), d = await ldGet(vi.digitally_shown_by[0].id);
+        const base = d.access_point[0].id.replace(/\/full\/.*$/, '');
+        const names = (o.identified_by || []).filter(x => x.type === 'Name');
+        const en = names.find(x => (x.language || []).some(l => /english|300388277/i.test(JSON.stringify(l))));
+        const maker = o.produced_by?.part?.[0]?.carried_out_by?.[0]?.id || o.produced_by?.carried_out_by?.[0]?.id || null;
+        return { key: id, thumb: base + '/full/320,/0/default.jpg', full: base + '/full/1600,/0/default.jpg', title: shorten((en || names[0])?.content),
+          artist: null, makerUrl: maker, license: 'CC0', page: id };
+      }));
+      return got.filter(x => x.status === 'fulfilled').map(x => x.value);
+    },
+  },
+};
+let artSearch = { seen: new Set() };
+function showArtAbout() {
+  const src = ART_SOURCES[$('artSrc').value];
+  $('artAbout').innerHTML = src.about + ' Only the words you type are sent.';
+}
+$('artSrc').addEventListener('change', () => { showArtAbout(); if ($('artQ').value.trim()) searchArt(false); });
+showArtAbout();
+async function searchArt(more) {
+  const q = $('artQ').value.trim(), srcKey = $('artSrc').value, src = ART_SOURCES[srcKey];
+  if (!q) { $('artQ').focus(); $('artHint').textContent = 'Type what you’re looking for, like “dragon” or “ship in a storm”.'; return; }
+  if (!more) { artSearch = { q, src: srcKey, offset: 0, plain: false, seen: new Set() }; $('artGrid').textContent = ''; }
+  if (artSearch.offset < 0) return;
+  $('artGo').disabled = $('artMore').disabled = true; $('artHint').textContent = `Searching ${src.name} for “${q}”…`;
+  try {
+    const items = await src.more(artSearch);
+    for (const it of items) {
+      if (artSearch.seen.has(it.key)) continue;
+      artSearch.seen.add(it.key);
+      const b = document.createElement('button'), im = document.createElement('img');
+      b.type = 'button'; b.setAttribute('role', 'listitem'); b.title = `${it.title} · ${it.artist || src.name} · ${it.license} · ${src.name}`;
+      im.src = it.thumb; im.alt = it.title; im.loading = 'lazy'; b.append(im);
+      b.onclick = () => useSearchArt(it, src, q, b);
+      $('artGrid').append(b);
+    }
+    const total = $('artGrid').children.length;
+    $('artMore').hidden = artSearch.offset < 0;
+    $('artHint').textContent = total ? `${total} result${total > 1 ? 's' : ''} from ${src.name} for “${q}”. Pick one to use it.`
+      : `${src.name} had nothing free to use for “${q}”. Try a simpler word, or another source.`;
+  } catch (e) { $('artHint').textContent = `Couldn’t reach ${src.name}. Check your connection, or try another source.`; }
+  $('artGo').disabled = $('artMore').disabled = false;
+}
+async function useSearchArt(it, src, q, btn) {
+  btn.disabled = true; st.edits++; $('artHint').textContent = `Loading that artwork from ${src.name}…`;
+  try {
+    const r = await fetch(it.full); if (!r.ok) throw 0;
+    const blob = await r.blob(), img = await loadImage(URL.createObjectURL(blob));
+    let artist = it.artist;
+    if (!artist && it.makerUrl) { try { const per = await ldGet(it.makerUrl); artist = (per.identified_by || []).find(x => x.type === 'Name')?.content; } catch (e) {} }
+    if (/^(anoniem|anonymous|onbekend)$/i.test(artist || '')) artist = '';
+    const art = { img, blob, artist: artist || 'Unknown artist', title: it.title, url: it.page, word: q, source: src.name, license: it.license };
+    st.img = img; st.blob = blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; st.edits++;
+    $('artist').value = art.artist; $('cardNotice').hidden = true; setCredit(art);
+    $('randomNote').hidden = true; saveDraft(); draw();
+    $('artHint').textContent = `Using “${art.title}” from ${src.name}.`;
+  } catch (e) { $('artHint').textContent = 'That artwork couldn’t be loaded. Try another.'; }
+  btn.disabled = false;
+}
+$('artGo').onclick = () => searchArt(false);
+$('artMore').onclick = () => searchArt(true);
+$('artQ').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); searchArt(false); } });
+
+// ---------- design colors ----------
+// One place to recolor a whole custom design: every box/strip background, and the text that sits on them
+// (or that shares their text color). Stickers and starbursts keep their own colors.
+const DS_PAIRS = [['#b0281e', '#efe6d2', 'Red & cream'], ['#111111', '#f2f2f2', 'Black & white'], ['#e2b33c', '#151515', 'Mustard & black'],
+  ['#1f6f78', '#f4efe2', 'Teal & cream'], ['#5b2a86', '#f7d9ff', 'Purple & pink'], ['#f1ead8', '#1a1a1a', 'Newsprint'], ['#2e5e2a', '#e9f2c9', 'Moss'], ['#0b2545', '#8ee3ef', 'Deep sea']];
+function plainBg(L) { return L.bg === 'box' || L.bg === 'strips'; }
+function designColors() { // the current colors, read from the first layer with a box or strip
+  const L = st.layers.find(plainBg);
+  return L ? { bg: L.bgColor, ink: L.color } : null;
+}
+function syncDesignColors() {
+  const c = designColors(); if (!c) return;
+  if (document.activeElement !== $('dsBg')) $('dsBg').value = c.bg;
+  if (document.activeElement !== $('dsInk')) $('dsInk').value = c.ink;
+}
+function recolorDesign(bg, ink) {
+  const old = designColors(); if (!old) { $('status').textContent = 'This design has no boxes or strips to recolor.'; return; }
+  for (const L of st.layers) {
+    if (/sticker|barcode|price|burst/.test(L.bg)) continue;
+    if (bg && (plainBg(L) || L.bg === 'bands')) L.bgColor = bg;
+    if (ink && (plainBg(L) || L.color === old.ink)) {
+      if (L.pip !== 'inherit' && L.pipColor === L.color) L.pipColor = ink;
+      L.color = ink;
+    }
+  }
+  layersChanged();
+}
+for (const [a, b, name] of DS_PAIRS) {
+  const btn = document.createElement('button'); btn.type = 'button'; btn.title = name; btn.setAttribute('aria-label', name);
+  btn.style.background = `linear-gradient(135deg, ${a} 50%, ${b} 50%)`;
+  btn.onclick = () => { $('dsBg').value = a; $('dsInk').value = b; recolorDesign(a, b); };
+  $('dsPal').append(btn);
+}
+$('dsBg').addEventListener('input', e => recolorDesign(e.target.value, null));
+$('dsInk').addEventListener('input', e => recolorDesign(null, e.target.value));
 
 // ---------- symbols panel ----------
 const SLOTS = [['SET', 'Set symbol (all rarities)'], ['SET:C', 'Common only'], ['SET:U', 'Uncommon only'], ['SET:R', 'Rare only'], ['SET:M', 'Mythic only']];
