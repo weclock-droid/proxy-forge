@@ -251,6 +251,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="posterize">Posterize</option>
               <option value="grain">Film grain</option>
               <option value="paint">Oil painting</option>
+              <option value="copy">Photocopy</option>
+              <option value="pixel">Pixel art</option>
             </select>
           </label>
           <label for="fxAmt" id="fxAmtWrap" hidden><span id="fxAmtLabel">Strength</span> <input type="range" id="fxAmt" min="0" max="1" step="0.01" value="0.5"></label>
@@ -322,9 +324,17 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         </label>
         <div class="actions" id="wearMore" hidden>
           <button type="button" id="wearShuffle">Shuffle damage</button>
-          <span class="hint">Every card wears differently. Shuffle for new tears, creases and chips.</span>
+          <span class="hint">Every card wears and misprints differently. Shuffle for new tears, creases, streaks and smears.</span>
         </div>
         <input type="hidden" id="wearSeed" value="0">
+        <label for="misprint">Print errors
+          <select id="misprint">
+            <option value="none">None (clean print)</option>
+            <option value="light">Toner specks (photocopy)</option>
+            <option value="off">Color misprint (stripes, ghosting)</option>
+            <option value="bad">Bad print run (more stripes, miscut)</option>
+          </select>
+        </label>
         <label class="inline"><input type="checkbox" id="gloss"> Plastic case glare (like a tape in its clamshell case)</label>
         <div class="row">
           <label for="layout">Layout
@@ -333,6 +343,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="panel">Full art · text panel</option>
               <option value="framed">Classic frame</option>
               <option value="console">Starship console</option>
+              <option value="wrist">Wrist computer</option>
               <option value="custom">Custom (place text anywhere)</option>
             </select>
           </label>
@@ -340,8 +351,10 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
             <select id="border">
               <option value="#0b0b0c">Black</option>
               <option value="#f3f1ec">White</option>
+              <option value="#efeadc">Cream paper</option>
               <option value="#a9abae">Silver</option>
               <option value="#b8964c">Gold</option>
+              <option value="gilt">Gold foil (textured)</option>
               <option value="none">Borderless</option>
             </select>
           </label>
@@ -449,7 +462,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="balloon">Speech balloon</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -461,7 +474,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Mana symbols in this layer</h3>
           <div class="row">
-            <label>Style <select id="L-pip"><option value="inherit">Same as card</option><option value="classic">Classic colored</option><option value="flat">Flat colored</option><option value="outline">Outline</option><option value="solid">Solid color</option><option value="glyph">Symbol only</option></select></label>
+            <label>Style <select id="L-pip"><option value="inherit">Same as card</option><option value="classic">Classic colored</option><option value="flat">Flat colored</option><option value="outline">Outline</option><option value="solid">Solid color</option><option value="glyph">Symbol only</option><option value="letters">Plain letters (2W)</option></select></label>
             <label>Symbol color <input type="color" id="L-pipColor"></label>
           </div>
         </div>
@@ -572,7 +585,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint'];
 const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
@@ -582,7 +595,7 @@ const SAMPLE = {
   pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Proxy — not for sale',
   layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
   pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true,
-  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false
+  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none'
 };
 // Original example cards used for the random first-visit card.
 const EXAMPLES = [
@@ -997,6 +1010,16 @@ function fxImage(img, o) {
   const w = Math.max(1, Math.round(iw * k)), h = Math.max(1, Math.round(ih * k));
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const g = c.getContext('2d', { willReadFrequently: true });
+  if (fx === 'pixel') { // shrink to a few dozen pixels across, cut the colors, and blow it back up with hard edges
+    const cols = Math.round(150 - amt * 100), rows = Math.max(1, Math.round(cols * h / w));
+    const t = document.createElement('canvas'); t.width = cols; t.height = rows;
+    const tg = t.getContext('2d', { willReadFrequently: true }); tg.drawImage(img, 0, 0, cols, rows);
+    const id = tg.getImageData(0, 0, cols, rows), d = id.data, step = 255 / 5;
+    for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) d[i + k] = Math.min(255, Math.round(Math.min(255, d[i + k] * 1.08) / step) * step);
+    tg.putImageData(id, 0, 0);
+    g.imageSmoothingEnabled = false; g.drawImage(t, 0, 0, w, h);
+    if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c;
+  }
   if (fx === 'paint') { oilPaint(c, g, img, iw, ih, amt); if (m.size > 6) m.delete(m.keys().next().value); m.set(key, c); return c; }
   if (fx === 'halftone' || fx === 'pop') halftone(g, img, w, h, amt, fx === 'pop', hex(o.fxDark), o.fxLight);
   else {
@@ -1012,6 +1035,13 @@ function fxImage(img, o) {
       else if (fx === 'sepia') { d[i] = Math.min(255, t * 255 * 1.07 + 20); d[i + 1] = t * 255 * 0.88 + 10; d[i + 2] = t * 255 * 0.66; }
       else if (fx === 'duotone') { d[i] = dr + (lr - dr) * t; d[i + 1] = dg + (lg - dg) * t; d[i + 2] = db + (lb - db) * t; }
       else if (fx === 'posterize') { d[i] = Math.round(r / step) * step; d[i + 1] = Math.round(gg / step) * step; d[i + 2] = Math.round(b / step) * step; }
+      else if (fx === 'copy') {
+        // high-contrast toner: a grainy threshold into dark ink on cream paper
+        const px = (i >> 2) % w, py = (i >> 2) / w | 0, hsh = Math.imul((px >> 1) * 374761393 + (py >> 1) * 668265263, 1274126177) >>> 0;
+        let v = (t - 0.5) * (1.6 + amt * 3) + 0.5 + ((hsh & 1023) / 1023 - 0.5) * (0.75 - amt * 0.35);
+        v = v < .42 ? 0 : v > .58 ? 1 : (v - .42) / .16;
+        d[i] = 27 + (241 - 27) * v; d[i + 1] = 29 + (236 - 29) * v; d[i + 2] = 38 + (222 - 38) * v;
+      }
       else if (fx === 'grain') { const n = (Math.random() - 0.5) * noise; d[i] = r + n; d[i + 1] = gg + n; d[i + 2] = b + n; }
     }
     g.putImageData(id, 0, 0);
@@ -1080,15 +1110,143 @@ function halftone(g, img, w, h, amt, color, ink, paper) {
 }
 
 function artRect(o) {
+  const aw = o.layout === 'custom' && (o.layers || []).find(l => l.src === 'art');
+  if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true };
   if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
+  if (o.layout === 'wrist') return { x: 66, y: 140, w: 618, h: 400 };
   if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 132, w: 690, h: o.rules ? 616 : 718 } : { x: 30, y: 132, w: 690, h: 410 };
   if (o.border === 'none') return { x: 0, y: 0, w: W, h: H };
   return { x: 30, y: 30, w: W - 60, h: H - 60 };
 }
 
+// ---------- wrist computer layout ----------
+// A rugged wrist-worn computer: olive metal casing with colored side grips, a curved CRT screen with
+// scanlines and a green readout, a dark type bar and a riveted panel for the rules.
+const WRIST_ACC = { W: '#d6cca6', U: '#4a74b4', B: '#6b5293', R: '#b0473b', G: '#3e7d47', C: '#8b9097' };
+function renderWrist(g, o) {
+  const HUD = FONTS.terminal, SANS = FONTS.plex;
+  ensureFont(HUD, 'STATUSDATAMAPITEMSRADIOLVLHPAPRAD0123456789/');
+  ensureFont(SANS, (o.name || '') + (o.type || '') + (o.rules || '') + (o.flavor || ''));
+  const syms = parseCost(o.cost), cols = [...new Set((syms.join('').match(/[WUBRG]/g) || []))];
+  const fb = /^[WUBRG]$/.test(o.color) ? o.color : 'C';
+  const accL = WRIST_ACC[cols[0] || fb], accR = WRIST_ACC[cols[cols.length - 1] || fb];
+  let hsh = 7; for (const ch of o.name || 'x') hsh = Math.imul(hsh ^ ch.charCodeAt(0), 16777619);
+  const n = (k, m) => Math.abs((hsh >>> k) % m);
+  const R = rng(hsh);
+  const rr = (x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+  const dark = '#1b1c17', edge = '#2b2b1d';
+  g.save();
+  g.fillStyle = '#0c0c0b'; g.fillRect(0, 0, W, H);
+  // colored grips down both sides, with ridges
+  for (const [x, c] of [[20, accL], [W - 50, accR]]) {
+    rr(x, 70, 30, 880, 10); g.fillStyle = c; g.fill();
+    g.fillStyle = 'rgba(0,0,0,.35)'; for (let y = 230; y < 900; y += 38) g.fillRect(x + 4, y, 22, 4);
+    g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(x + 4, 76, 4, 868);
+  }
+  // olive metal casing: upper and lower halves
+  const metal = (x, y, w, h, r) => {
+    rr(x, y, w, h, r);
+    const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, '#6f6d47'); gr.addColorStop(.5, '#5a5938'); gr.addColorStop(1, '#46452c');
+    g.fillStyle = gr; g.fill(); g.lineWidth = 4; g.strokeStyle = edge; g.stroke();
+    g.save(); g.clip();
+    g.strokeStyle = 'rgba(255,255,230,.16)'; g.lineWidth = 3; rr(x + 5, y + 5, w - 10, h - 10, r - 4); g.stroke();
+    for (let i = 0; i < 140; i++) { g.fillStyle = R() < .5 ? 'rgba(20,20,10,.18)' : 'rgba(255,255,220,.08)'; g.fillRect(x + R() * w, y + R() * h, 1 + R() * 3, 1 + R() * 2); }
+    g.restore();
+  };
+  metal(34, 96, W - 68, 552, 24);
+  metal(40, 652, W - 80, 304, 18);
+  const rivet = (x, y) => { g.beginPath(); g.arc(x, y, 6, 0, 7); g.fillStyle = '#3a3a26'; g.fill(); g.beginPath(); g.arc(x - 1.5, y - 1.5, 2.5, 0, 7); g.fillStyle = 'rgba(255,255,220,.35)'; g.fill(); };
+  for (const [x, y] of [[54, 820], [54, 850], [W - 54, 820], [W - 54, 850], [54, 612], [W - 54, 612]]) rivet(x, y);
+
+  // title bar
+  rr(40, 38, W - 80, 78, 14); g.fillStyle = dark; g.fill(); g.lineWidth = 4; g.strokeStyle = '#575739'; g.stroke();
+  g.save(); g.translate(110, 24); g.fillStyle = '#4b4a31'; rr(-62, -12, 124, 24, 4); g.fill();
+  g.font = `400 20px ${HUD.f}`; g.fillStyle = '#c9c7a2'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WRIST-COMP', 0, 1); g.restore();
+  const costLeft = syms.length ? drawCostRight(g, syms, W - 56, 77, 42) : W - 56;
+  g.fillStyle = '#f2f2ea'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
+  fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, 18, costLeft - 64 - 18);
+  g.fillText(o.name || '', 64, 92);
+
+  // the screen
+  rr(52, 126, W - 104, 428, 36); g.fillStyle = '#121310'; g.fill(); g.lineWidth = 4; g.strokeStyle = '#2d2e22'; g.stroke();
+  const ar = artRect(o);
+  g.save(); rr(ar.x, ar.y, ar.w, ar.h, 28); g.clip();
+  drawArt(g, ar, st.img);
+  g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(70,255,120,.45)'; g.fillRect(ar.x, ar.y, ar.w, ar.h);
+  g.globalCompositeOperation = 'source-over';
+  g.fillStyle = 'rgba(0,0,0,.2)'; for (let y = ar.y; y < ar.y + ar.h; y += 4) g.fillRect(ar.x, y, ar.w, 1.6);
+  const vg = g.createRadialGradient(W / 2, ar.y + ar.h / 2, ar.h * .35, W / 2, ar.y + ar.h / 2, ar.w * .62);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); g.fillStyle = vg; g.fillRect(ar.x, ar.y, ar.w, ar.h);
+  const gl = g.createLinearGradient(ar.x, ar.y, ar.x + ar.w * .5, ar.y + ar.h * .6);
+  gl.addColorStop(0, 'rgba(255,255,255,.14)'); gl.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gl; g.fillRect(ar.x, ar.y, ar.w, ar.h);
+  // green readout across the top and tabs along the bottom, on a dim band so it reads over bright art
+  for (const [y0, y1] of [[ar.y, ar.y + 70], [ar.y + ar.h, ar.y + ar.h - 70]]) {
+    const sh = g.createLinearGradient(0, y0, 0, y1); sh.addColorStop(0, 'rgba(0,12,0,.6)'); sh.addColorStop(1, 'rgba(0,12,0,0)');
+    g.fillStyle = sh; g.fillRect(ar.x, Math.min(y0, y1), ar.w, 70);
+  }
+  const green = 'rgba(141,255,133,.9)';
+  g.strokeStyle = green; g.fillStyle = green; g.lineWidth = 2.5; g.font = `400 23px ${HUD.f}`; g.textBaseline = 'alphabetic';
+  const top = ['SYS', `LVL ${String(n(3, 40) + 1).padStart(2, '0')}`, `HP ${n(5, 300) + 100}/${400}`, `AP ${n(9, 50) + 30}/80`, `RAD ${n(13, 99)}`];
+  const x0 = ar.x + 24, x1 = ar.x + ar.w - 24, seg = (x1 - x0) / top.length;
+  top.forEach((t, i) => {
+    const a = x0 + seg * i, b = a + seg - 10;
+    g.beginPath(); if (i === 0) { g.moveTo(a, ar.y + 34); g.lineTo(a, ar.y + 20); } else g.moveTo(a, ar.y + 20); g.lineTo(b, ar.y + 20); g.lineTo(b, ar.y + 28); g.stroke();
+    g.textAlign = i ? 'right' : 'left'; g.fillText(t, i ? b - 4 : a + 10, ar.y + 44);
+  });
+  const tabs = ['STATUS', 'DATA', 'MAP', 'ITEMS', 'RADIO'], ty = ar.y + ar.h - 20, tseg = (x1 - x0) / tabs.length;
+  g.beginPath(); g.moveTo(x0, ty - 34); g.lineTo(x0, ty - 18); g.lineTo(x1, ty - 18); g.lineTo(x1, ty - 34); g.stroke();
+  g.textAlign = 'center';
+  tabs.forEach((t, i) => {
+    const cx = x0 + tseg * (i + .5);
+    if (i === 0) { const tw = g.measureText(t).width + 16; g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(cx - tw / 2, ty - 26, tw, 30); g.fillStyle = green; g.strokeRect(cx - tw / 2, ty - 26, tw, 30); }
+    g.fillText(t, cx, ty);
+  });
+  g.restore();
+  // power lamp and dial
+  const lamp = g.createRadialGradient(46, 566, 1, 46, 566, 16); lamp.addColorStop(0, '#fff3c0'); lamp.addColorStop(.45, '#ff9a2e'); lamp.addColorStop(1, 'rgba(255,120,20,0)');
+  g.beginPath(); g.arc(46, 566, 12, 0, 7); g.fillStyle = '#2a2a1e'; g.fill(); g.beginPath(); g.arc(46, 566, 16, 0, 7); g.fillStyle = lamp; g.fill();
+  rr(W - 46, 410, 22, 80, 6); g.fillStyle = '#2a2b22'; g.fill();
+  g.fillStyle = 'rgba(255,255,220,.25)'; for (let y = 416; y < 486; y += 8) g.fillRect(W - 44, y, 18, 2);
+
+  // type bar
+  rr(42, 566, W - 84, 62, 10); g.fillStyle = dark; g.fill(); g.lineWidth = 3; g.strokeStyle = '#575739'; g.stroke();
+  const rw = drawRarity(g, o, W - 60, 597, 32);
+  g.fillStyle = '#f2f2ea'; g.textAlign = 'left';
+  fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, W - 84 - 40 - (rw ? rw + 14 : 0));
+  g.fillText(o.type || '', 62, 609);
+
+  // rules panel: two worn inset plates with the text over them
+  for (const [x, w] of [[72, 296], [380, 298]]) { rr(x, 670, w, 262, 8); g.fillStyle = 'rgba(0,0,0,.13)'; g.fill(); g.lineWidth = 2; g.strokeStyle = 'rgba(0,0,0,.28)'; g.stroke(); }
+  const paras = [...(o.rules ? parseRich(o.rules, false) : []), ...(o.flavor ? parseRich(o.flavor, true) : [])];
+  if (paras.length) {
+    curFam = SANS; curLH = 1.14;
+    const ptW = o.pt ? 132 : 0, room = 236, wid = W - 2 * 84;
+    let fs = 32, lay;
+    for (; fs >= 12; fs--) { lay = layoutRich(g, paras, fs, wid - (fs > 24 ? 0 : 0)); if (lay.h <= room - (o.pt ? 10 : 0)) break; }
+    g.save(); g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
+    drawRich(g, lay, fs, 84, 682 + Math.max(0, (room - lay.h) / 2), '#f4f3ea');
+    g.restore();
+    curFam = { f: BODY, wt: 400 }; curLH = 1.16;
+  }
+  // bottom notch with a brass arrow
+  g.beginPath(); g.moveTo(W / 2 - 46, 944); g.lineTo(W / 2 + 46, 944); g.lineTo(W / 2 + 36, 972); g.lineTo(W / 2 - 36, 972); g.closePath(); g.fillStyle = dark; g.fill();
+  g.beginPath(); g.moveTo(W / 2 - 18, 952); g.lineTo(W / 2 + 18, 952); g.lineTo(W / 2, 966); g.closePath(); g.fillStyle = '#c9b27a'; g.fill();
+  // power / toughness
+  if (o.pt) {
+    rr(W - 170, 924, 124, 64, 8); g.fillStyle = dark; g.fill(); g.lineWidth = 3; g.strokeStyle = '#c9c7b0'; g.stroke();
+    g.fillStyle = '#f2f2ea'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    fitText(g, o.pt, px => `400 ${px}px ${HUD.f}`, 56, 20, 108); g.fillText(o.pt, W - 108, 958);
+    g.textBaseline = 'alphabetic';
+  }
+  const info = [o.info, o.artist ? '✎ ' + o.artist : ''].filter(Boolean).join('   ');
+  g.font = `500 15px ${SANS.f}`; g.fillStyle = '#e9e6df'; g.textAlign = 'left'; g.fillText(info, 44, H - 22);
+  if (o.note) { g.textAlign = 'right'; g.fillText(o.note, W - (o.pt ? 190 : 44), H - 22); }
+  g.restore();
+}
+
 // ---------- the card ----------
 function render(g, o, bleed) {
-  const borderCol = o.border === 'none' ? '#0b0b0c' : o.border;
+  const borderCol = o.border === 'none' ? '#0b0b0c' : o.border === 'gilt' ? '#b8964c' : o.border;
   const shade = +o.shade, size = +o.size;
   g.save();
   g.clearRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2);
@@ -1100,16 +1258,43 @@ function render(g, o, bleed) {
     g.beginPath(); g.roundRect(0, 0, W, H, o.round ? 36 : 0); g.clip();
     g.fillStyle = borderCol; g.fillRect(0, 0, W, H);
   }
+  if (o.border === 'gilt') drawGilt(g, bleed);
 
   curPip = { kind: o.pipStyle || 'classic', color: o.pipColor || '#ffffff' };
   curFx = o;
   if (o.layout === 'framed') renderFramed(g, o, size, borderCol);
   else if (o.layout === 'console') renderConsole(g, o, size);
+  else if (o.layout === 'wrist') renderWrist(g, o);
   else if (o.layout === 'custom') renderCustom(g, o, bleed);
   else renderFullArt(g, o, shade, size, bleed);
+  drawMisprint(g, o, bleed);
   drawWear(g, o);
   if (o.gloss) drawGloss(g);
   g.restore();
+  g.restore();
+}
+// Gold foil: a warm gradient, a tiled pattern of dark and bright flecks, and a soft diagonal sheen.
+let giltTile = null;
+function drawGilt(g, bleed) {
+  const m = bleed ? BLEED : 0;
+  if (!giltTile) {
+    giltTile = document.createElement('canvas'); giltTile.width = giltTile.height = 400;
+    const t = giltTile.getContext('2d'), R = rng(1937);
+    t.fillStyle = '#c9a54e'; t.fillRect(0, 0, 400, 400);
+    for (let i = 0; i < 5200; i++) {
+      const x = R() * 400, y = R() * 400, r = .6 + R() * R() * 3.2, dark = R() < .55;
+      t.fillStyle = dark ? `rgba(92,62,18,${.25 + R() * .5})` : `rgba(255,236,170,${.3 + R() * .5})`;
+      t.beginPath(); t.ellipse(x, y, r, r * (.5 + R() * .5), R() * 3, 0, Math.PI * 2); t.fill();
+    }
+    t.strokeStyle = 'rgba(80,52,14,.18)'; t.lineWidth = 1.2; // faint engraved swirls
+    for (let i = 0; i < 14; i++) { const x = R() * 400, y = R() * 400, r = 14 + R() * 30; t.beginPath(); t.arc(x, y, r, R() * 6, R() * 6 + 2.4); t.stroke(); }
+  }
+  g.save();
+  const pat = g.createPattern(giltTile, 'repeat'); pat.setTransform(new DOMMatrix([.5, 0, 0, .5, 0, 0]));
+  g.fillStyle = pat; g.fillRect(-m, -m, W + m * 2, H + m * 2);
+  const sh = g.createLinearGradient(0, 0, W, H);
+  sh.addColorStop(0, 'rgba(255,240,190,.28)'); sh.addColorStop(.35, 'rgba(255,240,190,0)'); sh.addColorStop(.6, 'rgba(90,60,15,.22)'); sh.addColorStop(.8, 'rgba(255,240,190,.2)'); sh.addColorStop(1, 'rgba(90,60,15,.25)');
+  g.fillStyle = sh; g.fillRect(-m, -m, W + m * 2, H + m * 2);
   g.restore();
 }
 // Light catching a clear plastic case: two soft diagonal sheens, a bright edge and a few scuffs in the plastic.
@@ -1131,6 +1316,119 @@ function drawGloss(g) {
     const x = R() * W, y = R() * H, l = 10 + R() * 70, an = -.5 + R() * .3;
     g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(an) * l, y + Math.sin(an) * l);
     g.strokeStyle = `rgba(255,255,255,${.06 + R() * .1})`; g.lineWidth = .6 + R(); g.stroke();
+  }
+  g.restore();
+}
+
+// ---------- print errors ----------
+// Mistakes from a cheap print run, modeled on real ink plates (cyan, magenta, yellow and black):
+// light  = toner specks and uneven toner, like a photocopy;
+// off    = a color misprint: the black plate printed in magenta or cyan in some bands, a yellow ghost
+//          of the card a little lower, color-bar stripes, plates slightly out of line;
+// bad    = all of that, stronger, with a miscut and ink-starved streaks.
+// Seeded like the wear marks, so the preview, PNG and print sheet match.
+const MISPRINT = { light: 1, off: 2, bad: 3 };
+let misCanvas = null;
+function drawMisprint(g, o, bleed) {
+  const lv = MISPRINT[o.misprint]; if (!lv) return;
+  let seed = 2166136261; for (const ch of (o.name || 'card') + 'press' + o.misprint + (o.wearSeed || 0)) seed = Math.imul(seed ^ ch.charCodeAt(0), 16777619);
+  const R = rng(seed), t = g.getTransform(), u = Math.hypot(t.a, t.b) || 1;
+  const m = bleed ? BLEED : 0;
+  if (lv >= 2) {
+    // the card's area in canvas pixels
+    const rx = Math.max(0, Math.floor(t.e - m * u)), ry = Math.max(0, Math.floor(t.f - m * u));
+    const rw = Math.min(g.canvas.width - rx, Math.ceil((W + m * 2) * u)), rh = Math.min(g.canvas.height - ry, Math.ceil((H + m * 2) * u));
+    if (rw > 8 && rh > 8) {
+      const src = g.getImageData(rx, ry, rw, rh), d = src.data, n = rw * rh;
+      // split into ink plates
+      const K = new Uint8Array(n), C = new Uint8Array(n), M = new Uint8Array(n), Y = new Uint8Array(n);
+      for (let p = 0, q = 0; p < n; p++, q += 4) {
+        const r = d[q], gg = d[q + 1], b = d[q + 2], mx = Math.max(r, gg, b), k = 255 - mx;
+        K[p] = k;
+        if (mx > 0) { C[p] = (mx - r) * 255 / mx; M[p] = (mx - gg) * 255 / mx; Y[p] = (mx - b) * 255 / mx; }
+      }
+      const off = () => { const a = R() * Math.PI * 2, dd = (lv === 2 ? 1.5 : 3) * (.5 + R()) * u; return [Math.round(Math.cos(a) * dd), Math.round(Math.sin(a) * dd)]; };
+      // miscut moves the whole print; plates each drift a little on top of that
+      let cx = 0, cy = 0;
+      if (lv === 3) { const k = 10 * u * (.6 + R() * .8); if (R() < .5) cx = Math.round((R() < .5 ? -1 : 1) * k); else cy = Math.round((R() < .5 ? -1 : 1) * k); }
+      const [kx, ky] = off().map(v => Math.round(v * .4)), [ccx, ccy] = off(), [mmx, mmy] = off(), [yyx, yyy] = off();
+      // bands where the black plate came out in a color ink: 0 black, 1 magenta, 2 cyan, 3 yellow
+      const rowInk = new Uint8Array(rh), rowShift = new Int16Array(rh);
+      const bands = lv === 2 ? 2 + (R() * 2 | 0) : 4 + (R() * 3 | 0);
+      for (let b = 0; b < bands; b++) {
+        const y0 = R() * rh | 0, hh = (30 + R() * 110) * u | 0, ink = R() < .5 ? 1 : R() < .8 ? 2 : 3, sh = Math.round((R() - .5) * 6 * u);
+        for (let y = y0; y < Math.min(rh, y0 + hh); y++) { rowInk[y] = ink; rowShift[y] = sh; }
+      }
+      // a yellow ghost of everything, printed lower down
+      const gy = Math.round((70 + R() * 90) * u), gx = Math.round((R() - .5) * 8 * u), gA = .5 + R() * .3;
+      const g0 = R() * rh * .5 | 0, g1 = Math.min(rh, g0 + (rh * (.35 + R() * .45) | 0));
+      const at = (A, x, y) => (x < 0 || y < 0 || x >= rw || y >= rh) ? 0 : A[y * rw + x];
+      const out = g.createImageData(rw, rh), o2 = out.data;
+      const MIX = [[1, 1, 1], [.06, .95, .4], [.95, .32, .06], [.03, .1, .95]]; // how much of R, G, B each ink takes away
+      for (let y = 0; y < rh; y++) {
+        const ink = MIX[rowInk[y]], sh = rowShift[y], ghost = y >= g0 && y < g1;
+        for (let x = 0; x < rw; x++) {
+          const p = y * rw + x, q = p * 4;
+          const k = at(K, x - cx - kx - sh, y - cy - ky) / 255;
+          const c = at(C, x - cx - ccx, y - cy - ccy) / 255, mm = at(M, x - cx - mmx, y - cy - mmy) / 255;
+          let yy = at(Y, x - cx - yyx, y - cy - yyy) / 255;
+          if (ghost) yy = 1 - (1 - yy) * (1 - at(K, x - cx - gx, y - cy - gy) / 255 * gA);
+          o2[q] = 255 * (1 - c) * (1 - k * ink[0]);
+          o2[q + 1] = 255 * (1 - mm) * (1 - k * ink[1]);
+          o2[q + 2] = 255 * (1 - yy) * (1 - k * ink[2]);
+          o2[q + 3] = d[q + 3];
+        }
+      }
+      g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+      if (!misCanvas) misCanvas = document.createElement('canvas');
+      misCanvas.width = rw; misCanvas.height = rh; misCanvas.getContext('2d').putImageData(out, 0, 0);
+      g.clearRect(rx, ry, rw, rh); g.drawImage(misCanvas, rx, ry);
+      g.restore();
+    }
+  }
+
+  g.save();
+  const x0 = -m, y0 = -m, w = W + m * 2, h = H + m * 2;
+  g.globalCompositeOperation = 'multiply';
+  // color-bar stripes running across the sheet
+  if (lv >= 2) {
+    const bar = (y, hh, col, a) => {
+      g.fillStyle = col; g.globalAlpha = a; g.fillRect(x0, y, w, hh);
+      g.globalAlpha = 1; g.globalCompositeOperation = 'screen'; g.fillStyle = 'rgba(255,255,255,.55)'; // white scan gaps inside the band
+      for (let k = 0; k < hh / 9; k++) if (R() < .5) g.fillRect(x0, y + R() * hh, w, .6 + R() * 1.4);
+      g.globalCompositeOperation = 'multiply';
+    };
+    if (R() < .7) { bar(y0, 10 + R() * 14, '#35b6dc', .9); bar(y0 + 26 + R() * 8, 3, '#e8357d', .9); }
+    const n = lv === 2 ? 1 + (R() * 2 | 0) : 3 + (R() * 2 | 0);
+    for (let k = 0; k < n; k++) {
+      const y = 120 + R() * (H - 200);
+      bar(y, 24 + R() * 40, '#ffe41a', .85);
+      if (R() < .6) bar(y + 50 + R() * 40, 3 + R() * 6, R() < .5 ? '#e8357d' : '#35b6dc', .85);
+    }
+    if (R() < .6) { const y = H - 150 - R() * 120; bar(y, 4, '#e8357d', .85); bar(y + 7, 5, '#ffe41a', .85); bar(y + 13, 3, '#35b6dc', .7); }
+  }
+  // uneven toner: soft lighter streaks
+  g.globalCompositeOperation = 'screen';
+  for (let i = 0; i < lv; i++) {
+    const pos = x0 + R() * w, sw = 6 + R() * 24 * lv, a = .06 + R() * .07 * lv;
+    const gr = g.createLinearGradient(pos - sw, 0, pos + sw, 0);
+    gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(.5, `rgba(255,255,255,${a})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(pos - sw, y0, sw * 2, h);
+  }
+  // toner specks, some in little clusters, more toward the edges
+  g.globalCompositeOperation = 'source-over';
+  const speck = (x, y, r, a) => { g.fillStyle = `rgba(22,24,32,${a})`; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); };
+  for (let i = 0; i < 70 + lv * 30; i++) {
+    let x = R() * W, y = R() * H;
+    if (R() < .5) { if (R() < .5) x = R() < .5 ? R() * 60 : W - R() * 60; else y = R() < .5 ? R() * 60 : H - R() * 60; }
+    speck(x, y, .4 + R() * R() * 2.4, .35 + R() * .5);
+    if (R() < .12) for (let k = 0; k < 6; k++) speck(x + (R() - .5) * 18, y + (R() - .5) * 18, .3 + R() * 1.1, .3 + R() * .5);
+  }
+  if (lv === 3) for (let i = 0; i < 2; i++) { // a couple of ink blots
+    const bx = 60 + R() * (W - 120), by = 60 + R() * (H - 120), r0 = 3 + R() * 6;
+    g.fillStyle = 'rgba(22,24,32,.7)'; g.beginPath();
+    for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, rr = r0 * (.7 + R() * .6); g[k ? 'lineTo' : 'moveTo'](bx + Math.cos(a) * rr, by + Math.sin(a) * rr); }
+    g.closePath(); g.fill();
   }
   g.restore();
 }
@@ -1684,7 +1982,7 @@ const FONTS = {
 };
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
-  rulesflavor: 'Rules + flavor', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
+  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
 };
 const LDEF = {
   src: 'custom', text: '', x: 60, y: 60, w: 630, h: 0, rot: 0, font: 'spectral', size: 40, color: '#ffffff', align: 'left',
@@ -1754,6 +2052,78 @@ const PRESETS = {
     L.push(cost, { src: 'custom', text: 'PROXY\nCOMICS', x: 44, y: 44, w: 170, size: 30, font: 'bungee', color: '#151515', align: 'center', lh: 1, bg: 'sticker', bgColor: '#f4f1e8', bgOp: 1, pad: 10, rad: 2, effect: 'none' });
     return L;
   },
+  playtest: () => [
+    { src: 'art', x: 46, y: 200, w: 658, h: 540, effect: 'none' },
+    { src: 'name', x: 44, y: 34, w: 500, size: 84, font: 'spectral', color: '#1b1d26', fit: true, lh: .95, effect: 'none' },
+    { src: 'cost', x: 520, y: 40, w: 190, size: 72, font: 'spectral', color: '#1b1d26', align: 'right', pip: 'letters', effect: 'none' },
+    { src: 'type', x: 46, y: 140, w: 640, size: 38, font: 'crimson', color: '#1b1d26', fit: true, effect: 'none' },
+    { src: 'rulesflavor', x: 46, y: 762, w: 520, h: 200, size: 36, font: 'crimson', color: '#1b1d26', lh: 1.1, pip: 'letters', effect: 'none' },
+    { src: 'pt', x: 560, y: 878, w: 150, size: 80, font: 'spectral', color: '#1b1d26', align: 'right', effect: 'none' },
+    { src: 'credit', x: 46, y: 990, w: 660, size: 15, font: 'plex', color: '#1b1d26', effect: 'none' },
+  ],
+  storybook: () => [
+    { src: 'art', x: 70, y: 196, w: 610, h: 560, bdW: 8, bdColor: '#3b260c', effect: 'none' },
+    { src: 'name', x: 70, y: 46, w: 470, size: 70, font: 'almendra', color: '#2a1a08', fit: true, lh: 1, rot: -3, bg: 'ribbon', bgColor: '#ecd9a0', bgOp: 1, pad: 14, bdW: 3, bdColor: '#3b260c', effect: 'none' },
+    { src: 'cost', x: 470, y: 128, w: 230, size: 40, align: 'right', rot: 2, bg: 'ribbon', bgColor: '#ecd9a0', bgOp: 1, pad: 10, bdW: 3, bdColor: '#3b260c', pip: 'classic', effect: 'none' },
+    { src: 'type', x: 80, y: 778, w: 590, size: 32, font: 'medieval', upper: true, color: '#2a1a08', align: 'center', fit: true, bg: 'ribbon', bgColor: '#ecd9a0', bgOp: 1, pad: 12, bdW: 3, bdColor: '#3b260c', effect: 'none' },
+    { src: 'rulesflavor', x: 70, y: 852, w: 516, h: 146, size: 26, font: 'crimson', color: '#2a1a08', bg: 'box', bgColor: '#f1e4bd', bgOp: .95, pad: 14, rad: 8, bdW: 3, bdColor: '#3b260c', effect: 'none' },
+    { src: 'pt', x: 600, y: 900, w: 100, size: 42, font: 'almendra', color: '#2a1a08', align: 'center', bg: 'box', bgColor: '#f1e4bd', bgOp: 1, pad: 10, rad: 6, bdW: 4, bdColor: '#3b260c', effect: 'none' },
+    { src: 'credit', x: 60, y: 1008, w: 630, size: 13, font: 'plex', color: '#2a1a08', align: 'center', effect: 'none' },
+  ],
+  pack: () => [
+    { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 480, bg: 'box', bgColor: '#f4efe2', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 0, y: 480, w: 750, h: 570, bg: 'pinstripe', bgColor: '#2f6b5a', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 0, y: 466, w: 750, h: 14, bg: 'box', bgColor: '#b8956a', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'art', x: 215, y: 540, w: 320, h: 300, bdW: 8, bdColor: '#f4efe2', effect: 'none' },
+    { src: 'custom', text: 'FINE QUALITY  ·  EST. 1993', x: 60, y: 44, w: 630, size: 20, font: 'oswald', color: '#8a6a3a', align: 'center', ls: 6, effect: 'none' },
+    { src: 'name', x: 40, y: 104, w: 670, size: 160, font: 'anton', upper: true, color: '#1d1d1d', align: 'center', fit: true, lh: .92, effect: 'none' },
+    { src: 'type', x: 60, y: 318, w: 630, size: 30, font: 'oswald', upper: true, color: '#2f6b5a', align: 'center', fit: true, ls: 8, effect: 'none' },
+    { src: 'cost', x: 40, y: 384, w: 670, size: 40, align: 'center', effect: 'none' },
+    { src: 'rulesflavor', x: 60, y: 868, w: 630, h: 110, size: 24, font: 'oswald', color: '#f4efe2', align: 'center', bg: 'box', bgColor: '#2f6b5a', bgOp: .9, pad: 12, rad: 4, pip: 'outline', pipColor: '#f4efe2', effect: 'none' },
+    { src: 'pt', x: 610, y: 960, w: 100, size: 34, font: 'anton', color: '#1d1d1d', align: 'center', bg: 'box', bgColor: '#f4efe2', bgOp: 1, pad: 8, rad: 4, effect: 'none' },
+    { src: 'credit', x: 40, y: 1004, w: 560, size: 13, font: 'plex', color: '#f4efe2', effect: 'none' },
+  ],
+  fantasypb: () => [
+    { src: 'custom', text: 'PROXY\nFANTASY\nCLASSIC', x: 14, y: 22, w: 66, h: 110, size: 14, font: 'oswald', color: '#151515', align: 'center', lh: 1.05, bg: 'box', bgColor: '#e9e3d0', bgOp: 1, pad: 8, rad: 4, effect: 'none' },
+    { src: 'custom', text: '75¢', x: 14, y: 146, w: 66, size: 24, font: 'oswald', color: '#e9e3d0', align: 'center', effect: 'none' },
+    { src: 'cost', x: 24, y: 192, w: 46, size: 40, vert: true, pip: 'outline', pipColor: '#e9e3d0', effect: 'none' },
+    { src: 'type', x: 100, y: 28, w: 620, size: 24, font: 'cinzel', upper: true, color: '#e0674c', align: 'center', fit: true, effect: 'none' },
+    { src: 'artist', x: 100, y: 62, w: 620, size: 58, font: 'spectral', upper: true, color: '#efe9d6', align: 'center', fit: true, ls: 2, effect: 'shadow', effColor: '#000000', effSize: .7 },
+    { src: 'name', x: 100, y: 136, w: 620, size: 96, font: 'fraktur', color: '#f4e04d', align: 'center', fit: true, lh: .95, effect: 'shadow', effColor: '#000000', effSize: .7 },
+    { src: 'rulesflavor', x: 40, y: 690, w: 540, h: 270, size: 27, font: 'crimson', color: '#f2efe6', effect: 'shadow', effColor: '#000000', effSize: .8, pip: 'classic' },
+    { src: 'pt', x: 600, y: 912, w: 110, size: 38, font: 'spectral', color: '#f2efe6', align: 'right', effect: 'shadow' },
+    { src: 'credit', x: 40, y: 1004, w: 670, size: 13, font: 'plex', color: '#f2efe6', effect: 'shadow' },
+  ],
+  scales: () => [
+    { src: 'custom', text: '\u00a0', x: -20, y: 150, w: 80, h: 920, bg: 'scales', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 690, y: 150, w: 80, h: 920, bg: 'scales', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'name', x: 22, y: 22, w: 560, size: 50, font: 'spectral', color: '#2a2118', fit: true, bg: 'parchment', bgColor: '#efe6cf', bgOp: 1, pad: 20, rad: 34, effect: 'none' },
+    { src: 'cost', x: 540, y: 34, w: 190, size: 38, align: 'right', bg: 'parchment', bgColor: '#efe6cf', bgOp: 1, pad: 12, rad: 30, pip: 'classic', effect: 'none' },
+    { src: 'type', x: 46, y: 566, w: 658, size: 32, font: 'spectral', color: '#f3ead6', align: 'center', fit: true, bg: 'box', bgColor: '#3a2f25', bgOp: 1, pad: 14, rad: 6, bdW: 4, bdColor: '#cdbf9c', effect: 'none' },
+    { src: 'rulesflavor', x: 58, y: 642, w: 634, h: 320, size: 32, font: 'crimson', color: '#2a2118', align: 'center', bg: 'parchment', bgColor: '#ece2c8', bgOp: 1, pad: 28, rad: 4, effect: 'none', pip: 'classic' },
+    { src: 'pt', x: 600, y: 944, w: 110, size: 34, font: 'spectral', color: '#f3ead6', align: 'center', bg: 'box', bgColor: '#3a2f25', bgOp: 1, pad: 10, rad: 22, bdW: 3, bdColor: '#cdbf9c', effect: 'none' },
+    { src: 'credit', x: 40, y: 1004, w: 540, size: 13, font: 'plex', color: '#f3ead6', effect: 'shadow' },
+  ],
+  pixel: () => [
+    { src: 'name', x: 26, y: 26, w: 530, size: 26, font: 'pixel', upper: true, color: '#ffffff', fit: true, lh: 1.2, bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 24, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
+    { src: 'cost', x: 566, y: 26, w: 158, size: 36, align: 'center', bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 20, bdW: 4, bdColor: '#2e9bd6', pip: 'classic', effect: 'none' },
+    { src: 'type', x: 26, y: 596, w: 698, size: 20, font: 'pixel', upper: true, color: '#ffffff', fit: true, bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 22, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
+    { src: 'rulesflavor', x: 26, y: 676, w: 698, h: 252, size: 34, font: 'terminal', color: '#ffffff', lh: 1.05, bg: 'pixel', bgColor: '#000000', bgOp: .85, pad: 26, bdW: 4, bdColor: '#2e9bd6', pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 580, y: 936, w: 144, size: 26, font: 'pixel', color: '#ffffff', align: 'center', bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 20, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
+    { src: 'credit', x: 40, y: 1004, w: 520, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
+  ],
+  bronze: () => [
+    { src: 'custom', text: '25¢\nNo. 20', x: 16, y: 20, w: 104, h: 116, size: 34, font: 'bangers', color: '#111111', align: 'center', lh: 1, bg: 'box', bgColor: '#f6d32a', bgOp: 1, pad: 12, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'custom', text: 'PROXY\nCOMICS\nGROUP', x: 16, y: 146, w: 104, h: 100, size: 22, font: 'bangers', color: '#c8161d', align: 'center', lh: 1, bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 10, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'custom', text: 'PROXY SUPER-TALES PRESENTS:', x: 134, y: 20, w: 470, size: 36, font: 'bangers', color: '#111111', fit: true, ls: 1, bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 8, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'cost', x: 610, y: 26, w: 120, size: 34, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'name', x: 134, y: 84, w: 600, size: 128, font: 'bangers', upper: true, color: '#f6d32a', align: 'center', fit: true, lh: .88, ls: 2, effect: 'extrude', effColor: '#c8161d', effSize: 1.2 },
+    { src: 'flavor', x: 470, y: 330, w: 240, size: 24, font: 'comic', upper: true, color: '#111111', align: 'center', lh: 1.05, bg: 'balloon', bgColor: '#ffffff', bgOp: 1, pad: 18, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'type', x: 40, y: 700, w: 420, size: 24, font: 'comic', upper: true, italic: true, color: '#c8161d', fit: true, rot: -1, bg: 'box', bgColor: '#fff7d6', bgOp: 1, pad: 10, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'rules', x: 40, y: 758, w: 520, h: 214, size: 22, font: 'comic', upper: true, color: '#111111', lh: 1.1, bg: 'box', bgColor: '#f6d32a', bgOp: 1, pad: 14, rad: 0, bdW: 3, bdColor: '#111111', pip: 'classic', effect: 'none' },
+    { src: 'pt', x: 590, y: 868, w: 130, size: 76, font: 'bangers', color: '#f6d32a', align: 'center', rot: -6, effect: 'extrude', effColor: '#111111', effSize: 1 },
+    { src: 'credit', x: 40, y: 1004, w: 670, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
+  ],
   clean: () => [
     { src: 'name', x: 50, y: 50, w: 420, size: 42, fit: true },
     { src: 'cost', x: 430, y: 56, w: 272, size: 38, align: 'right' },
@@ -1887,6 +2257,11 @@ function mixHex(a, b, t) {
 }
 // Draws one layer and returns its box (for selecting and dragging), or null when it has no text.
 function drawLayer(g, L, o) {
+  if (L.src === 'art') { // the art is drawn under every layer by renderCustom; this only adds an optional frame
+    const bx = +L.x, by = +L.y, bw = +L.w, bh = +L.h || 400;
+    if (+L.bdW > 0) { g.save(); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.strokeRect(bx, by, bw, bh); g.restore(); }
+    return { id: L.id, x: bx, y: by, w: bw, h: bh, cx: bx + bw / 2, cy: by + bh / 2, rot: 0, resizeW: true, resizeH: true, art: true };
+  }
   let text = layerText(L, o);
   // a custom layer with no text but a background and a set height is a plain panel or stripe band
   const panel = L.src === 'custom' && L.bg && L.bg !== 'none' && +L.h > 0;
@@ -1898,6 +2273,9 @@ function drawLayer(g, L, o) {
   const prev = { fam: curFam, lh: curLH, pip: curPip };
   curFam = fam; curLH = +L.lh || 1.15;
   if (L.pip && L.pip !== 'inherit') curPip = { kind: L.pip, color: L.pipColor || '#ffffff' };
+  const letters = curPip.kind === 'letters';
+  const lz = v => letters ? String(v).replace(/\{([^}]+)\}/g, (_, c) => ({ T: 'TAP', Q: 'UNTAP' })[c.toUpperCase()] || c.toUpperCase()) : v;
+  text = lz(text);
   g.save();
   if ('letterSpacing' in g) g.letterSpacing = (+L.ls || 0) + 'px';
   const alignOff = (room, used) => L.align === 'center' ? (room - used) / 2 : L.align === 'right' ? room - used : 0;
@@ -1909,7 +2287,7 @@ function drawLayer(g, L, o) {
     const ih = size, iw = ih * img.width / img.height;
     bw = Math.max(+L.w, iw + 2 * pad); bh = ih + 2 * pad;
     paintAll = (bx, by) => g.drawImage(img, bx + pad + alignOff(bw - 2 * pad, iw), by + pad, iw, ih);
-  } else if (L.src === 'cost') {
+  } else if (L.src === 'cost' && !letters) {
     kind = 'cost';
     const syms = parseCost(text);
     if (!syms.length) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; return null; }
@@ -1954,7 +2332,7 @@ function drawLayer(g, L, o) {
     };
   } else {
     kind = 'rich';
-    const up = s => L.upper ? upper(s || '') : (s || '');
+    const up = s => lz(L.upper ? upper(s || '') : (s || ''));
     const paras = L.src === 'rulesflavor'
       ? [...(o.rules ? parseRich(up(o.rules), !!L.italic) : []), ...(o.flavor ? parseRich(up(o.flavor), true) : [])]
       : parseRich(up(text), L.src === 'flavor' || !!L.italic);
@@ -1989,6 +2367,76 @@ function drawLayer(g, L, o) {
   } else if (L.bg === 'box' || L.bg === 'strips') {
     g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); fillStroke();
   } else if (L.bg === 'sticker' || L.bg === 'barcode' || L.bg === 'price') drawSticker(g, L, bx, by, bw, bh, size);
+  else if (L.bg === 'ribbon') { // a banner with swallowtail ends folded behind it
+    const tail = Math.min(bh * .9, 60), drop = bh * .22, dark = mixHex(L.bgColor, '#000000', .3), fold = mixHex(L.bgColor, '#000000', .55);
+    g.save();
+    for (const side of [-1, 1]) {
+      const ex = side < 0 ? bx : bx + bw, ox = ex - side * tail * .35;
+      g.beginPath(); // the tail
+      g.moveTo(ox, by + drop); g.lineTo(ex + side * tail, by + drop); g.lineTo(ex + side * tail * .62, by + drop + bh / 2); g.lineTo(ex + side * tail, by + bh + drop); g.lineTo(ox, by + bh + drop); g.closePath();
+      g.fillStyle = dark; g.fill(); if (+L.bdW > 0) { g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
+      g.beginPath(); g.moveTo(ex, by + bh); g.lineTo(ox, by + bh + drop); g.lineTo(ex, by + bh + drop); g.closePath(); // the fold
+      g.fillStyle = fold; g.fill();
+    }
+    g.beginPath(); g.rect(bx, by, bw, bh);
+    const gr = g.createLinearGradient(0, by, 0, by + bh);
+    gr.addColorStop(0, mixHex(L.bgColor, '#ffffff', .25)); gr.addColorStop(.5, L.bgColor); gr.addColorStop(1, mixHex(L.bgColor, '#000000', .15));
+    g.fillStyle = gr; g.globalAlpha = Math.max(.2, +L.bgOp); g.fill(); g.globalAlpha = 1;
+    if (+L.bdW > 0) { g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
+    g.restore();
+  }
+  else if (L.bg === 'pixel') { // a game text box: notched corners, a white rim and a colored inner line
+    const st0 = 8, path = (x, y, w, h, k) => {
+      g.beginPath(); g.moveTo(x + k, y); g.lineTo(x + w - k, y); g.lineTo(x + w - k, y + k); g.lineTo(x + w, y + k); g.lineTo(x + w, y + h - k); g.lineTo(x + w - k, y + h - k);
+      g.lineTo(x + w - k, y + h); g.lineTo(x + k, y + h); g.lineTo(x + k, y + h - k); g.lineTo(x, y + h - k); g.lineTo(x, y + k); g.lineTo(x + k, y + k); g.closePath();
+    };
+    path(bx, by, bw, bh, st0); g.fillStyle = hexA(L.bgColor, +L.bgOp); g.fill();
+    g.lineJoin = 'miter'; g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.stroke();
+    path(bx + 7, by + 7, bw - 14, bh - 14, st0 - 3); g.lineWidth = +L.bdW > 0 ? +L.bdW : 3; g.strokeStyle = L.bdColor; g.stroke();
+  }
+  else if (L.bg === 'scales') { // overlapping rounded scales, shaded from the background color
+    g.save(); g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); g.clip();
+    const r = 24, hi = mixHex(L.bgColor, '#ffffff', .35), lo = mixHex(L.bgColor, '#000000', .45);
+    g.fillStyle = lo; g.fillRect(bx, by, bw, bh);
+    for (let row = 0, y = by - r; y < by + bh + r; y += r * .8, row++) for (let x = bx - r + (row % 2) * r; x < bx + bw + r; x += r * 2) {
+      const gr = g.createRadialGradient(x - r * .3, y + r * .2, 1, x, y, r * 1.1);
+      gr.addColorStop(0, hi); gr.addColorStop(.6, L.bgColor); gr.addColorStop(1, lo);
+      g.beginPath(); g.arc(x, y, r, 0, Math.PI); g.closePath(); g.fillStyle = gr; g.fill();
+      g.lineWidth = 1.5; g.strokeStyle = 'rgba(0,0,0,.35)'; g.stroke();
+    }
+    g.restore();
+  }
+  else if (L.bg === 'balloon') { // a comic speech balloon with its tail down to the left
+    const cx0 = bx + bw / 2, cy0 = by + bh / 2, rx = bw / 2 * 1.1, ry = bh / 2 * 1.22;
+    const tail = () => { g.beginPath(); g.moveTo(cx0 - rx * .35, cy0 + ry * .75); g.lineTo(cx0 - rx * .75, cy0 + ry * 1.55); g.lineTo(cx0 - rx * .02, cy0 + ry * .9); g.closePath(); };
+    g.save(); g.fillStyle = hexA(L.bgColor, Math.max(.6, +L.bgOp)); g.strokeStyle = L.bdColor; g.lineWidth = +L.bdW || 3; g.lineJoin = 'round';
+    tail(); g.fill(); g.stroke();
+    g.beginPath(); g.ellipse(cx0, cy0, rx, ry, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.save(); g.translate(cx0 - rx * .35, cy0 + ry * .8); g.scale(.82, .82); g.translate(-(cx0 - rx * .35), -(cy0 + ry * .8)); tail(); g.fill(); g.restore();
+    g.restore();
+  }
+  else if (L.bg === 'parchment') { // old paper: mottled, darker toward the edges
+    g.save(); g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2));
+    g.fillStyle = hexA(L.bgColor, +L.bgOp); g.fill(); g.clip();
+    const R = rng(Math.round(bx * 31 + by * 17 + bw));
+    for (let i = 0; i < 40; i++) {
+      const x = bx + R() * bw, y = by + R() * bh, rad = 20 + R() * 70, gr = g.createRadialGradient(x, y, 0, x, y, rad);
+      gr.addColorStop(0, `rgba(140,110,60,${.04 + R() * .06})`); gr.addColorStop(1, 'rgba(140,110,60,0)');
+      g.fillStyle = gr; g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
+    }
+    const eg = g.createRadialGradient(bx + bw / 2, by + bh / 2, Math.min(bw, bh) * .35, bx + bw / 2, by + bh / 2, Math.max(bw, bh) * .75);
+    eg.addColorStop(0, 'rgba(120,85,40,0)'); eg.addColorStop(1, 'rgba(120,85,40,.35)'); g.fillStyle = eg; g.fillRect(bx, by, bw, bh);
+    g.restore();
+    if (+L.bdW > 0) { g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
+  }
+  else if (L.bg === 'pinstripe') { // a solid panel with thin lighter stripes
+    g.save(); g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); g.clip();
+    g.fillStyle = hexA(L.bgColor, +L.bgOp); g.fillRect(bx, by, bw, bh);
+    g.fillStyle = mixHex(L.bgColor, '#ffffff', .28);
+    for (let y = by + 10; y < by + bh; y += 17) g.fillRect(bx, y, bw, 4);
+    g.restore();
+    if (+L.bdW > 0) { g.beginPath(); g.roundRect(bx, by, bw, bh, Math.min(+L.rad || 0, bw / 2, bh / 2)); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
+  }
   else if (L.bg === 'bands') { // stacked stripes: the background color and three neighbouring hues
     const n = 4;
     for (let i = 0; i < n; i++) { g.fillStyle = hueShift(L.bgColor, i * 22); g.fillRect(bx, by + (bh / n) * i, bw, bh / n + .6); }
@@ -2044,7 +2492,9 @@ function drawSticker(g, L, bx, by, bw, bh, size) {
 function renderCustom(g, o, bleed) {
   const ar = artRect(o);
   g.save();
-  if (o.border === 'none') {
+  if (ar.win) {
+    // drawn with its layer below
+  } else if (o.border === 'none') {
     drawArt(g, ar, st.img);
     if (bleed) { g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#0b0b0c'; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, H + BLEED * 2); }
   } else {
@@ -2055,6 +2505,15 @@ function renderCustom(g, o, bleed) {
   const rec = g === ctx;
   if (rec) st.layerBounds = [];
   for (const L of o.layers || []) {
+    if (L.src === 'art' && ar.win) { // an art window: pasted-in, with slightly uneven edges
+      g.save();
+      const R = rng(ar.x * 7 + ar.y * 13 + ar.w), j = () => (R() - .5) * 5;
+      g.beginPath(); g.moveTo(ar.x + j(), ar.y + j());
+      for (const [px, py] of [[ar.x + ar.w, ar.y], [ar.x + ar.w, ar.y + ar.h], [ar.x, ar.y + ar.h]]) g.lineTo(px + j(), py + j());
+      g.closePath(); g.clip();
+      drawArt(g, ar, st.img);
+      g.restore();
+    }
     const b = drawLayer(g, { ...LDEF, ...L }, o);
     if (b && rec) st.layerBounds.push(b);
   }
@@ -2243,7 +2702,11 @@ function hitLayer(p) {
   }
   for (let i = B.length - 1; i >= 0; i--) {
     const b = B[i], l = toLocal(p, b);
-    if (Math.abs(l.x) <= b.w / 2 + 6 && Math.abs(l.y) <= b.h / 2 + 6) return { id: b.id, mode: 'move' };
+    if (Math.abs(l.x) <= b.w / 2 + 6 && Math.abs(l.y) <= b.h / 2 + 6) {
+      // inside an art window you pan the picture; grab its edge to move the window
+      if (b.art && Math.abs(l.x) < b.w / 2 - tol && Math.abs(l.y) < b.h / 2 - tol) continue;
+      return { id: b.id, mode: 'move' };
+    }
   }
   return null;
 }
@@ -2359,7 +2822,7 @@ function renderLayerList() {
   for (const L of st.layers) {
     const b = document.createElement('button'); b.type = 'button';
     const t = layerText(L, o);
-    b.textContent = L.src === 'custom' ? `“${(L.text || '').slice(0, 22) || 'empty'}”` : SRC_LABEL[L.src] + (t ? '' : ' (empty)');
+    b.textContent = L.src === 'custom' ? `“${(L.text || '').slice(0, 22) || 'empty'}”` : SRC_LABEL[L.src] + (t || L.src === 'art' ? '' : ' (empty)');
     b.setAttribute('aria-pressed', L.id === st.sel ? 'true' : 'false');
     b.onclick = () => selectLayer(L.id);
     box.append(b);
@@ -2640,6 +3103,7 @@ function randomLook() {
     ...(Math.random() < .35 ? (() => { const [a, b] = pick(FX_PAIRS); return { artFx: pick(['duotone', 'duotone', 'halftone', 'pop', 'bw', 'posterize', 'grain', 'paint']), fxDark: a, fxLight: b, fxAmt: String(Math.round((0.3 + Math.random() * 0.4) * 100) / 100) }; })() : { artFx: 'none' }),
     shade: String(Math.round((0.6 + Math.random() * 0.3) * 100) / 100),
     wear: Math.random() < .3 ? pick(['light', 'worn', 'worn', 'beat', 'wrecked']) : 'none', wearSeed: String(Math.floor(Math.random() * 1e6)),
+    misprint: Math.random() < .12 ? pick(['light', 'light', 'off', 'bad']) : 'none',
     pipStyle: bold ? pick(['outline', 'solid', 'glyph']) : pick(['classic', 'classic', 'flat', 'outline', 'solid', 'glyph']),
     pipColor: pick(['#ffffff', '#ffffff', '#111111', '#f2c14e', '#ff5d8f', '#4cc9f0', '#90e39a']),
   };
@@ -3000,15 +3464,16 @@ for (const [a, b, name] of FX_PAIRS) {
 }
 function updateFxUI() {
   const fx = $('artFx').value;
-  $('wearMore').hidden = $('wear').value === 'none';
+  $('wearMore').hidden = $('wear').value === 'none' && $('misprint').value === 'none';
   $('fxAmtWrap').hidden = fx === 'none';
-  $('fxAmtLabel').textContent = { paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
+  $('fxAmtLabel').textContent = { pixel: 'Pixel size', paint: 'Brush size', halftone: 'Dot size', pop: 'Dot size', posterize: 'Fewer colors', grain: 'Amount' }[fx] || 'Contrast';
   $('fxColors').hidden = !(fx === 'duotone' || fx === 'halftone');
   $('fxDarkLabel').firstChild.textContent = fx === 'halftone' ? 'Ink ' : 'Shadows ';
   $('fxLightLabel').firstChild.textContent = fx === 'halftone' ? 'Paper ' : 'Highlights ';
 }
 $('artFx').addEventListener('input', updateFxUI);
 $('wear').addEventListener('input', updateFxUI);
+$('misprint').addEventListener('input', updateFxUI);
 $('wearShuffle').onclick = () => { $('wearSeed').value = String(Math.floor(Math.random() * 1e6)); st.edits++; saveDraft(); draw(); };
 updateFxUI();
 
@@ -3027,6 +3492,15 @@ const STYLES = [
   { id: 'retro', name: 'Retro game', preset: 'retro', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
   { id: 'modern', name: 'Modern game', preset: 'modern', f: { layout: 'custom', border: 'none', pipStyle: 'flat', pipColor: '#ffffff', gloss: true } },
   { id: 'vhs', name: 'VHS tape', preset: 'vhs', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'worn', gloss: true } },
+  { id: 'bronze', name: 'Comic cover', preset: 'bronze', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
+  { id: 'fantasypb', name: 'Fantasy paperback', preset: 'fantasypb', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#f2efe6', artFx: 'duotone', fxDark: '#0e3436', fxLight: '#a6dcd2', fxAmt: '0.4', wear: 'light' } },
+  { id: 'scales', name: 'Scales & scroll', preset: 'scales', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'pixel', name: 'Pixel hero', preset: 'pixel', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'pixel', fxAmt: '0.45' } },
+  { id: 'storybook', name: 'Storybook gold', preset: 'storybook', f: { layout: 'custom', border: 'gilt', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'pack', name: 'Vintage pack', preset: 'pack', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#1d1d1d' } },
+  { id: 'playtest', name: 'Playtest', preset: 'playtest', f: { layout: 'custom', border: '#efeadc', pipStyle: 'glyph', pipColor: '#1b1d26', artFx: 'copy', fxAmt: '0.5', misprint: 'light' } },
+  { id: 'misprint', name: 'Playtest misprint', preset: 'playtest', f: { layout: 'custom', border: '#efeadc', pipStyle: 'glyph', pipColor: '#1b1d26', artFx: 'copy', fxAmt: '0.5', misprint: 'off' } },
+  { id: 'wrist', name: 'Wrist computer', f: { layout: 'wrist', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'console', name: 'Starship console', f: { layout: 'console', border: '#0b0b0c', pipStyle: 'flat', pipColor: '#ffffff' } },
   { id: 'oil', name: 'Oil painting', f: { layout: 'framed', border: '#0b0b0c', titleFont: 'Cormorant SC', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff', artFx: 'paint', fxAmt: '0.45' } },
   { id: 'paperback', name: 'Worn paperback', preset: 'paperback', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'glyph', pipColor: '#ece6da', wear: 'worn' } },
@@ -3050,7 +3524,7 @@ function buildStyles() {
   }
 }
 function applyStyle(sty) {
-  writeForm({ artFx: 'none', wear: 'none', gloss: false, ...sty.f });
+  writeForm({ artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f });
   if (sty.preset) { applyPreset(sty.preset, true); updateLook(); }
   activeStyle = sty.id; markStyle();
   $('randomNote').hidden = true;
@@ -3068,7 +3542,7 @@ function refreshStyles() {
     STYLES.forEach((sty, i) => {
       const c = $('styles').children[i]?.querySelector('canvas'); if (!c) return;
       const g = c.getContext('2d'); g.setTransform(0.24, 0, 0, 0.24, 0, 0);
-      try { render(g, { ...o, artFx: 'none', wear: 'none', gloss: false, ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
+      try { render(g, { ...o, artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f, round: true, bleed: false, layers: sty.preset ? styleLayers(sty) : o.layers }, false); } catch (e) {}
     });
   }, styleFontsAsked ? 600 : 0);
 }
@@ -3221,7 +3695,7 @@ function recolorDesign(bg, ink) {
   const old = designColors(); if (!old) { $('status').textContent = 'This design has no boxes or strips to recolor.'; return; }
   for (const L of st.layers) {
     if (/sticker|barcode|price|burst/.test(L.bg)) continue;
-    if (bg && (plainBg(L) || L.bg === 'bands')) L.bgColor = bg;
+    if (bg && (plainBg(L) || /^(bands|ribbon|pinstripe|parchment)$/.test(L.bg))) L.bgColor = bg;
     if (ink && (plainBg(L) || L.color === old.ink)) {
       if (L.pip !== 'inherit' && L.pipColor === L.color) L.pipColor = ink;
       L.color = ink;
