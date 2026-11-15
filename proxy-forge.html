@@ -135,6 +135,9 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .mylist span button { padding: 1px 7px; border-radius: 999px; font-size: 12px; }
 .artlib { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; }
 .randsrc { display: grid; gap: 8px; }
+.mycard { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; margin: 8px 0; }
+.mycard summary { cursor: pointer; font-weight: 600; }
+.mycard[open] { display: grid; gap: 10px; }
 .artlib summary { cursor: pointer; font-weight: 600; }
 .artlib[open] summary { margin-bottom: 8px; }
 .libgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; margin-bottom: 8px; }
@@ -153,6 +156,15 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .artgrid button { padding: 0; border-radius: 6px; overflow: hidden; aspect-ratio: 3 / 4; background: #000; }
 .artgrid img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .notice.intro { border-color: var(--line); background: var(--panel); }
+.help { margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; gap: 14px; max-width: 980px; }
+.help h2 { margin: 0; }
+.help .steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.help .steps li { counter-increment: step; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 14px; line-height: 1.45; }
+.help .steps li::before { content: counter(step); display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; margin-right: 8px; }
+.help .faq { display: grid; gap: 6px; }
+.help details { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 9px 14px; }
+.help summary { cursor: pointer; font-weight: 600; }
+.help details p { margin: 8px 0 2px; line-height: 1.5; }
 .notice p { margin: 0; font-size: 13px; line-height: 1.5; }
 .quality { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
 .quality:empty { display: none; }
@@ -213,13 +225,13 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 <div class="wrap">
   <header>
     <h1>Proxy Forge</h1>
-    <p>Drop in any image, type your card text, save a print-ready PNG.</p>
+    <p>Make your own <i>Magic: The Gathering</i> stand-in cards with any art you like, then print them at home. <a href="#help">New here? How it works ↓</a></p>
   </header>
 
   <div class="grid">
     <div class="controls">
       <div class="notice intro" id="randomNote" role="status" hidden>
-        <p>You're looking at a <b>random remix</b>: a real card's text, public-domain art and a random look. Put your own art on it, change anything, remix again, or start from the default card.</p>
+        <p><b>Welcome!</b> This page makes custom versions of <i>Magic</i> cards for casual play and testing decks. The card on the right is a random example: a real card's text with an old public-domain painting and a random style. Change anything on the left, press <b>Remix</b> for another idea, or <a href="#help">read how it works</a>.</p>
         <div class="actions">
           <button type="button" class="primary" id="shuffle">Remix again</button>
           <button type="button" id="useDefault">Use the default card</button>
@@ -307,6 +319,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
               <option value="bw">Black &amp; white</option>
               <option value="sepia">Sepia</option>
               <option value="duotone">Duotone</option>
+              <option value="cardtone">Duotone in the card's color</option>
               <option value="halftone">Halftone dots</option>
               <option value="pop">Color halftone (pop art)</option>
               <option value="posterize">Posterize</option>
@@ -393,6 +406,13 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <span class="hint">Every card wears and misprints differently. Shuffle for new tears, creases, streaks and smears.</span>
         </div>
         <input type="hidden" id="wearSeed" value="0">
+        <label for="label">Card wording
+          <select id="label">
+            <option value="design">As each style has it</option>
+            <option value="playtest">Say “Playtest” everywhere</option>
+            <option value="proxy">Say “Proxy” everywhere</option>
+          </select>
+        </label>
         <label for="misprint">Print errors
           <select id="misprint">
             <option value="none">None (clean print)</option>
@@ -529,7 +549,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="chamfer">Neon box (cut corners)</option><option value="bevel">Beveled picture frame</option><option value="shade">Dark fade (for text over art)</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="crt">Old TV screen, 4:3 (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="chamfer">Neon box (cut corners)</option><option value="bevel">Beveled picture frame</option><option value="shade">Dark fade (for text over art)</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -587,6 +607,26 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <span class="part"><button type="button" id="roll-art" title="Public-domain art from Wikimedia Commons, picked to match the card">Art</button><button type="button" class="lock" id="lock-art" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span>
         <span class="part"><button type="button" id="roll-look" title="A random layout, border, fonts and symbol style">Look</button><button type="button" class="lock" id="lock-look" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.5" fill="currentColor"/><path d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button></span>
       </div>
+      <details class="mycard" id="myCardBox">
+        <summary>✦ Your card</summary>
+        <div class="row">
+          <label for="mcBirth">Your birthday <input type="date" id="mcBirth"> <span class="hint" id="mcSign"></span></label>
+          <label for="mcMood">Your mood
+            <select id="mcMood">
+              <option value="any">Let the stars decide (your sign's color)</option>
+              <option value="U">Calm (blue)</option>
+              <option value="G">Balanced (green)</option>
+              <option value="W">Hopeful (white)</option>
+              <option value="R">Passionate (red)</option>
+              <option value="B">Brooding (black)</option>
+              <option value="M">Dreamy (many colors)</option>
+            </select>
+          </label>
+        </div>
+        <label class="inline"><input type="checkbox" id="mcDaily" checked> A new card each day</label>
+        <div class="actions"><button type="button" class="primary" id="mcGo">Show my card</button>
+          <span class="hint">Like a mood ring: your star sign leans the card toward its element (Pisces gets sea creatures, Leo gets cats and nobles), the same birthday and mood always give the same card, art and look, and with “each day” ticked it changes every day. Your birthday stays in this browser.</span></div>
+      </details>
       <div class="actions">
         <button type="button" class="primary" id="addSheet">Add to print sheet</button>
         <button type="button" id="addNew" hidden>Add as a new card</button>
@@ -683,6 +723,25 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
     <ol class="thumbs" id="thumbs"></ol>
     <p class="hint" id="sheetEmpty">Make a card above and press <b>Add to print sheet</b>, or add card images you already have (scans, other proxies). Nine cards fit on each page at real card size, 2.5 × 3.5″. Print the PDF at 100% / “Actual size”, not “Fit to page”.</p>
   </section>
+
+  <section class="help" id="help" aria-labelledby="helpTitle">
+    <h2 id="helpTitle">How it works</h2>
+    <p class="hint">Proxy Forge makes <b>proxies</b>: stand-in cards for <i>Magic: The Gathering</i>. People use them to try out a deck before buying the real cards, to play casual games with friends, or just to see a favorite card with different art. Everything happens on this page, in your browser.</p>
+    <ol class="steps">
+      <li><b>Pick a card.</b> Type a real card's name under <b>Card text</b> and press <b>Fill in</b>, or type your own made-up card. Got a whole deck? Use <b>Add a deck list…</b> at the bottom.</li>
+      <li><b>Pick the art.</b> Use your own picture (<b>Choose image…</b>, drag one in, or paste), search old public-domain paintings and photos, or let <b>Remix</b> pick something. Drag the card to move the art; scroll or pinch to zoom.</li>
+      <li><b>Pick a look.</b> Click any style at the top, like Comic cover, Pixel hero or Tarot card. Fine-tune the frame, fonts, filters and wear under <b>Look</b>. In a custom layout, click any text on the card to move or restyle it.</li>
+      <li><b>Print it.</b> Press <b>Add to print sheet</b>, set how many copies, then <b>Save PDF</b>. Print at 100% (“Actual size”), cut along the marks, and slip each card into a sleeve in front of a basic land or an old card.</li>
+    </ol>
+    <div class="faq">
+      <details><summary>Just want to play around?</summary><p>Press <b>Remix</b> to get a random card, art and look. Lock the parts you like with the padlocks, or open <b>✦ Your card</b> and enter your birthday to get “your” card for the day.</p></details>
+      <details><summary>Is this allowed?</summary><p>Proxies are widely used for casual play and playtesting. They aren't allowed in official tournaments, and you shouldn't sell them. Proxy Forge is an unofficial fan tool, not made by or connected to Wizards of the Coast.</p></details>
+      <details><summary>Where do the card details and art come from?</summary><p>Card text comes from <a href="https://scryfall.com" target="_blank" rel="noopener">Scryfall</a>, a free card database. Search art comes from museums and archives (Wikimedia Commons, the Wellcome Collection, the Rijksmuseum, NASA) and is public domain or free to use; each pick is credited under the art controls. You can also use your own pictures.</p></details>
+      <details><summary>Is anything uploaded?</summary><p>No. Your pictures, cards and print sheet stay in your browser on this device. Only card names (to Scryfall) and the words you search for art (to the source you picked) are sent anywhere.</p></details>
+      <details><summary>How do I get them the right size?</summary><p>The PDF puts nine cards on a page at real card size (2.5 × 3.5 inches). In the print dialog choose 100% or “Actual size”, not “Fit to page”. Card stock or regular paper slipped into a sleeve both work.</p></details>
+      <details><summary>Can I save a look I made?</summary><p>Yes. Under the styles, type a name and press <b>Save style</b>. It shows up under <b>My styles</b>, and you can export your styles to a file to share them.</p></details>
+    </div>
+  </section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -691,17 +750,17 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label'];
 const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
   name: 'Nocturne Host', cost: '{2}{B}{B}', type: 'Creature — Vampire Noble',
   rules: 'Flying, lifelink\nWhenever another Vampire you control enters, each opponent loses 1 life and you gain 1 life.\n{T}, Pay 2 life: Draw a card. (Lifelink means damage this creature deals also causes you to gain that much life.)',
   flavor: '“Come in, come in. Do wipe your feet. And your throat.”',
-  pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Proxy — not for sale',
+  pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Playtest card — not for sale',
   layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
   pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true,
-  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none'
+  artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none', label: 'design'
 };
 // Original example cards used for the random first-visit card.
 const EXAMPLES = [
@@ -1207,8 +1266,12 @@ function drawArt(g, rect, img) {
 let curFx = null;
 const fxCache = new WeakMap();
 const hex = c => [1, 3, 5].map(i => parseInt((c || '#000000').slice(i, i + 2), 16) || 0);
+// Duotone pairs for each card color (shadows, highlights), like old paperback cover printing.
+const CARDTONE = { W: ['#3a2f1a', '#f3e3b2'], U: ['#0e3436', '#a6dcd2'], B: ['#1d1426', '#bca9cc'], R: ['#3d120c', '#f2b48a'], G: ['#14301a', '#b9dba4'],
+  M: ['#3a2a08', '#f1d47c'], A: ['#25282c', '#d4d8dc'], L: ['#2e2414', '#e0cca4'], C: ['#2a2a2a', '#dcd8cc'] };
 function fxImage(img, o) {
-  const fx = o && o.artFx; if (!fx || fx === 'none') return img;
+  let fx = o && o.artFx; if (!fx || fx === 'none') return img;
+  if (fx === 'cardtone') { const [d, l] = CARDTONE[cardColor(o)] || CARDTONE.C; o = { ...o, fxDark: d, fxLight: l }; fx = 'duotone'; }
   const amt = Math.max(0, Math.min(1, +o.fxAmt || 0)), key = [fx, o.fxDark, o.fxLight, amt].join('|');
   let m = fxCache.get(img); if (!m) fxCache.set(img, m = new Map());
   if (m.has(key)) return m.get(key);
@@ -1412,9 +1475,9 @@ function halftone(g, img, w, h, amt, color, ink, paper) {
 
 function artRect(o) {
   const aw = o.layout === 'custom' && (o.layers || []).find(l => l.src === 'art');
-  if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true, arch: aw.bg === 'arch', rad: +aw.rad || 0, clean: aw.bg === 'arch' || +aw.rad > 0 || aw.bg === 'box' };
+  if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true, arch: aw.bg === 'arch', crt: aw.bg === 'crt', rad: +aw.rad || 0, clean: aw.bg === 'arch' || aw.bg === 'crt' || +aw.rad > 0 || aw.bg === 'box' };
   if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
-  if (o.layout === 'wrist') return { x: 66, y: 140, w: 618, h: 400 };
+  if (o.layout === 'wrist') return { x: 108, y: 140, w: 534, h: 400 };
   if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 132, w: 690, h: o.rules ? 616 : 718 } : { x: 30, y: 132, w: 690, h: 410 };
   if (o.border === 'none') return { x: 0, y: 0, w: W, h: H };
   return { x: 30, y: 30, w: W - 60, h: H - 60 };
@@ -1438,44 +1501,66 @@ function renderWrist(g, o) {
   const dark = '#1b1c17', edge = '#2b2b1d';
   g.save();
   g.fillStyle = '#0c0c0b'; g.fillRect(0, 0, W, H);
-  // colored grips down both sides, with ridges
-  for (const [x, c] of [[20, accL], [W - 50, accR]]) {
-    rr(x, 70, 30, 880, 10); g.fillStyle = c; g.fill();
-    g.fillStyle = 'rgba(0,0,0,.35)'; for (let y = 230; y < 900; y += 38) g.fillRect(x + 4, y, 22, 4);
-    g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(x + 4, 76, 4, 868);
-  }
-  // olive metal casing: upper and lower halves
-  const metal = (x, y, w, h, r) => {
-    rr(x, y, w, h, r);
-    const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, '#6f6d47'); gr.addColorStop(.5, '#5a5938'); gr.addColorStop(1, '#46452c');
-    g.fillStyle = gr; g.fill(); g.lineWidth = 4; g.strokeStyle = edge; g.stroke();
-    g.save(); g.clip();
-    g.strokeStyle = 'rgba(255,255,230,.16)'; g.lineWidth = 3; rr(x + 5, y + 5, w - 10, h - 10, r - 4); g.stroke();
-    for (let i = 0; i < 140; i++) { g.fillStyle = R() < .5 ? 'rgba(20,20,10,.18)' : 'rgba(255,255,220,.08)'; g.fillRect(x + R() * w, y + R() * h, 1 + R() * 3, 1 + R() * 2); }
+  // Every part is a separate piece laid on the one below: a flat fill, a light edge along its top,
+  // a darker edge along its bottom, a crisp dark outline and a hard shadow underneath.
+  const INK = '#0b0c08';
+  const piece = (path, fill, o2 = {}) => {
+    const { shadow = 6, hi = .26, lo = .32, line = 3.5 } = o2;
+    if (shadow) { g.save(); g.translate(shadow * .4, shadow); path(); g.fillStyle = 'rgba(0,0,0,.55)'; g.fill(); g.restore(); }
+    path(); g.fillStyle = fill; g.fill();
+    g.save(); path(); g.clip();
+    if (o2.grain) { // fine, even texture
+      for (let i = 0; i < o2.grain; i++) { g.fillStyle = R() < .5 ? 'rgba(255,255,230,.05)' : 'rgba(0,0,0,.07)'; g.fillRect(o2.box[0] + R() * o2.box[2], o2.box[1] + R() * o2.box[3], 1.5, 1.5); }
+    }
+    g.lineWidth = 4;
+    if (hi) { g.save(); g.translate(0, 3); path(); g.strokeStyle = `rgba(255,255,235,${hi})`; g.stroke(); g.restore(); }
+    if (lo) { g.save(); g.translate(0, -3); path(); g.strokeStyle = `rgba(0,0,0,${lo})`; g.stroke(); g.restore(); }
     g.restore();
+    if (line) { path(); g.lineWidth = line; g.strokeStyle = INK; g.lineJoin = 'round'; g.stroke(); }
   };
-  metal(34, 96, W - 68, 552, 24);
-  metal(40, 652, W - 80, 304, 18);
-  const rivet = (x, y) => { g.beginPath(); g.arc(x, y, 6, 0, 7); g.fillStyle = '#3a3a26'; g.fill(); g.beginPath(); g.arc(x - 1.5, y - 1.5, 2.5, 0, 7); g.fillStyle = 'rgba(255,255,220,.35)'; g.fill(); };
-  for (const [x, y] of [[54, 820], [54, 850], [W - 54, 820], [W - 54, 850], [54, 612], [W - 54, 612]]) rivet(x, y);
+  const box = (x, y, w, h, r) => () => rr(x, y, w, h, r);
+  // side rails: stacked colored segments, like the grips of a handheld device
+  for (const [x, c] of [[18, accL], [W - 48, accR]]) {
+    piece(box(x, 64, 30, 890, 8), mixHex(c, '#000000', .45), { shadow: 4, hi: .15 });
+    for (let y = 80; y < 930; y += 46) piece(box(x + 4, y, 22, 38, 5), c, { shadow: 0, hi: .35, lo: .35, line: 2.5 });
+  }
+  // the casing: upper and lower halves
+  const olive = '#5f5e3d';
+  piece(box(34, 96, W - 68, 552, 26), olive, { grain: 900, box: [34, 96, W - 68, 552] });
+  piece(box(40, 652, W - 80, 304, 20), olive, { grain: 600, box: [40, 652, W - 80, 304] });
+  // a seam line across each half
+  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(50, 640); g.lineTo(W - 50, 640); g.stroke();
+  const screw = (x, y, r0 = 6.5) => {
+    piece(() => { g.beginPath(); g.arc(x, y, r0, 0, 7); }, '#a8a58a', { shadow: 2.5, hi: .5, lo: .4, line: 2 });
+    const a2 = (x * 7 + y * 3) % 6 / 6 * Math.PI; g.strokeStyle = INK; g.lineWidth = 1.8;
+    for (const b2 of [a2, a2 + Math.PI / 2]) { g.beginPath(); g.moveTo(x + Math.cos(b2) * r0 * .6, y + Math.sin(b2) * r0 * .6); g.lineTo(x - Math.cos(b2) * r0 * .6, y - Math.sin(b2) * r0 * .6); g.stroke(); }
+  };
+  for (const [x, y] of [[56, 118], [W - 56, 118], [58, 676], [W - 58, 676], [58, 932], [W - 58, 932]]) screw(x, y);
+  // a vent grille on the lower casing
+  for (let k = 0; k < 6; k++) piece(box(70 + k * 16, 940, 8, 24, 4), '#24251a', { shadow: 0, hi: 0, lo: 0, line: 2 });
 
   // title bar
-  rr(40, 38, W - 80, 78, 14); g.fillStyle = dark; g.fill(); g.lineWidth = 4; g.strokeStyle = '#575739'; g.stroke();
-  g.save(); g.translate(110, 24); g.fillStyle = '#4b4a31'; rr(-62, -12, 124, 24, 4); g.fill();
-  g.font = `400 20px ${HUD.f}`; g.fillStyle = '#c9c7a2'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WRIST-COMP', 0, 1); g.restore();
+  piece(box(48, 12, 124, 26, 5), '#4b4a31', { shadow: 3, hi: .3, lo: .3, line: 2.5 });
+  g.font = `400 20px ${HUD.f}`; g.fillStyle = '#d8d5ae'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WRIST-COMP', 110, 26);
+  piece(box(40, 38, W - 80, 78, 14), dark, { hi: .16, lo: .5 });
   const costLeft = syms.length ? drawCostRight(g, syms, W - 56, 77, 42) : W - 56;
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
   fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, 18, costLeft - 64 - 18);
   g.fillText(o.name || '', 64, 92);
 
   // the screen
-  rr(52, 126, W - 104, 428, 36); g.fillStyle = '#121310'; g.fill(); g.lineWidth = 4; g.strokeStyle = '#2d2e22'; g.stroke();
+  piece(box(88, 124, W - 176, 432, 38), '#1a1b15', { hi: .2, lo: .5 });
+  rr(100, 134, W - 200, 412, 32); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
   const ar = artRect(o);
   g.save(); rr(ar.x, ar.y, ar.w, ar.h, 28); g.clip();
   drawArt(g, ar, st.img);
   g.globalCompositeOperation = 'soft-light'; g.fillStyle = 'rgba(70,255,120,.45)'; g.fillRect(ar.x, ar.y, ar.w, ar.h);
   g.globalCompositeOperation = 'source-over';
-  g.fillStyle = 'rgba(0,0,0,.2)'; for (let y = ar.y; y < ar.y + ar.h; y += 4) g.fillRect(ar.x, y, ar.w, 1.6);
+  g.fillStyle = 'rgba(0,0,0,.34)'; for (let y = ar.y; y < ar.y + ar.h; y += 3) g.fillRect(ar.x, y, ar.w, 1.3);
+  g.fillStyle = 'rgba(0,0,0,.06)'; for (let x = ar.x; x < ar.x + ar.w; x += 3) g.fillRect(x, ar.y, 1, ar.h);
+  const roll = ar.y + ar.h * (.25 + R() * .5), rb = g.createLinearGradient(0, roll - 30, 0, roll + 30);
+  rb.addColorStop(0, 'rgba(190,255,200,0)'); rb.addColorStop(.5, 'rgba(190,255,200,.1)'); rb.addColorStop(1, 'rgba(190,255,200,0)');
+  g.fillStyle = rb; g.fillRect(ar.x, roll - 30, ar.w, 60);
   const vg = g.createRadialGradient(W / 2, ar.y + ar.h / 2, ar.h * .35, W / 2, ar.y + ar.h / 2, ar.w * .62);
   vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); g.fillStyle = vg; g.fillRect(ar.x, ar.y, ar.w, ar.h);
   const gl = g.createLinearGradient(ar.x, ar.y, ar.x + ar.w * .5, ar.y + ar.h * .6);
@@ -1487,7 +1572,7 @@ function renderWrist(g, o) {
   }
   const green = 'rgba(141,255,133,.9)';
   g.strokeStyle = green; g.fillStyle = green; g.lineWidth = 2.5; g.font = `400 23px ${HUD.f}`; g.textBaseline = 'alphabetic';
-  const top = ['SYS', `LVL ${String(n(3, 40) + 1).padStart(2, '0')}`, `HP ${n(5, 300) + 100}/${400}`, `AP ${n(9, 50) + 30}/80`, `RAD ${n(13, 99)}`];
+  const top = ['SYS', `LVL ${String(n(3, 40) + 1).padStart(2, '0')}`, `HP ${n(5, 300) + 100}/${400}`, `RAD ${n(13, 99)}`];
   const x0 = ar.x + 24, x1 = ar.x + ar.w - 24, seg = (x1 - x0) / top.length;
   top.forEach((t, i) => {
     const a = x0 + seg * i, b = a + seg - 10;
@@ -1504,20 +1589,45 @@ function renderWrist(g, o) {
   });
   g.restore();
   // power lamp and dial
-  const lamp = g.createRadialGradient(46, 566, 1, 46, 566, 16); lamp.addColorStop(0, '#fff3c0'); lamp.addColorStop(.45, '#ff9a2e'); lamp.addColorStop(1, 'rgba(255,120,20,0)');
-  g.beginPath(); g.arc(46, 566, 12, 0, 7); g.fillStyle = '#2a2a1e'; g.fill(); g.beginPath(); g.arc(46, 566, 16, 0, 7); g.fillStyle = lamp; g.fill();
-  rr(W - 46, 410, 22, 80, 6); g.fillStyle = '#2a2b22'; g.fill();
-  g.fillStyle = 'rgba(255,255,220,.25)'; for (let y = 416; y < 486; y += 8) g.fillRect(W - 44, y, 18, 2);
+  const bulb = (x, y, r0, col, on = true) => { // a glass bulb in a metal rim: glow, dome, filament, glare
+    const [cr, cg, cb] = hex(col);
+    if (on) { const halo = g.createRadialGradient(x, y, r0 * .5, x, y, r0 * 3.2); halo.addColorStop(0, `rgba(${cr},${cg},${cb},.55)`); halo.addColorStop(1, `rgba(${cr},${cg},${cb},0)`); g.fillStyle = halo; g.fillRect(x - r0 * 3.2, y - r0 * 3.2, r0 * 6.4, r0 * 6.4); }
+    const rim = g.createLinearGradient(x - r0, y - r0, x + r0, y + r0); rim.addColorStop(0, '#e7e4cf'); rim.addColorStop(.5, '#77735c'); rim.addColorStop(1, '#2b2a1f');
+    g.beginPath(); g.arc(x, y, r0 * 1.38, 0, 7); g.fillStyle = 'rgba(0,0,0,.5)'; g.fill();
+    g.beginPath(); g.arc(x, y, r0 * 1.3, 0, 7); g.fillStyle = rim; g.fill();
+    const dome = g.createRadialGradient(x - r0 * .25, y - r0 * .3, r0 * .1, x, y, r0);
+    if (on) { dome.addColorStop(0, '#ffffff'); dome.addColorStop(.3, `rgb(${Math.min(255, cr + 70)},${Math.min(255, cg + 70)},${Math.min(255, cb + 70)})`); dome.addColorStop(1, `rgb(${cr * .55 | 0},${cg * .55 | 0},${cb * .55 | 0})`); }
+    else { dome.addColorStop(0, `rgb(${cr * .5 | 0},${cg * .5 | 0},${cb * .5 | 0})`); dome.addColorStop(1, `rgb(${cr * .2 | 0},${cg * .2 | 0},${cb * .2 | 0})`); }
+    g.beginPath(); g.arc(x, y, r0, 0, 7); g.fillStyle = dome; g.fill();
+    g.strokeStyle = on ? 'rgba(255,250,220,.75)' : 'rgba(255,255,255,.15)'; g.lineWidth = Math.max(1, r0 * .1); // the filament
+    g.beginPath(); g.moveTo(x - r0 * .4, y + r0 * .2); for (let k = 1; k <= 6; k++) g.lineTo(x - r0 * .4 + k * r0 * .133, y + r0 * .2 + (k % 2 ? -1 : 1) * r0 * .14); g.stroke();
+    g.beginPath(); g.ellipse(x - r0 * .35, y - r0 * .42, r0 * .32, r0 * .18, -.6, 0, 7); g.fillStyle = 'rgba(255,255,255,.75)'; g.fill(); // glare
+    g.beginPath(); g.arc(x, y, r0 * 1.3, 0, 7); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke();
+    g.beginPath(); g.arc(x, y, r0, 0, 7); g.lineWidth = 1.5; g.stroke();
+  };
+  bulb(64, 520, 13, '#ff9a2e');
+  g.font = `400 13px ${HUD.f}`; g.fillStyle = 'rgba(230,226,190,.75)'; g.textAlign = 'center'; g.fillText('PWR', 64, 549); g.textAlign = 'left';
+  bulb(W - 63, 168, 10, '#3dff6e'); bulb(W - 63, 206, 10, '#ffc93d', n(17, 2) === 0); bulb(W - 63, 244, 10, '#ff3b2f', n(19, 3) === 0);
+  piece(box(W - 50, 404, 28, 92, 7), '#3a3b2c', { shadow: 4, hi: .3, lo: .4, line: 3 });
+  g.fillStyle = INK; for (let y = 414; y < 488; y += 9) g.fillRect(W - 46, y, 20, 2.5);
 
   // type bar
-  rr(42, 566, W - 84, 62, 10); g.fillStyle = dark; g.fill(); g.lineWidth = 3; g.strokeStyle = '#575739'; g.stroke();
+  piece(box(42, 566, W - 84, 62, 10), dark, { hi: .16, lo: .5 });
   const rw = drawRarity(g, o, W - 60, 597, 32);
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left';
   fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, W - 84 - 40 - (rw ? rw + 14 : 0));
   g.fillText(o.type || '', 62, 609);
 
   // rules panel: two worn inset plates with the text over them
-  for (const [x, w] of [[72, 296], [380, 298]]) { rr(x, 670, w, 262, 8); g.fillStyle = 'rgba(0,0,0,.13)'; g.fill(); g.lineWidth = 2; g.strokeStyle = 'rgba(0,0,0,.28)'; g.stroke(); }
+  for (const [x, w] of [[70, 298], [382, 298]]) { // recessed plates: shadow inside along the top
+    rr(x, 670, w, 262, 8); g.fillStyle = '#56553a'; g.fill();
+    g.save(); rr(x, 670, w, 262, 8); g.clip();
+    for (let i = 0; i < 500; i++) { g.fillStyle = R() < .5 ? 'rgba(255,255,230,.05)' : 'rgba(0,0,0,.08)'; g.fillRect(x + R() * w, 670 + R() * 262, 1.5, 1.5); }
+    g.lineWidth = 6; rr(x, 667, w, 262, 8); g.strokeStyle = 'rgba(0,0,0,.4)'; g.stroke();
+    rr(x, 673, w, 262, 8); g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
+    g.restore();
+    rr(x, 670, w, 262, 8); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke();
+  }
   const paras = [...(o.rules ? parseRich(o.rules, false) : []), ...(o.flavor ? parseRich(o.flavor, true) : [])];
   if (paras.length) {
     curFam = SANS; curLH = 1.14;
@@ -1530,11 +1640,12 @@ function renderWrist(g, o) {
     curFam = { f: BODY, wt: 400 }; curLH = 1.16;
   }
   // bottom notch with a brass arrow
-  g.beginPath(); g.moveTo(W / 2 - 46, 944); g.lineTo(W / 2 + 46, 944); g.lineTo(W / 2 + 36, 972); g.lineTo(W / 2 - 36, 972); g.closePath(); g.fillStyle = dark; g.fill();
-  g.beginPath(); g.moveTo(W / 2 - 18, 952); g.lineTo(W / 2 + 18, 952); g.lineTo(W / 2, 966); g.closePath(); g.fillStyle = '#c9b27a'; g.fill();
+  piece(() => { g.beginPath(); g.moveTo(W / 2 - 50, 940); g.lineTo(W / 2 + 50, 940); g.lineTo(W / 2 + 38, 974); g.lineTo(W / 2 - 38, 974); g.closePath(); }, dark, { shadow: 4, hi: .15, lo: .5, line: 3 });
+  piece(() => { g.beginPath(); g.moveTo(W / 2 - 18, 950); g.lineTo(W / 2 + 18, 950); g.lineTo(W / 2, 966); g.closePath(); }, '#c9b27a', { shadow: 0, hi: .5, lo: .3, line: 2 });
   // power / toughness
   if (o.pt) {
-    rr(W - 170, 924, 124, 64, 8); g.fillStyle = dark; g.fill(); g.lineWidth = 3; g.strokeStyle = '#c9c7b0'; g.stroke();
+    piece(box(W - 172, 922, 128, 68, 8), '#e9e6d6', { shadow: 5, hi: .5, lo: .3, line: 3.5 });
+    piece(box(W - 165, 929, 114, 54, 5), dark, { shadow: 0, hi: .15, lo: .4, line: 2 });
     g.fillStyle = '#f2f2ea'; g.textAlign = 'center'; g.textBaseline = 'middle';
     fitText(g, o.pt, px => `400 ${px}px ${HUD.f}`, 56, 20, 108); g.fillText(o.pt, W - 108, 958);
     g.textBaseline = 'alphabetic';
@@ -1546,7 +1657,14 @@ function renderWrist(g, o) {
 }
 
 // ---------- the card ----------
+// "Proxy" and "Playtest" mean the same thing on these cards; the Card wording setting swaps one for the other.
+function swapLabel(t, mode) {
+  if (!t || !mode || mode === 'design') return t;
+  if (mode === 'playtest') return t.replace(/Proxy(?= —)/g, 'Playtest card').replace(/\bPROXY\b/g, 'PLAYTEST').replace(/\bProxy\b/g, 'Playtest');
+  return t.replace(/Playtest card/g, 'Proxy').replace(/PLAYTEST CARD/g, 'PROXY').replace(/\bPLAYTEST\b/g, 'PROXY').replace(/\bPlaytest\b/g, 'Proxy').replace(/試作/g, 'PROXY');
+}
 function render(g, o, bleed) {
+  if (o.label && o.label !== 'design') o = { ...o, note: swapLabel(o.note, o.label) };
   const borderCol = o.border === 'none' ? '#0b0b0c' : o.border === 'gilt' ? '#b8964c' : o.border;
   const shade = +o.shade, size = +o.size;
   g.save();
@@ -2296,7 +2414,7 @@ const LDEF = {
 const PRESETS = {
   modern: () => [
     { src: 'custom', text: ' ', x: 0, y: 0, w: 750, h: 74, size: 20, bg: 'box', bgColor: '#1f5fd1', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'custom', text: 'PROXY  ✦  CARD EDITION', x: 40, y: 22, w: 420, size: 24, font: 'oswald', upper: true, color: '#ffffff', ls: 3, effect: 'none' },
+    { src: 'custom', text: 'PLAYTEST  ✦  CARD EDITION', x: 40, y: 22, w: 420, size: 24, font: 'oswald', upper: true, color: '#ffffff', ls: 3, effect: 'none' },
     { src: 'cost', x: 430, y: 17, w: 280, size: 38, align: 'right', effect: 'none' },
     { src: 'name', x: 36, y: 548, w: 678, size: 104, font: 'bebas', upper: true, color: '#ffffff', align: 'center', fit: true, lh: .9, ls: 2, effect: 'shadow', effColor: '#000000', effSize: 1.6 },
     { src: 'type', x: 60, y: 664, w: 630, size: 24, font: 'oswald', upper: true, color: '#e6ecff', align: 'center', fit: true, ls: 4, effect: 'shadow' },
@@ -2328,7 +2446,7 @@ const PRESETS = {
     { src: 'credit', x: 50, y: 990, w: 650, size: 14, font: 'plex', color: '#e8e4de', effect: 'none' },
   ],
   retro: () => [
-    { src: 'custom', text: 'PROXY  ✦  16-BIT  ✦  CARD SYSTEM', x: -425, y: 480, w: 1000, h: 90, size: 50, font: 'russo', upper: true, color: '#ffffff', align: 'center', ls: 4, lh: 1, rot: -90, bg: 'box', bgColor: '#c8161d', bgOp: 1, pad: 18, rad: 0, fit: true, effect: 'none' },
+    { src: 'custom', text: 'PLAYTEST  ✦  16-BIT  ✦  CARD SYSTEM', x: -425, y: 480, w: 1000, h: 90, size: 50, font: 'russo', upper: true, color: '#ffffff', align: 'center', ls: 4, lh: 1, rot: -90, bg: 'box', bgColor: '#c8161d', bgOp: 1, pad: 18, rad: 0, fit: true, effect: 'none' },
     { src: 'name', x: 138, y: 46, w: 574, size: 92, font: 'russo', upper: true, color: '#8fb6e0', align: 'center', fit: true, lh: .95, rot: -2, effect: 'chrome', effColor: '#141b33' },
     { src: 'cost', x: 406, y: 178, w: 300, size: 34, align: 'right', bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 8, rad: 30, bdW: 3, bdColor: '#111111', pip: 'classic', effect: 'none' },
     { src: 'custom', text: 'ALL NEW!', x: 168, y: 650, w: 136, size: 30, font: 'bangers', color: '#c8161d', align: 'center', rot: -12, bg: 'burst', bgColor: '#ffd93b', bgOp: 1, pad: 8, bdW: 2, bdColor: '#111111', effect: 'none' },
@@ -2385,14 +2503,16 @@ const PRESETS = {
     { src: 'credit', x: 40, y: 1004, w: 560, size: 13, font: 'plex', color: '#f4efe2', effect: 'none' },
   ],
   fantasypb: () => [
+    { src: 'custom', text: ' ', x: 0, y: 0, w: 750, h: 380, rot: 180, bg: 'shade', bgColor: '#0a0806', bgOp: .82, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: ' ', x: 0, y: 600, w: 750, h: 450, bg: 'shade', bgColor: '#0a0806', bgOp: .88, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: 'PROXY\nFANTASY\nCLASSIC', x: 14, y: 22, w: 66, h: 110, size: 14, font: 'oswald', color: '#151515', align: 'center', lh: 1.05, bg: 'box', bgColor: '#e9e3d0', bgOp: 1, pad: 8, rad: 4, effect: 'none' },
-    { src: 'custom', text: '75¢', x: 14, y: 146, w: 66, size: 24, font: 'oswald', color: '#e9e3d0', align: 'center', effect: 'none' },
+    { src: 'custom', text: '75¢', x: 14, y: 146, w: 66, size: 24, font: 'oswald', color: '#e9e3d0', align: 'center', effect: 'shadow', effColor: '#000000', effSize: 1 },
     { src: 'cost', x: 24, y: 192, w: 46, size: 40, vert: true, pip: 'outline', pipColor: '#e9e3d0', effect: 'none' },
-    { src: 'type', x: 100, y: 28, w: 620, size: 24, font: 'cinzel', upper: true, color: '#e0674c', align: 'center', fit: true, effect: 'none' },
-    { src: 'artist', x: 100, y: 62, w: 620, size: 58, font: 'spectral', upper: true, color: '#efe9d6', align: 'center', fit: true, ls: 2, effect: 'shadow', effColor: '#000000', effSize: .7 },
-    { src: 'name', x: 100, y: 136, w: 620, size: 96, font: 'fraktur', color: '#f4e04d', align: 'center', fit: true, lh: .95, effect: 'shadow', effColor: '#000000', effSize: .7 },
-    { src: 'rulesflavor', x: 40, y: 690, w: 540, h: 270, size: 27, font: 'crimson', color: '#f2efe6', effect: 'shadow', effColor: '#000000', effSize: .8, pip: 'classic' },
-    { src: 'pt', x: 600, y: 912, w: 110, size: 38, font: 'spectral', color: '#f2efe6', align: 'right', effect: 'shadow' },
+    { src: 'type', x: 100, y: 28, w: 620, size: 24, font: 'cinzel', upper: true, color: '#ff7b5c', align: 'center', fit: true, ls: 1, effect: 'outline', effColor: '#1a0c06', effSize: .8 },
+    { src: 'artist', x: 100, y: 62, w: 620, size: 58, font: 'spectral', upper: true, color: '#f5f0de', align: 'center', fit: true, ls: 2, effect: 'outline', effColor: '#120c06', effSize: 1 },
+    { src: 'name', x: 100, y: 136, w: 620, size: 96, font: 'fraktur', color: '#ffe44d', align: 'center', fit: true, lh: .95, effect: 'extrude', effColor: '#2a1206', effSize: 1 },
+    { src: 'rulesflavor', x: 40, y: 690, w: 540, h: 270, size: 28, font: 'crimson', color: '#fbf7ec', effect: 'outline', effColor: '#0a0806', effSize: .6, pip: 'classic' },
+    { src: 'pt', x: 600, y: 908, w: 110, size: 42, font: 'spectral', color: '#ffe44d', align: 'right', effect: 'outline', effColor: '#0a0806', effSize: 1 },
     { src: 'credit', x: 40, y: 1004, w: 670, size: 13, font: 'plex', color: '#f2efe6', effect: 'shadow' },
   ],
   scales: () => [
@@ -2410,10 +2530,11 @@ const PRESETS = {
     { src: 'custom', text: ' ', x: 26, y: 26, w: 698, h: 92, bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 0, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
     { src: 'name', x: 52, y: 54, w: 400, size: 26, font: 'pixel', upper: true, color: '#ffffff', fit: true, lh: 1.2, effect: 'none' },
     { src: 'cost', x: 452, y: 50, w: 250, size: 38, align: 'right', pip: 'pixel', effect: 'none' },
-    { src: 'type', x: 26, y: 566, w: 698, size: 20, font: 'pixel', upper: true, color: '#ffffff', fit: true, bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 24, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
-    { src: 'rulesflavor', x: 26, y: 644, w: 698, h: 300, size: 34, font: 'terminal', color: '#ffffff', lh: 1.05, bg: 'pixel', bgColor: '#000000', bgOp: .85, pad: 26, bdW: 4, bdColor: '#2e9bd6', pip: 'pixel', effect: 'none' },
-    { src: 'pt', x: 584, y: 916, w: 140, size: 26, font: 'pixel', color: '#ffffff', align: 'center', bg: 'pixel', bgColor: '#000000', bgOp: 1, pad: 20, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
-    { src: 'credit', x: 40, y: 1004, w: 520, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
+    { src: 'art', x: 30, y: 122, w: 690, h: 518, bg: 'box', effect: 'none' },
+    { src: 'type', x: 26, y: 638, w: 698, size: 20, font: 'pixel', upper: true, color: '#ffffff', fit: true, bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 24, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
+    { src: 'rulesflavor', x: 26, y: 712, w: 698, h: 294, size: 34, font: 'terminal', color: '#ffffff', lh: 1.05, bg: 'pixel', bgColor: '#000000', bgOp: .92, pad: 26, bdW: 4, bdColor: '#2e9bd6', pip: 'pixel', effect: 'none' },
+    { src: 'pt', x: 584, y: 960, w: 140, size: 26, font: 'pixel', color: '#ffffff', align: 'center', bg: 'pixel', bgColor: '#000000', bgOp: 1, pad: 20, bdW: 4, bdColor: '#2e9bd6', effect: 'none' },
+    { src: 'credit', x: 40, y: 1015, w: 520, size: 12, font: 'plex', color: '#ffffff', effect: 'none' },
   ],
   bronze: () => [
     { src: 'custom', text: '25¢\nNo. 20', x: 16, y: 20, w: 104, h: 116, size: 34, font: 'bangers', color: '#111111', align: 'center', lh: 1, bg: 'box', bgColor: '#f6d32a', bgOp: 1, pad: 12, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
@@ -2464,7 +2585,7 @@ const PRESETS = {
     { src: 'art', x: 44, y: 44, w: 548, h: 650, bdW: 4, bdColor: '#1a1410', effect: 'none' },
     { src: 'name', x: 608, y: 44, w: 98, h: 520, size: 52, font: 'dela', color: '#f6efe0', align: 'center', vert: true, fit: true, bg: 'box', tintBg: 'main', bgColor: '#b3261e', bgOp: 1, pad: 14, rad: 0, bdW: 3, bdColor: '#1a1410', effect: 'none' },
     { src: 'cost', x: 628, y: 580, w: 60, size: 40, vert: true, pip: 'outline', pipColor: '#1a1410', effect: 'none' },
-    { src: 'custom', text: 'PROXY', x: 486, y: 600, w: 92, size: 18, font: 'dela', color: '#f6efe0', align: 'center', lh: 1, rot: -4, bg: 'box', bgColor: '#b3261e', bgOp: .92, pad: 10, rad: 4, effect: 'none' },
+    { src: 'custom', text: '試作', x: 486, y: 600, w: 92, size: 24, font: 'dela', color: '#f6efe0', align: 'center', lh: 1, rot: -4, bg: 'box', bgColor: '#b3261e', bgOp: .92, pad: 10, rad: 4, effect: 'none' },
     { src: 'type', x: 44, y: 712, w: 662, size: 28, font: 'plex', upper: true, color: '#1a1410', fit: true, ls: 3, effect: 'none' },
     { src: 'rulesflavor', x: 44, y: 756, w: 662, h: 236, size: 27, font: 'crimson', color: '#1a1410', vmid: true, bg: 'box', bgColor: '#f3ead6', bgOp: 1, pad: 20, rad: 0, bdW: 3, bdColor: '#1a1410', pip: 'outline', pipColor: '#1a1410', effect: 'none' },
     { src: 'pt', x: 608, y: 946, w: 98, size: 32, font: 'dela', color: '#f6efe0', align: 'center', bg: 'box', tintBg: 'main', bgColor: '#b3261e', bgOp: 1, pad: 8, rad: 0, effect: 'none' },
@@ -2534,7 +2655,7 @@ const PRESETS = {
     { src: 'custom', text: '\u00a0', x: 0, y: 540, w: 750, h: 510, bg: 'shade', bgColor: '#05060a', bgOp: .94, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 14, y: 14, w: 722, h: 1022, bg: 'chamfer', bgColor: '#000000', bgOp: 0, pad: 0, rad: 34, bdW: 3, tintBd: 'neon', bdColor: '#29c6ff', effect: 'none' },
     { src: 'cost', x: 34, y: 34, w: 300, size: 40, align: 'left', bg: 'chamfer', bgColor: '#0a0d14', bgOp: .92, pad: 16, rad: 18, bdW: 3, tintBd: 'neon', bdColor: '#29c6ff', pip: 'classic', effect: 'none' },
-    { src: 'custom', text: 'PROXY', x: 560, y: 40, w: 150, size: 24, font: 'oswald', upper: true, color: '#05060a', align: 'center', ls: 3, bg: 'chamfer', tintBg: 'neon', bgColor: '#29c6ff', bgOp: 1, pad: 8, rad: 12, effect: 'none' },
+    { src: 'custom', text: 'PLAYTEST', x: 540, y: 40, w: 170, size: 22, font: 'oswald', upper: true, color: '#05060a', align: 'center', ls: 3, bg: 'chamfer', tintBg: 'neon', bgColor: '#29c6ff', bgOp: 1, pad: 8, rad: 12, effect: 'none' },
     { src: 'name', x: 40, y: 676, w: 660, size: 84, font: 'antonio', upper: true, color: '#ffffff', fit: true, lh: .95, effect: 'shadow', effColor: '#000000', effSize: 1.2 },
     { src: 'type', x: 42, y: 768, w: 640, size: 26, font: 'plex', upper: true, color: '#d5dbe6', fit: true, ls: 2, effect: 'shadow' },
     { src: 'rulesflavor', x: 40, y: 816, w: 540, h: 180, size: 25, font: 'plex', color: '#ffffff', lh: 1.22, pip: 'classic', kw: 'chip', tintKw: 'neon', kwColor: '#f5e663', effect: 'shadow', effColor: '#000000', effSize: .8 },
@@ -2652,7 +2773,7 @@ function layerText(L, o) {
   switch (L.src) {
     case 'rulesflavor': return [o.rules, o.flavor].filter(Boolean).join('\n');
     case 'credit': return [o.info, o.artist && '✎ ' + o.artist].filter(Boolean).join('   ');
-    case 'custom': return L.text || '';
+    case 'custom': return swapLabel(L.text || '', o.label);
     case 'monogram': return (o.name || '').trim().charAt(0).toUpperCase();
     case 'stars': { // one star per point of mana value
       const mv = [...(o.cost || '').matchAll(/\{([^}]+)\}/g)].reduce((t, m) => { const c = m[1].split('/')[0]; return t + (/^\d+$/.test(c) ? +c : /^[XYZ]$/i.test(c) ? 0 : 1); }, 0);
@@ -2743,8 +2864,25 @@ function mixHex(a, b, t) {
   return `rgb(${Math.round(r1 + (r2 - r1) * t)},${Math.round(g1 + (g2 - g1) * t)},${Math.round(b1 + (b2 - b1) * t)})`;
 }
 // Draws one layer and returns its box (for selecting and dragging), or null when it has no text.
-function artShape(g, x, y, w, h, arch, rad) {
+function crtGlass(g, x, y, w, h) { // scanlines, a dark edge and a soft glare, over whatever is on the screen
+  g.save();
+  g.fillStyle = 'rgba(0,0,0,.22)'; for (let yy = y; yy < y + h; yy += 4) g.fillRect(x, yy, w, 1.6);
+  const vg = g.createRadialGradient(x + w / 2, y + h / 2, Math.min(w, h) * .35, x + w / 2, y + h / 2, Math.max(w, h) * .68);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); g.fillStyle = vg; g.fillRect(x, y, w, h);
+  const gl = g.createLinearGradient(x, y, x + w * .55, y + h * .7);
+  gl.addColorStop(0, 'rgba(255,255,255,.16)'); gl.addColorStop(.5, 'rgba(255,255,255,.04)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gl; g.fillRect(x, y, w, h);
+  g.restore();
+}
+function artShape(g, x, y, w, h, arch, rad, crt) {
   g.beginPath();
+  if (crt) { // a picture tube: big rounded corners and slightly bowed edges
+    const r = Math.min(w, h) * .09, b = Math.min(w, h) * .025;
+    g.moveTo(x + r, y); g.quadraticCurveTo(x + w / 2, y - b, x + w - r, y); g.quadraticCurveTo(x + w, y, x + w, y + r);
+    g.quadraticCurveTo(x + w + b, y + h / 2, x + w, y + h - r); g.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    g.quadraticCurveTo(x + w / 2, y + h + b, x + r, y + h); g.quadraticCurveTo(x, y + h, x, y + h - r);
+    g.quadraticCurveTo(x - b, y + h / 2, x, y + r); g.quadraticCurveTo(x, y, x + r, y); g.closePath(); return;
+  }
   if (arch) { const r = Math.min(w / 2, h / 2); g.moveTo(x, y + h); g.lineTo(x, y + r); g.arc(x + w / 2, y + r, w / 2, Math.PI, 0); g.lineTo(x + w, y + h); g.closePath(); }
   else g.roundRect(x, y, w, h, Math.min(rad, w / 2, h / 2));
 }
@@ -2782,7 +2920,7 @@ function drawLayer(g, L, o) {
     const bx = +L.x, by = +L.y, bw = +L.w, bh = +L.h || 400;
     if (+L.bdW > 0) {
       g.save(); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor;
-      if (L.bg === 'arch' || +L.rad > 0) { artShape(g, bx, by, bw, bh, L.bg === 'arch', +L.rad || 0); g.stroke(); } else g.strokeRect(bx, by, bw, bh);
+      if (L.bg === 'arch' || L.bg === 'crt' || +L.rad > 0) { artShape(g, bx, by, bw, bh, L.bg === 'arch', +L.rad || 0, L.bg === 'crt'); g.stroke(); } else g.strokeRect(bx, by, bw, bh);
       g.restore();
     }
     return { id: L.id, x: bx, y: by, w: bw, h: bh, cx: bx + bw / 2, cy: by + bh / 2, rot: 0, resizeW: true, resizeH: true, art: true };
@@ -3236,7 +3374,7 @@ function renderCustom(g, o, bleed) {
   for (const L of o.layers || []) {
     if (L.src === 'art' && ar.win) { // an art window: pasted-in, with slightly uneven edges
       g.save();
-      if (ar.clean) { artShape(g, ar.x, ar.y, ar.w, ar.h, ar.arch, ar.rad); g.clip(); }
+      if (ar.clean) { artShape(g, ar.x, ar.y, ar.w, ar.h, ar.arch, ar.rad, ar.crt); g.clip(); }
       else {
         const R = rng(ar.x * 7 + ar.y * 13 + ar.w), j = () => (R() - .5) * 5;
         g.beginPath(); g.moveTo(ar.x + j(), ar.y + j());
@@ -3244,6 +3382,7 @@ function renderCustom(g, o, bleed) {
         g.closePath(); g.clip();
       }
       drawArt(g, ar, st.img);
+      if (ar.crt) crtGlass(g, ar.x, ar.y, ar.w, ar.h);
       g.restore();
     }
     const b = drawLayer(g, { ...LDEF, ...L }, o);
@@ -3354,6 +3493,7 @@ function loadFile(file) {
     st.prev = { img: st.img, blob: st.blob, zoom: st.zoom, ox: st.ox, oy: st.oy, sample: st.sample };
     checkFinishedCard(img, file);
     st.img = img; st.blob = file; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
+    useOwnArt(true);
     if (st.sample && $('artist').value === 'Sample art') $('artist').value = '';
     st.sample = false; $('status').textContent = ''; setCredit(null); st.edits++; draw();
     if (typeof libAdd === 'function') libAdd(file, file.name, '');
@@ -3827,24 +3967,25 @@ for (const k of FIELDS) $(k).addEventListener('input', () => { st.edits++; draw(
 
 // First visit (nothing saved yet): show a random example card in a random look.
 let lastPick = '';
-const pick = a => a[Math.floor(Math.random() * a.length)];
+let RNG = Math.random, seededPick = false; // RNG becomes a seeded generator while "your card" is being made
+const pick = a => a[Math.floor(RNG() * a.length)];
 // A random look: layout (or a custom-layout design), border, title font, shading and symbol style. Sets st.layers.
 let lastLook = '';
 function randomLook() {
   let lk;
-  do lk = pick([['fade'], ['panel'], ['framed'], ['console'], ...Object.keys(PRESETS).map(p => ['custom', p])]); while (lk.join() === lastLook);
+  do lk = pick([['fade'], ['panel'], ['framed'], ['console'], ...Object.keys(PRESETS).map(p => ['custom', p])]); while (lk.join() === lastLook && !seededPick);
   lastLook = lk.join();
   st.layers = [];
   if (lk[0] === 'custom') applyPreset(lk[1], true);
   const bold = lk[1] === 'comic' || lk[1] === 'poster';
   return {
     layout: lk[0],
-    border: lk[0] === 'custom' && Math.random() < .5 ? 'none' : pick(['#0b0b0c', '#0b0b0c', '#0b0b0c', '#f3f1ec', '#a9abae', '#b8964c', 'none']),
-    titleFont: Math.random() < .6 ? pick(['Spectral', 'Cinzel', 'Cormorant SC', 'IM Fell English SC']) : famOf(pick(Object.values(FONTS).filter(f => f.g !== 'Handwritten' || Math.random() < .3))),
-    ...(Math.random() < .35 ? (() => { const [a, b] = pick(FX_PAIRS); return { artFx: pick(['duotone', 'duotone', 'halftone', 'pop', 'bw', 'posterize', 'grain', 'paint']), fxDark: a, fxLight: b, fxAmt: String(Math.round((0.3 + Math.random() * 0.4) * 100) / 100) }; })() : { artFx: 'none' }),
-    shade: String(Math.round((0.6 + Math.random() * 0.3) * 100) / 100),
-    wear: Math.random() < .3 ? pick(['light', 'worn', 'worn', 'beat', 'wrecked']) : 'none', wearSeed: String(Math.floor(Math.random() * 1e6)),
-    misprint: Math.random() < .12 ? pick(['light', 'light', 'off', 'bad']) : 'none',
+    border: lk[0] === 'custom' && RNG() < .5 ? 'none' : pick(['#0b0b0c', '#0b0b0c', '#0b0b0c', '#f3f1ec', '#a9abae', '#b8964c', 'none']),
+    titleFont: RNG() < .6 ? pick(['Spectral', 'Cinzel', 'Cormorant SC', 'IM Fell English SC']) : famOf(pick(Object.values(FONTS).filter(f => f.g !== 'Handwritten' || RNG() < .3))),
+    ...(RNG() < .35 ? (() => { const [a, b] = pick(FX_PAIRS); return { artFx: pick(['duotone', 'duotone', 'halftone', 'pop', 'bw', 'posterize', 'grain', 'paint']), fxDark: a, fxLight: b, fxAmt: String(Math.round((0.3 + RNG() * 0.4) * 100) / 100) }; })() : { artFx: 'none' }),
+    shade: String(Math.round((0.6 + RNG() * 0.3) * 100) / 100),
+    wear: RNG() < .3 ? pick(['light', 'worn', 'worn', 'beat', 'wrecked']) : 'none', wearSeed: String(Math.floor(RNG() * 1e6)),
+    misprint: RNG() < .12 ? pick(['light', 'light', 'off', 'bad']) : 'none',
     pipStyle: bold ? pick(['outline', 'solid', 'glyph']) : pick(['classic', 'classic', 'flat', 'outline', 'solid', 'glyph']),
     pipColor: pick(['#ffffff', '#ffffff', '#111111', '#f2c14e', '#ff5d8f', '#4cc9f0', '#90e39a']),
   };
@@ -3858,7 +3999,7 @@ function randomStart() {
   do card = pick(EXAMPLES); while (card.name === lastPick);
   lastPick = card.name;
   writeForm({ ...SAMPLE, ...card, color: costColor(card), ...randomLook() });
-  st.img = st.sampleImg; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
+  st.img = st.sampleImg; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.ownArt = false;
   $('randomNote').hidden = false;
   draw();
 }
@@ -3869,7 +4010,7 @@ $('useDefault').onclick = $('defaultBtn').onclick = () => {
   leaveSheetCard();
   st.layers = []; st.sel = null;
   writeForm(SAMPLE);
-  st.img = st.sampleImg; st.blob = null; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1;
+  st.img = st.sampleImg; st.blob = null; st.sample = true; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.ownArt = false;
   $('randomNote').hidden = true; setCredit(null); saveDraft(); draw();
 };
 
@@ -3994,7 +4135,7 @@ async function applyLookup(withArt = $('lookupArt').checked) {
     try {
       const a = await fetchArt(art);
       if (look.card !== card) return;
-      st.img = a.img; st.blob = a.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false;
+      st.img = a.img; st.blob = a.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; useOwnArt(false);
       $('artist').value = artist; setCredit(null);
       $('status').textContent = `Filled in “${t.name}” with its official art.`;
     } catch (e) { $('status').textContent = `Filled in “${t.name}”, but its art couldn’t be loaded.`; }
@@ -4106,7 +4247,7 @@ $('deckGo').onclick = async () => {
     if (withArt && art) { try { a = await fetchArt(art); } catch (e) { artFail++; } }
     const official = !!a;
     let pdArtist = '';
-    if (!a && artMode === 'pd') { try { a = await findArt(artWords(fields)); pdArtist = a.artist; } catch (e) { artFail++; } }
+    if (!a && artMode === 'pd') { try { a = await cardArt(fields); pdArtist = a.artist; } catch (e) { artFail++; } }
     if (!a && artMode === 'own') { try { a = await ownArt(true); pdArtist = a.artist; } catch (e) { artFail++; } }
     if (!a) a = await placeholderArt(fields.color);
     const form = { ...base, ...fields, artist: official ? artist : pdArtist };
@@ -4180,16 +4321,47 @@ const MOODS = {
 };
 const STOP = new Set('the of and a an to in on for with from at by into your you this that its it is are be as or all each other target creature card cards'.split(' '));
 // Search words for art: a creature type or a word from the name first, then a mood that fits the card's color.
-function artWords(o) {
-  const sub = ((o.type || '').split(/[—-]/)[1] || '').split(/\s+/).filter(w => w.length > 2);
+// Search words for art, most specific first:
+// lands: landscape words for their land types (or their color), then a word from the name;
+// everything else: its creature or other subtypes, then a word from the name, then moods for its color.
+const LAND_WORDS = { Plains: ['meadow', 'field', 'prairie', 'pasture', 'harvest'], Island: ['island', 'sea', 'coast', 'ocean', 'bay'],
+  Swamp: ['swamp', 'marsh', 'bog', 'moonlight'], Mountain: ['mountain', 'mountains', 'alps', 'volcano', 'cliff'], Forest: ['forest', 'woods', 'grove', 'trees'] };
+const isLand = o => /(^|[^a-z])land([^a-z]|$)/i.test(o.type || '');
+function artWords(o, extra = []) {
   const name = (o.name || '').replace(/[^A-Za-z\s']/g, ' ').split(/\s+/).filter(w => w.length > 3 && !STOP.has(w.toLowerCase()));
-  const mood = MOODS[o.color] || MOODS.C;
-  const words = [];
-  if (sub.length) words.push(pick(sub));
+  const col = cardColor(o), words = [];
+  if (isLand(o)) {
+    const types = Object.keys(LAND_WORDS).filter(t => (o.type || '').split(/[^A-Za-z]+/).includes(t));
+    const fromColor = { W: 'Plains', U: 'Island', B: 'Swamp', R: 'Mountain', G: 'Forest' }[col];
+    for (const t of (types.length ? types : fromColor ? [fromColor] : [])) words.push(...[...LAND_WORDS[t]].sort(() => RNG() - .5).slice(0, 2));
+    if (name.length) words.push(pick(name));
+    words.push('landscape', pick(MOODS.L));
+    return [...new Set(words.map(w => w.toLowerCase()))];
+  }
+  words.push(...extra);
+  const sub = ((o.type || '').split(/[—-]/)[1] || '').split(/\s+/).filter(w => w.length > 2);
+  words.push(...[...sub].sort(() => RNG() - .5));
   if (name.length) words.push(pick(name));
-  words.sort(() => Math.random() - .5);
+  const mood = MOODS[col] || MOODS.C;
   words.push(pick(mood), pick(MOODS[pick(Object.keys(MOODS))]));
   return [...new Set(words.map(w => w.toLowerCase()))];
+}
+// Art for a card: lands get either a landscape painting or a landscape photo; everything else a painting.
+async function cardArt(o, extra = []) {
+  const words = artWords(o, extra);
+  if (isLand(o) && RNG() < .5) {
+    for (const w of words.slice(0, 3)) {
+      try {
+        const items = (await ART_SOURCES.photos.more({ q: w, offset: RNG() < .5 ? 0 : 24 })).filter(x => seededPick || !usedArt.has(x.key));
+        if (!items.length) continue;
+        const it = pick(items); usedArt.add(it.key);
+        const r = await fetch(it.full); if (!r.ok) continue;
+        const blob = await r.blob();
+        return { img: await loadImage(URL.createObjectURL(blob)), blob, artist: it.artist, title: it.title, url: it.page, word: w, source: 'Wikimedia Commons photos', license: it.license };
+      } catch (e) {}
+    }
+  }
+  return findArt(words);
 }
 const COMMONS = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*';
 const usedArt = new Set();
@@ -4205,7 +4377,7 @@ async function findArt(words) {
         j = await r.json();
       } catch (e) { throw new Error('Couldn’t reach Wikimedia Commons for art.'); }
       const pages = Object.values(j.query?.pages || {}).filter(p => {
-        const i = p.imageinfo?.[0]; if (!i || usedArt.has(p.title)) return false;
+        const i = p.imageinfo?.[0]; if (!i || (!seededPick && usedArt.has(p.title))) return false;
         const lic = i.extmetadata?.LicenseShortName?.value || '', ratio = i.width / i.height;
         return /public domain|cc0|pd/i.test(lic) && ratio > 0.45 && ratio < 1.9 && Math.min(i.width, i.height) >= 900;
       });
@@ -4249,7 +4421,7 @@ async function remix(parts, firstVisit = false) {
     let art = null;
     if (parts.includes('art')) {
       const o = { ...readForm(), ...(fields || {}) };
-      try { art = randSrc === 'commons' ? await findArt(artWords(o)) : { ...(await ownArt(true)), own: true }; } catch (e) { notes.push(e.message); }
+      try { art = randSrc === 'commons' ? await cardArt(o) : { ...(await ownArt(true)), own: true }; } catch (e) { notes.push(e.message); }
     }
     if (firstVisit && st.edits !== edits) return; // the visitor started editing; leave their card alone
     if (parts.includes('look')) writeForm(randomLook());
@@ -4258,7 +4430,7 @@ async function remix(parts, firstVisit = false) {
       if (card) { showLookup(card); $('lookupName').value = card.name; }
     }
     if (art) {
-      st.img = art.img; st.blob = art.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false;
+      st.img = art.img; st.blob = art.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; useOwnArt(!!art.own);
       $('artist').value = art.artist; $('cardNotice').hidden = true; setCredit(art.own ? null : art);
     } else if (fields && st.sample) $('artist').value = 'Sample art';
     renderLayerList(); saveDraft(); draw();
@@ -4268,6 +4440,87 @@ async function remix(parts, firstVisit = false) {
     remixing = false; btns.forEach(b => b.disabled = false);
   }
 }
+
+// ---------- your card ----------
+// A birthday (and the day, and a mood) becomes a seed; the seed picks a real card of the mood's color from Scryfall,
+// its art and its look, the same way every time.
+// Star signs: each has a color, kinds of cards it leans toward (a Scryfall search) and art words.
+const ZODIAC = [ // [name, symbol, element, color, card themes, art words, last day as MMDD]
+  ['Capricorn', '♑', 'earth', 'B', 't:goat OR t:demon OR o:sacrifice', ['goat', 'mountain', 'winter'], 119],
+  ['Aquarius', '♒', 'air', 'U', 't:bird OR t:elemental OR t:djinn OR keyword:flying', ['water', 'sky', 'storm'], 218],
+  ['Pisces', '♓', 'water', 'U', 't:fish OR t:merfolk OR t:leviathan OR t:serpent OR t:kraken OR t:octopus OR t:whale', ['fish', 'sea', 'ocean'], 320],
+  ['Aries', '♈', 'fire', 'R', 't:goat OR t:warrior OR t:berserker OR keyword:haste', ['ram', 'battle', 'fire'], 419],
+  ['Taurus', '♉', 'earth', 'G', 't:ox OR t:beast OR t:boar OR t:elk', ['bull', 'pasture', 'garden'], 520],
+  ['Gemini', '♊', 'air', 'U', 't:shapeshifter OR o:copy', ['twins', 'mirror', 'sky'], 620],
+  ['Cancer', '♋', 'water', 'U', 't:crab OR t:turtle OR t:merfolk OR t:otter', ['crab', 'shore', 'moon'], 722],
+  ['Leo', '♌', 'fire', 'W', 't:cat OR t:noble OR t:lion', ['lion', 'sun', 'crown'], 822],
+  ['Virgo', '♍', 'earth', 'W', 't:cleric OR t:druid OR o:"gain"', ['maiden', 'harvest', 'wheat'], 922],
+  ['Libra', '♎', 'air', 'W', 't:advisor OR t:soldier OR o:"each player"', ['justice', 'balance', 'scales'], 1022],
+  ['Scorpio', '♏', 'water', 'B', 't:scorpion OR t:insect OR t:spider OR keyword:deathtouch', ['scorpion', 'night', 'poison'], 1121],
+  ['Sagittarius', '♐', 'fire', 'R', 't:archer OR t:centaur OR keyword:reach', ['archer', 'centaur', 'hunt'], 1221],
+];
+function signOf(birth) {
+  const [, m, d] = (birth || '').split('-').map(Number); if (!m) return null;
+  const md = m * 100 + d;
+  return ZODIAC.find(z => md <= z[6]) || ZODIAC[0]; // after Dec 21 wraps to Capricorn
+}
+function showSign() {
+  const z = signOf($('mcBirth').value);
+  $('mcSign').textContent = z ? `${z[1]} ${z[0]}, a ${z[2]} sign` : '';
+}
+function seedOf(str) { let h = 2166136261; for (const ch of str) h = Math.imul(h ^ ch.codePointAt(0), 16777619); return h >>> 0; }
+async function showMyCard() {
+  const birth = $('mcBirth').value;
+  if (!birth) { $('mcBirth').focus(); $('status').textContent = 'Pick your birthday first.'; return; }
+  for (let t = 0; remixing && t < 60; t++) { $('status').textContent = 'One moment…'; await new Promise(r => setTimeout(r, 250)); } // let a remix that's under way finish
+  if (remixing) return;
+  try { localStorage.setItem('proxyforge.mycard', JSON.stringify({ birth, mood: $('mcMood').value, daily: $('mcDaily').checked })); } catch (e) {}
+  const today = new Date(), day = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const daily = $('mcDaily').checked;
+  let mood = $('mcMood').value;
+  remixing = true; RNG = rng(seedOf(`${birth}|${daily ? day : ''}|${mood}`)); seededPick = true;
+  const btns = ['remixAll', 'mcGo', ...PARTS.map(k => 'roll-' + k)].map($);
+  btns.forEach(b => b.disabled = true);
+  $('status').textContent = 'Reading the stars…';
+  try {
+    const z = signOf(birth);
+    if (mood === 'any') mood = z ? z[3] : pick(['W', 'U', 'B', 'R', 'G', 'M']);
+    const colorQ = `${SF_RANDOM} ${mood === 'M' ? 'c:m' : 'c=' + mood}`;
+    let q = z ? `${colorQ} (${z[4]})` : colorQ, first;
+    try { first = await sf(`/cards/search?order=name&unique=cards&q=${encodeURIComponent(q)}`); } catch (e) { first = null; }
+    if (!first || !first.total_cards) { q = colorQ; first = await sf(`/cards/search?order=name&unique=cards&q=${encodeURIComponent(q)}`); } // no card of that color fits the sign
+    const idx = Math.floor(RNG() * (first.total_cards || first.data.length)), per = first.data.length || 175;
+    const pageNo = Math.floor(idx / per) + 1;
+    const page = pageNo === 1 ? first : await sf(`/cards/search?order=name&unique=cards&page=${pageNo}&q=${encodeURIComponent(q)}`);
+    const card = page.data[idx % per] || page.data[0];
+    const { art: _a, artist: _b, ...fields } = cardText(card);
+    let art = null, note = '';
+    try {
+      if (randSrc === 'commons') art = await cardArt({ ...readForm(), ...fields }, z && !/land/i.test(fields.type || '') ? [pick(z[5])] : []);
+      else { // your own pictures, picked by the seed
+        if (randSrc === 'folder' && await folderReady(true)) { const f = folder.files[Math.floor(RNG() * folder.files.length)], file = f.getFile ? await f.getFile() : f; art = { img: await loadImage(URL.createObjectURL(file)), blob: file, artist: '', own: true }; }
+        else { const items = (await idb.artAll()).filter(x => x.blob).sort((a, b) => a.added - b.added); if (items.length) { const it = items[Math.floor(RNG() * items.length)]; art = { img: await loadImage(URL.createObjectURL(it.blob)), blob: it.blob, artist: it.artist || '', own: true }; } }
+      }
+    } catch (e) { note = ' (no art this time: ' + e.message + ')'; }
+    const look = randomLook();
+    writeForm(look); writeForm(fields); showLookup(card); $('lookupName').value = card.name;
+    if (art) {
+      st.img = art.img; st.blob = art.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; useOwnArt(!!art.own);
+      $('artist').value = art.artist; $('cardNotice').hidden = true; setCredit(art.own ? null : art);
+    }
+    st.edits++; activeStyle = null; markStyle(); renderLayerList(); saveDraft(); draw();
+    const MOOD = { W: 'hopeful', U: 'calm', B: 'brooding', R: 'passionate', G: 'balanced', M: 'dreamy' };
+    $('status').textContent = `Your ${daily ? 'card for today' : 'card'}: “${card.name}”, ${MOOD[mood]}${z ? `, ${z[1]} ${z[0]}` : ''}.${note}`;
+  } catch (e) {
+    $('status').textContent = 'Couldn’t reach Scryfall for your card. Try again in a moment.';
+  } finally {
+    RNG = Math.random; seededPick = false; remixing = false; btns.forEach(b => b.disabled = false);
+  }
+}
+$('mcGo').onclick = showMyCard;
+$('mcBirth').addEventListener('input', showSign);
+try { const m = JSON.parse(localStorage.getItem('proxyforge.mycard') || 'null'); if (m) { $('mcBirth').value = m.birth || ''; $('mcMood').value = m.mood || 'any'; $('mcDaily').checked = m.daily !== false; } } catch (e) {}
+showSign();
 
 // ---------- art filter controls ----------
 const FX_PAIRS = [['#1d1442', '#ffcf70', 'Midnight gold'], ['#2b0a0a', '#ff6b4a', 'Ember'], ['#0b2545', '#8ee3ef', 'Deep sea'], ['#1a1f16', '#c6ff4a', 'Toxic'],
@@ -4327,7 +4580,7 @@ const STYLES = [
   { id: 'polaroid', name: 'Polaroid', preset: 'polaroid', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#1f2a44' } },
   { id: 'token', name: 'Token', preset: 'token', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'bronze', name: 'Comic cover', preset: 'bronze', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
-  { id: 'fantasypb', name: 'Fantasy paperback', preset: 'fantasypb', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#f2efe6', artFx: 'duotone', fxDark: '#0e3436', fxLight: '#a6dcd2', fxAmt: '0.4', wear: 'light' } },
+  { id: 'fantasypb', name: 'Fantasy paperback', preset: 'fantasypb', f: { layout: 'custom', border: 'none', pipStyle: 'outline', pipColor: '#f2efe6', artFx: 'cardtone', fxAmt: '0.4', wear: 'light' } },
   { id: 'scales', name: 'Scales & scroll', preset: 'scales', f: { layout: 'custom', border: 'none', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'pixel', name: 'Pixel hero', preset: 'pixel', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'pixel', pipColor: '#ffffff', artFx: 'pixel', fxAmt: '0.45' } },
   { id: 'storybook', name: 'Storybook gold', preset: 'storybook', f: { layout: 'custom', border: 'gilt', pipStyle: 'classic', pipColor: '#ffffff' } },
@@ -4368,13 +4621,25 @@ function buildStyles() {
     b.append(c, t); b.onclick = () => applyStyle(sty); box.append(b);
   }
 }
+// Your own pictures (uploads, your library, your folder) start with no filter, and styles don't add one;
+// pick a filter under Art filter whenever you like. Searched and official art take the style's filter.
+const FX_KEYS = ['artFx', 'fxAmt', 'fxDark', 'fxLight'];
+function useOwnArt(own) {
+  st.ownArt = own;
+  if (own && $('artFx').value !== 'none') { $('artFx').value = 'none'; updateFxUI(); saveDraft(); }
+}
+function styleLook(sty) {
+  const f = { artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f };
+  if (st.ownArt) for (const k of FX_KEYS) delete f[k];
+  return f;
+}
 function applyStyle(sty) {
-  writeForm({ artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f });
+  writeForm(styleLook(sty));
   if (sty.preset) { applyPreset(sty.preset, true); updateLook(); }
   else if (sty.layers) { st.layers = sty.layers.map(l => ({ ...LDEF, ...l, id: newLid() })); st.sel = st.layers.find(l => l.src === 'name')?.id || st.layers[0]?.id || null; updateLook(); }
   activeStyle = sty.id; markStyle();
   $('randomNote').hidden = true;
-  $('status').textContent = `${sty.name} style. Your text and art are unchanged.`;
+  $('status').textContent = `${sty.name} style. Your text and art are unchanged.` + (st.ownArt && sty.f.artFx && sty.f.artFx !== 'none' ? ' Your own picture stays unfiltered; choose a filter under Art if you want one.' : '');
   renderLayerList(); saveDraft(); draw();
 }
 function markStyle() { for (const b of $('styles').children) b.setAttribute('aria-pressed', b.dataset.style === activeStyle); }
@@ -4389,7 +4654,7 @@ function refreshStyles() {
       const btn = $('styles').children[i]; if (!btn || btn.hidden) return; // styles in other tabs redraw when their tab opens
       const c = btn.querySelector('canvas'); if (!c) return;
       const g = c.getContext('2d'); g.setTransform(0.24, 0, 0, 0.24, 0, 0);
-      try { render(g, { ...o, artFx: 'none', wear: 'none', gloss: false, misprint: 'none', ...sty.f, round: true, bleed: false, layers: sty.preset || sty.layers ? styleLayers(sty) : o.layers }, false); } catch (e) {}
+      try { render(g, { ...o, ...styleLook(sty), round: true, bleed: false, layers: sty.preset || sty.layers ? styleLayers(sty) : o.layers }, false); } catch (e) {}
     });
   }, styleFontsAsked ? 600 : 0);
 }
@@ -4534,7 +4799,7 @@ async function libAdd(blob, name, artist) {
 async function libUse(it) {
   try {
     const img = await loadImage(URL.createObjectURL(it.blob));
-    st.img = img; st.blob = it.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; st.edits++;
+    st.img = img; st.blob = it.blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; st.edits++; useOwnArt(true);
     if (it.artist) $('artist').value = it.artist;
     setCredit(null); $('cardNotice').hidden = true; saveDraft(); draw();
     $('libHint').textContent = `Using ${it.name ? '“' + it.name + '”' : 'your saved image'}.`;
@@ -4786,7 +5051,7 @@ async function useSearchArt(it, src, q, btn) {
     if (!artist && it.makerUrl) { try { const per = await ldGet(it.makerUrl); artist = (per.identified_by || []).find(x => x.type === 'Name')?.content; } catch (e) {} }
     if (/^(anoniem|anonymous|onbekend)$/i.test(artist || '')) artist = '';
     const art = { img, blob, artist: artist || 'Unknown artist', title: it.title, url: it.page, word: q, source: src.name, license: it.license };
-    st.img = img; st.blob = blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; st.edits++;
+    st.img = img; st.blob = blob; st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; st.sample = false; st.edits++; useOwnArt(false);
     $('artist').value = art.artist; $('cardNotice').hidden = true; setCredit(art);
     $('randomNote').hidden = true; saveDraft(); draw();
     $('artHint').textContent = `Using “${art.title}” from ${src.name}.`;
