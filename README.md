@@ -65,7 +65,7 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Basic lands:** pick which basics (and Wastes or snow-covered versions), how many of each, and whether every copy gets different art: public-domain landscapes, official basic land art or placeholders. They're added to the print sheet in your current style.
 - **Sharpness meter** that tells you whether your image is big enough to print well.
 - **Print sheets:** add cards (or card images you already have), set copies, and save a PDF with 9 cards per page at real card size (2.5 × 3.5″), with cut marks. Print at 100% / "Actual size".
-- **Single cards:** save a 600 dpi PNG, with optional ⅛″ bleed for print shops.
+- **Single cards:** save a 600 dpi PNG with **Save PNG**, or press **Save PNG with ⅛″ bleed** for print shops that trim the edges.
 
 Everything runs in your browser. Nothing is uploaded anywhere, and your print sheet is saved in your own browser. Card lookups and deck lists send only the card names to Scryfall, Remix asks Scryfall for a random card and Wikimedia Commons for art, and art search sends only the words you type to the source you picked.
 

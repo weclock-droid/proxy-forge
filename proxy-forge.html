@@ -636,6 +636,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         <button type="button" class="primary" id="addSheet">Add to print sheet</button>
         <button type="button" id="addNew" hidden>Add as a new card</button>
         <button type="button" id="save">Save PNG</button>
+        <button type="button" id="saveBleed" title="Adds ⅛″ of extra art around every edge, for print shops that trim">Save PNG with ⅛″ bleed</button>
         <button type="button" id="clear">New blank card</button>
         <button type="button" id="defaultBtn" title="Replace the card you're editing with the default example">Default card</button>
         <span class="status" id="status"></span>
@@ -3740,8 +3741,9 @@ function updateQuality(o) {
     : `This will look blurry when printed. Find a larger version (at least ${need} px for this layout), or zoom out.`;
   q.innerHTML = `<span class="pill ${cls}">${word} · ${dpi} dpi</span><span>Your image is ${img.naturalWidth} × ${img.naturalHeight} px. ${tip}</span>`;
 }
-async function exportPng() {
-  const o = readForm(), bleed = o.bleed;
+async function exportPng(forceBleed) {
+  const o = readForm(), bleed = forceBleed === true || o.bleed;
+  if (bleed) o.bleed = true;
   const c = document.createElement('canvas');
   c.width = (W + (bleed ? BLEED * 2 : 0)) * RES; c.height = (H + (bleed ? BLEED * 2 : 0)) * RES;
   const g = c.getContext('2d');
@@ -3941,7 +3943,8 @@ canvas.addEventListener('wheel', e => {
 $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
 $('guides').onchange = draw;
 $('resetArt').onclick = () => { st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; draw(); };
-$('save').onclick = exportPng;
+$('save').onclick = () => exportPng(false);
+$('saveBleed').onclick = () => exportPng(true);
 // ---------- custom layout editor ----------
 const LPROPS = {
   src: 's', text: 's', font: 's', size: 'n', color: 's', align: 's', w: 'n', h: 'n', rot: 'n', ls: 'n', lh: 'n',
