@@ -1707,7 +1707,7 @@ function renderWrist(g, o) {
     g.beginPath(); g.arc(x, y, r0, 0, 7); g.lineWidth = 1.5; g.stroke();
   };
   bulb(64, 520, 13, '#ff9a2e');
-  g.font = `400 13px ${HUD.f}`; g.fillStyle = 'rgba(230,226,190,.75)'; g.textAlign = 'center'; g.fillText('PWR', 64, 549); g.textAlign = 'left';
+  g.font = `400 16px ${HUD.f}`; g.fillStyle = 'rgba(230,226,190,.75)'; g.textAlign = 'center'; g.fillText('PWR', 64, 549); g.textAlign = 'left';
   bulb(W - 63, 168, 10, '#3dff6e'); bulb(W - 63, 206, 10, '#ffc93d', n(17, 2) === 0); bulb(W - 63, 244, 10, '#ff3b2f', n(19, 3) === 0);
   piece(box(W - 50, 404, 28, 92, 7), '#3a3b2c', { shadow: 4, hi: .3, lo: .4, line: 3 });
   g.fillStyle = INK; for (let y = 414; y < 488; y += 9) g.fillRect(W - 46, y, 20, 2.5);
@@ -1752,7 +1752,7 @@ function renderWrist(g, o) {
     g.textBaseline = 'alphabetic';
   }
   const info = [o.info, o.artist ? '✎ ' + o.artist : ''].filter(Boolean).join('   ');
-  g.font = `500 15px ${SANS.f}`; g.fillStyle = '#e9e6df'; g.textAlign = 'left'; g.fillText(info, 44, H - 22);
+  g.font = `500 19px ${SANS.f}`; g.fillStyle = '#e9e6df'; g.textAlign = 'left'; g.fillText(info, 44, H - 20);
   if (o.note) { g.textAlign = 'right'; g.fillText(o.note, W - (o.pt ? 190 : 44), H - 22); }
   g.restore();
 }
@@ -2313,7 +2313,7 @@ function renderConsole(g, o, size) {
   const bottomLine = () => {
     g.textBaseline = 'alphabetic';
     const info = [o.info, o.artist ? '✎ ' + o.artist : ''].filter(Boolean).join('   ');
-    g.font = conFont(15, 600); g.fillStyle = '#e9e6df'; g.textAlign = 'left'; g.fillText(upper(info), 34, H - 22);
+    g.font = conFont(19, 600); g.fillStyle = '#e9e6df'; g.textAlign = 'left'; g.fillText(upper(info), 34, H - 20);
     if (o.note) { g.textAlign = 'right'; g.fillText(o.note, W - 34, H - 22); }
   };
   if (land) {
@@ -2461,13 +2461,13 @@ function drawFooter(g, o, color, y, rightLimit) {
   g.save();
   g.shadowColor = color === '#1a1816' ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.6)'; g.shadowBlur = 4;
   g.fillStyle = color; g.textBaseline = 'alphabetic';
-  g.font = `600 15px "IBM Plex Sans", system-ui, sans-serif`;
+  g.font = `600 20px "IBM Plex Sans", system-ui, sans-serif`;
   let left = o.info || '';
   if (o.artist) left += (left ? '   ' : '') + '✎ ' + o.artist;
   if (left) g.fillText(left, 52, y);
   if (o.note) {
-    g.font = `400 13px "IBM Plex Sans", system-ui, sans-serif`; g.textAlign = 'right';
-    g.fillText(o.note, W - 52, y); g.textAlign = 'left';
+    g.font = `400 18px "IBM Plex Sans", system-ui, sans-serif`; g.textAlign = 'right';
+    g.fillText(o.note, rightLimit ? rightLimit - 12 : W - 52, y); g.textAlign = 'left'; // clear of the P/T box
   }
   g.restore();
 }
@@ -2518,6 +2518,7 @@ const FONTS = {
   antonio: { label: 'Antonio (console caps)', f: '"Antonio", "Arial Narrow", sans-serif', wt: 600, g: 'Sci-fi & retro' },
   notojp: { label: 'Noto Sans JP (Japanese)', f: '"Noto Sans JP", system-ui, sans-serif', wt: 700, g: 'Display' },
 };
+const TEXT_FLOOR = { rules: 24, rulesflavor: 24, rulesx: 24, dialog: 22, flavor: 22, type: 20, maintype: 20, subtype: 20, typeleft: 20, credit: 20, illus: 20, artist: 20, note: 18, name: 26 };
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
   rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', kanji: 'Name in Japanese (basic lands)', stars: 'Level stars (mana value)', mv: 'Mana value (number)', subtype: 'Subtypes (after the dash)', typeleft: 'Card type (before the dash)', rulesx: 'Rules + flavor (blank for basics)', paymv: '“PAY” and the mana value', maintype: 'Main card type (BASIC LAND, CREATURE…)', illus: '“Illustrated by” the artist', dialog: 'Rules, or “Tap for 1 mana?” for basics', atkdef: 'Power / toughness as ATK / DEF', landmana: 'Card color as one mana symbol', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
@@ -3207,7 +3208,7 @@ function tintOf(o, kind) {
   if (kind === 'pastel') return PASTEL[col] || PASTEL.C;
   return kind === 'pale' ? mix(.62, [232, 228, 218]) : kind === 'deep' ? mix(.45, [16, 14, 12]) : c;
 }
-function drawLayer(g, L, o) {
+function drawLayer(g, L, o, measure) { // measure: only report how much taller a text box must get
   if (L.tintBg || L.tintInk || L.tintBd || L.tintKw || L.tintPip) { L = { ...L }; if (L.tintPip) { L.pipColor = tintOf(o, L.tintPip); if (L.pip === 'inherit') L.pip = 'glyph'; } if (L.tintBg) L.bgColor = tintOf(o, L.tintBg); if (L.tintInk) L.color = tintOf(o, L.tintInk); if (L.tintBd) L.bdColor = tintOf(o, L.tintBd); if (L.tintKw) L.kwColor = tintOf(o, L.tintKw); }
   if (L.src === 'art') { // the art is drawn under every layer by renderCustom; this only adds an optional frame
     const bx = +L.x, by = +L.y, bw = +L.w, bh = +L.h || 400;
@@ -3226,6 +3227,11 @@ function drawLayer(g, L, o) {
   ensureFont(fam, text);
   const pad = +L.pad || 0, rot = +L.rot || 0;
   let size = Math.max(4, +L.size || 30);
+  // Smallest readable size for each kind of text (card units: 300 per inch, so 24 is about 6 pt, 20 about 5 pt),
+  // like the smallest type on printed cards. Text that won't fit at this size gets a taller box or is narrowed.
+  const minSize = TEXT_FLOOR[L.src] || 16;
+  size = Math.max(size, minSize);
+  let grow = 0, squeeze = 1;
   const prev = { fam: curFam, lh: curLH, pip: curPip };
   curFam = fam; curLH = +L.lh || 1.15;
   if (L.pip && L.pip !== 'inherit') curPip = { kind: L.pip, color: L.pipColor || '#ffffff' };
@@ -3271,7 +3277,7 @@ function drawLayer(g, L, o) {
       return { cw, ln };
     };
     let m = measure(size);
-    if (+L.h > 0) while (m.ln + 2 * pad > +L.h && size > 6) { size = Math.max(6, size - Math.max(1, size * .04)); m = measure(size); }
+    if (+L.h > 0) while (m.ln + 2 * pad > +L.h && size > minSize) { size = Math.max(minSize, size - Math.max(1, size * .04)); m = measure(size); }
     const fx = makePaint(g, L, size), step = size * curLH, colW = m.cw;
     bw = colW + 2 * pad; bh = (+L.h > 0 ? +L.h - 2 * pad : m.ln) + 2 * pad;
     paintAll = (bx, by) => {
@@ -3300,14 +3306,26 @@ function drawLayer(g, L, o) {
       const over = lay.paras.some(p => p.some(line => lineW(line, lay) > avail + .5));
       const wraps = L.fit && lay.paras.some(p => p.length > 1);
       const tall = fixedH && lay.h > fixedH;
-      if ((over || wraps || tall) && size > 6) size = Math.max(6, size - Math.max(1, size * .04)); else break;
+      if ((over || wraps || tall) && size > minSize) size = Math.max(minSize, size - Math.max(1, size * .04)); else break;
     }
-    bw = +L.w; bh = fixedH ? +L.h : lay.h + 2 * pad;
+    // still too tall at the smallest readable size: the box grows upward (the bottom stays put)
+    if (fixedH && lay.h > fixedH) grow = lay.h - fixedH;
+    // still too wide (a single line that can't wrap): narrow the letters a little instead of shrinking them
+    const widest = Math.max(0, ...lay.paras.flatMap(p => p.map(line => lineW(line, lay))));
+    if (widest > avail + .5) squeeze = Math.max(.6, avail / widest);
+    if (measure) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; curKw = null; return grow; }
+    bw = +L.w; bh = fixedH ? +L.h + grow : lay.h + 2 * pad;
     const fx = makePaint(g, L, size);
     const vOff = L.vmid && fixedH ? Math.max(0, (fixedH - lay.h) / 2) : 0;
-    paintAll = (bx, by) => drawRich(g, lay, size, bx + pad, by + pad + vOff, L.color, { align: L.align, w: avail, paint: fx });
+    paintAll = (bx, by) => {
+      if (squeeze === 1) return drawRich(g, lay, size, bx + pad, by + pad + vOff, L.color, { align: L.align, w: avail, paint: fx });
+      const ax = bx + pad + (L.align === 'center' ? avail / 2 : L.align === 'right' ? avail : 0);
+      g.save(); g.translate(ax, 0); g.scale(squeeze, 1); g.translate(-ax, 0);
+      drawRich(g, lay, size, bx + pad, by + pad + vOff, L.color, { align: L.align, w: avail / squeeze, paint: fx });
+      g.restore();
+    };
   }
-  const bx = +L.x + hugX, by = +L.y, cx = bx + bw / 2, cy = by + bh / 2;
+  const bx = +L.x + hugX, by = +L.y - grow, cx = bx + bw / 2, cy = by + bh / 2;
   g.translate(cx, cy); g.rotate(rot * Math.PI / 180); g.translate(-cx, -cy);
   // background
   const fillStroke = () => {
@@ -3712,7 +3730,31 @@ function drawSticker(g, L, bx, by, bw, bh, size) {
   g.restore();
   if (+L.bdW > 0) { g.beginPath(); g.roundRect(x, y, w, h, r); g.lineWidth = +L.bdW; g.strokeStyle = L.bdColor; g.stroke(); }
 }
+// Long rules at a readable size: like a printed card, the text box gets taller and everything above it in that
+// column (type line, title bars) moves up with it, while the art window gets shorter.
+function reflowLayers(g, o) {
+  const layers = (o.layers || []).map(L => ({ ...LDEF, ...L }));
+  const RULES = ['rules', 'rulesflavor', 'rulesx', 'dialog', 'flavor'];
+  for (const R of layers) {
+    if (!RULES.includes(R.src) || !(+R.h > 0) || R.vert) continue;
+    let grow = 0;
+    try { grow = drawLayer(g, R, o, true) || 0; } catch (e) { grow = 0; }
+    if (!(grow > .5)) continue;
+    grow = Math.ceil(grow);
+    const top = +R.y, l = +R.x, r = +R.x + +R.w, overlapsX = A => +A.x < r && +A.x + (+A.w || 0) > l;
+    const hOf = A => +A.h > 0 ? +A.h : (+A.size || 30) * 1.4;
+    for (const A of layers) {
+      if (A === R || !overlapsX(A)) continue;
+      const aTop = +A.y, aBot = aTop + hOf(A);
+      if (A.src === 'art') { if (aTop < top && aBot > top - grow - 12) A.h = Math.max(120, (+A.h || 400) - Math.min(grow, aBot - (top - grow - 12))); continue; }
+      if (aTop < top - 4 && aTop + hOf(A) / 2 < top && aTop >= top - 320) A.y = aTop - grow; // just above the box: move up with it
+    }
+    R.y = top - grow; R.h = +R.h + grow;
+  }
+  return layers;
+}
 function renderCustom(g, o, bleed) {
+  o = { ...o, layers: reflowLayers(g, o) };
   const ar = artRect(o);
   g.save();
   if (ar.win) {
