@@ -61,6 +61,33 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 input[type=range] { width: 100%; accent-color: var(--accent); }
 input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
 .hint { font-size: 12px; color: var(--muted); font-weight: 400; letter-spacing: 0; line-height: 1.45; }
+/* Reference panel */
+.ref { display: grid; gap: 12px; }
+.ref .find { display: grid; gap: 8px; }
+.ref .find .go { display: flex; gap: 8px; align-items: end; }
+.ref .find .go label { flex: 1 1 auto; }
+.ref .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+.ref .meta select { font-size: 12px; padding: 4px 8px; }
+.reflist { display: grid; gap: 8px; }
+.refsec { border: 1px solid var(--line); border-radius: 9px; background: var(--panel); padding: 10px 12px 12px; }
+.refsec > summary { font-weight: 600; cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: baseline; }
+.refsec > summary::-webkit-details-marker { display: none; }
+.refsec > summary::before { content: '▸'; color: var(--muted); font-size: 11px; }
+.refsec[open] > summary::before { content: '▾'; }
+.refsec .count { color: var(--muted); font-size: 12px; font-weight: 400; margin-left: auto; }
+.refsec h4 { display: none; }
+.refitems { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.refitems li { font-size: 13px; line-height: 1.5; padding-left: 10px; border-left: 2px solid var(--line); }
+.refitems li.must { border-left-color: var(--accent); }
+.refitems li.should { border-left-color: #c9962f; }
+.refmore { justify-self: start; }
+.refmark { background: color-mix(in oklab, var(--accent) 26%, transparent); color: inherit; border-radius: 2px; }
+.refnone { font-size: 12px; color: var(--muted); }
+.reftag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .03em; color: var(--accent); margin-right: 5px; }
+.refitems li.should .reftag { color: #c9962f; }
+.refitems a { color: var(--accent); overflow-wrap: anywhere; }
+.refsec .actions { margin-top: 10px; }
+.code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
 code { font-family: var(--f-mono); font-size: 11.5px; background: color-mix(in srgb, var(--line) 55%, transparent); padding: 1px 4px; border-radius: 4px; }
 .drop {
   border: 1.5px dashed var(--line); border-radius: 9px; padding: 14px; display: flex; gap: 12px;
@@ -352,6 +379,8 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <div class="fxpal" id="fxPal" role="group" aria-label="Color pairs"></div>
         </div>
         <label class="inline"><input type="checkbox" id="guides" checked> Show art-area guide on the preview (never printed)</label>
+        <label class="inline"><input type="checkbox" id="safeGuides"> Show the safety margin (¼″ in from the cut, twice the bleed)</label>
+        <span class="hint" style="margin-top:-6px">Print shops cut slightly off-centre, so keep anything that matters — the name, mana cost, type line, rules and power/toughness — inside the green line. Art and plain background may cross it; the collector line may fall outside it. The ready-made layouts already do this; in the custom layout, you place the text, so check it yourself.</span>
         <div class="quality" id="quality" aria-live="polite"></div>
         <p class="credit" id="artCredit" hidden></p>
         <div class="notice" id="cardNotice" role="status" hidden>
@@ -755,6 +784,41 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
     <p class="hint" id="sheetEmpty">Make a card above and press <b>Add to print sheet</b>, or add card images you already have (scans, other proxies). Nine cards fit on each page at real card size, 2.5 × 3.5″. Print the PDF at 100% / “Actual size”, not “Fit to page”.</p>
   </section>
 
+  <section class="ref" id="ref" aria-labelledby="refTitle" hidden>
+    <div class="sheet-head">
+      <div>
+        <h2 id="refTitle">Reference</h2>
+        <p class="hint" id="refCount">Loading…</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="refOpenAll">Open all</button>
+        <button type="button" id="refCloseAll">Close all</button>
+      </div>
+    </div>
+    <div class="find">
+      <div class="go">
+        <label for="refQ">Search the guidelines and the reference
+          <input type="text" id="refQ" placeholder="bleed, artist credit, upscaling, pngcrush…" autocomplete="off" spellcheck="false">
+        </label>
+        <button type="button" id="refClear">Clear</button>
+      </div>
+      <div class="meta">
+        <span id="refWhere">Showing every section.</span>
+        <label class="inline" for="refSet" style="margin-left:auto">Sections
+          <select id="refSet">
+            <option value="all">Everything</option>
+            <option value="guidelines">Posting guidelines</option>
+            <option value="pipeline">Tools and print pipeline</option>
+          </select>
+        </label>
+      </div>
+      <div class="reflist" id="refList" role="region" aria-label="Reference sections" aria-live="polite"></div>
+      <div class="actions">
+        <span class="hint" id="refNote">These come from reference files on your own computer, built into your local copy of the page. Nothing here is sent anywhere.</span>
+      </div>
+    </div>
+  </section>
+
   <section class="help" id="help" aria-labelledby="helpTitle">
     <h2 id="helpTitle">How it works</h2>
     <p class="hint">Proxy Forge makes <b>proxies</b>: stand-in cards for <i>Magic: The Gathering</i>. People use them to try out a deck before buying the real cards, to play casual games with friends, or just to see a favorite card with different art. Everything happens on this page, in your browser.</p>
@@ -775,11 +839,19 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
   </section>
 </div>
 
+<!-- refs:start — built from the project's markdown by tools/build.mjs; edit the markdown, not this block -->
+<script type="application/json" id="refData">{"built":"","docs":[]}</script>
+<!-- refs:end -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 (() => {
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
+// The safety margin print shops ask for: ¼" in from the cut, which is twice the ⅛" bleed. One unit is
+// 1/300", so ¼" is 75 units. Keep the name, cost, type line, rules and P/T inside this; the collector
+// line is allowed to fall outside it, and art may cross it.
+const SAFE = BLEED * 2;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
 const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label','aiArt','aiModel','setCode'];
@@ -1290,10 +1362,18 @@ function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
 }
 
 // ---------- drawing helpers ----------
+// Shrinks text to fit maxW, down to minSize. If it still doesn't fit at minSize it is truncated with an
+// ellipsis rather than allowed to overflow: a name or type line wider than its box would otherwise run
+// into the mana cost or past the safety margin, and no amount of shrinking fixes a name that is simply
+// longer than the space. Returns the string to draw, so callers can use the result instead of the input.
 function fitText(g, text, font, maxSize, minSize, maxW) {
   let s = maxSize;
   for (; s > minSize; s -= 1) { g.font = font(s); if (g.measureText(text).width <= maxW) break; }
-  g.font = font(s); return s;
+  g.font = font(s);
+  if (g.measureText(text).width <= maxW) return text;
+  let cut = text;
+  while (cut.length > 1 && g.measureText(cut + '…').width > maxW) cut = cut.slice(0, -1);
+  return cut + '…';
 }
 function drawCostRight(g, syms, right, cy, d) {
   const gap = d * .1; let x = right - syms.length * (d + gap) + gap;
@@ -1577,9 +1657,12 @@ function halftone(g, img, w, h, amt, color, ink, paper) {
 function artRect(o) {
   const aw = o.layout === 'custom' && (o.layers || []).find(l => l.src === 'art');
   if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true, arch: aw.bg === 'arch', crt: aw.bg === 'crt', rad: +aw.rad || 0, clean: aw.bg === 'arch' || aw.bg === 'crt' || +aw.rad > 0 || aw.bg === 'box' };
-  if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
-  if (o.layout === 'wrist') return { x: 108, y: 140, w: 534, h: 400 };
-  if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 132, w: 690, h: o.rules ? 616 : 718 } : { x: 30, y: 132, w: 690, h: 410 };
+  if (o.layout === 'framed') return { x: 58, y: 133, w: 634, h: 457 }; // starts below the title bar; bottom stays at 590
+  // Starts below the shifted title bar; the bottom edge (540) is unmoved, so nothing below it moves.
+  if (o.layout === 'wrist') return { x: 108, y: 140 + (SAFE - 38), w: 534, h: 400 - (SAFE - 38) };
+  // The header band is taller than it was so the name and cost clear the ¼″ line, so the art window
+  // starts lower and is shorter by the same amount — its bottom edge, and everything below, is unmoved.
+  if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 165, w: 690, h: o.rules ? 583 : 685 } : { x: 30, y: 165, w: 690, h: 377 };
   if (o.border === 'none') return { x: 0, y: 0, w: W, h: H };
   return { x: 30, y: 30, w: W - 60, h: H - 60 };
 }
@@ -1620,14 +1703,17 @@ function renderWrist(g, o) {
     if (line) { path(); g.lineWidth = line; g.strokeStyle = INK; g.lineJoin = 'round'; g.stroke(); }
   };
   const box = (x, y, w, h, r) => () => rr(x, y, w, h, r);
+  // The top of the device is pushed down by this much so the name and mana cost clear the ¼″ line.
+  // Everything below the title bar keeps its original position, so only the hat moves.
+  const hdr = SAFE - 38;
   // side rails: stacked colored segments, like the grips of a handheld device
   for (const [x, c] of [[18, accL], [W - 48, accR]]) {
-    piece(box(x, 64, 30, 890, 8), mixHex(c, '#000000', .45), { shadow: 4, hi: .15 });
-    for (let y = 80; y < 930; y += 46) piece(box(x + 4, y, 22, 38, 5), c, { shadow: 0, hi: .35, lo: .35, line: 2.5 });
+    piece(box(x, 64 + hdr, 30, 890 - hdr, 8), mixHex(c, '#000000', .45), { shadow: 4, hi: .15 });
+    for (let y = 80 + hdr; y < 930; y += 46) piece(box(x + 4, y, 22, 38, 5), c, { shadow: 0, hi: .35, lo: .35, line: 2.5 });
   }
   // the casing: upper and lower halves
   const olive = '#5f5e3d';
-  piece(box(34, 96, W - 68, 552, 26), olive, { grain: 900, box: [34, 96, W - 68, 552] });
+  piece(box(34, 96 + hdr, W - 68, 552 - hdr, 26), olive, { grain: 900, box: [34, 96 + hdr, W - 68, 552 - hdr] });
   piece(box(40, 652, W - 80, 304, 20), olive, { grain: 600, box: [40, 652, W - 80, 304] });
   // a seam line across each half
   g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(50, 640); g.lineTo(W - 50, 640); g.stroke();
@@ -1636,22 +1722,23 @@ function renderWrist(g, o) {
     const a2 = (x * 7 + y * 3) % 6 / 6 * Math.PI; g.strokeStyle = INK; g.lineWidth = 1.8;
     for (const b2 of [a2, a2 + Math.PI / 2]) { g.beginPath(); g.moveTo(x + Math.cos(b2) * r0 * .6, y + Math.sin(b2) * r0 * .6); g.lineTo(x - Math.cos(b2) * r0 * .6, y - Math.sin(b2) * r0 * .6); g.stroke(); }
   };
-  for (const [x, y] of [[56, 118], [W - 56, 118], [58, 676], [W - 58, 676], [58, 932], [W - 58, 932]]) screw(x, y);
+  for (const [x, y] of [[56, 118 + hdr], [W - 56, 118 + hdr], [58, 676], [W - 58, 676], [58, 932], [W - 58, 932]]) screw(x, y);
   // a vent grille on the lower casing
   for (let k = 0; k < 6; k++) piece(box(70 + k * 16, 940, 8, 24, 4), '#24251a', { shadow: 0, hi: 0, lo: 0, line: 2 });
 
-  // title bar
-  piece(box(48, 12, 124, 26, 5), '#4b4a31', { shadow: 3, hi: .3, lo: .3, line: 2.5 });
-  g.font = `400 20px ${HUD.f}`; g.fillStyle = '#d8d5ae'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WRIST-COMP', 110, 26);
-  piece(box(40, 38, W - 80, 78, 14), dark, { hi: .16, lo: .5 });
-  const costLeft = syms.length ? drawCostRight(g, syms, W - 56, 77, 42) : W - 56;
+  // title bar. The WRIST-COMP tag rides along with the header; the name and cost get their own band
+  // below the ¼″ line, so the tag is allowed to sit outside the margin with the rest of the chrome.
+  piece(box(48, 12 + hdr, 124, 26, 5), '#4b4a31', { shadow: 3, hi: .3, lo: .3, line: 2.5 });
+  g.font = `400 20px ${HUD.f}`; g.fillStyle = '#d8d5ae'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WRIST-COMP', 110, 26 + hdr);
+  piece(box(40, 38 + hdr, W - 80, 78, 14), dark, { hi: .16, lo: .5 });
+  const costLeft = syms.length ? drawCostRight(g, syms, W - SAFE, 77 + hdr, 42) : W - SAFE;
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, 18, costLeft - 64 - 18);
-  g.fillText(o.name || '', 64, 92);
+  const nameDrawn = fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, 18, costLeft - (SAFE + 10) - 18);
+  g.fillText(nameDrawn, SAFE + 10, safeTitleBase(g, nameDrawn, 92 + hdr, artRect(o).y - 22));
 
   // the screen
-  piece(box(88, 124, W - 176, 432, 38), '#1a1b15', { hi: .2, lo: .5 });
-  rr(100, 134, W - 200, 412, 32); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
+  piece(box(88, 124 + hdr, W - 176, 432 - hdr, 38), '#1a1b15', { hi: .2, lo: .5 });
+  rr(100, 134 + hdr, W - 200, 412 - hdr, 32); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
   const ar = artRect(o);
   g.save(); rr(ar.x, ar.y, ar.w, ar.h, 28); g.clip();
   drawArt(g, ar, st.img);
@@ -1714,10 +1801,9 @@ function renderWrist(g, o) {
 
   // type bar
   piece(box(42, 566, W - 84, 62, 10), dark, { hi: .16, lo: .5 });
-  const rw = drawRarity(g, o, W - 60, 597, 32);
+  const rw = drawRarity(g, o, W - SAFE, 597, 32);
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left';
-  fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, W - 84 - 40 - (rw ? rw + 14 : 0));
-  g.fillText(o.type || '', 62, 609);
+  g.fillText(fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, (W - SAFE) - (SAFE + 10) - (rw ? rw + 14 : 0)), SAFE + 10, 609);
 
   // rules panel: two worn inset plates with the text over them
   for (const [x, w] of [[70, 298], [382, 298]]) { // recessed plates: shadow inside along the top
@@ -1743,12 +1829,14 @@ function renderWrist(g, o) {
   // bottom notch with a brass arrow
   piece(() => { g.beginPath(); g.moveTo(W / 2 - 50, 940); g.lineTo(W / 2 + 50, 940); g.lineTo(W / 2 + 38, 974); g.lineTo(W / 2 - 38, 974); g.closePath(); }, dark, { shadow: 4, hi: .15, lo: .5, line: 3 });
   piece(() => { g.beginPath(); g.moveTo(W / 2 - 18, 950); g.lineTo(W / 2 + 18, 950); g.lineTo(W / 2, 966); g.closePath(); }, '#c9b27a', { shadow: 0, hi: .5, lo: .3, line: 2 });
-  // power / toughness
+  // Power / toughness. Kept inside the ¼" safety margin: the plate's right edge sits on the line and
+  // its bottom ends 75 units up from the cut, clear of the notch rather than level with it.
   if (o.pt) {
-    piece(box(W - 172, 922, 128, 68, 8), '#e9e6d6', { shadow: 5, hi: .5, lo: .3, line: 3.5 });
-    piece(box(W - 165, 929, 114, 54, 5), dark, { shadow: 0, hi: .15, lo: .4, line: 2 });
+    const ph = 58, pw = 128, py = H - SAFE - ph - 8, pxl = W - SAFE - pw;
+    piece(box(pxl, py, pw, ph, 8), '#e9e6d6', { shadow: 5, hi: .5, lo: .3, line: 3.5 });
+    piece(box(pxl + 7, py + 7, pw - 14, ph - 14, 5), dark, { shadow: 0, hi: .15, lo: .4, line: 2 });
     g.fillStyle = '#f2f2ea'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    fitText(g, o.pt, px => `400 ${px}px ${HUD.f}`, 56, 20, 108); g.fillText(o.pt, W - 108, 958);
+    g.fillText(fitText(g, o.pt, px => `400 ${px}px ${HUD.f}`, 56, 20, pw - 20), pxl + pw / 2, py + ph / 2);
     g.textBaseline = 'alphabetic';
   }
   const info = [o.info, o.artist ? '✎ ' + o.artist : ''].filter(Boolean).join('   ');
@@ -2195,23 +2283,29 @@ function renderFullArt(g, o, shade, size, bleed) {
     drawArt(g, ar, st.img);
   }
 
-  const L = 48, R = W - 48, innerW = R - L;
+  // The text column keeps clear of the ¼" safety margin, so a slightly off-centre cut never clips
+  // the name, cost, type line or rules.
+  const L = SAFE + 8, R = W - SAFE - 8, innerW = R - L;
   // ---- title ----
+  // The name and the mana cost are the two things that most have to survive an off-centre cut, so both
+  // sit below the ¼" line. A 40px title is about 30 units tall, so a baseline at SAFE + 33 puts its top
+  // just inside; the pips are 38 units tall and take their centre from SAFE + 20.
   const cost = parseCost(o.cost), costD = 38;
+  const titleTop = SAFE - 13, titleBase = SAFE + 33, costMid = SAFE + 20;
   if (o.layout === 'panel') {
-    g.fillStyle = `rgba(10,9,11,${shade})`; g.beginPath(); g.roundRect(L - 6, 46, innerW + 12, 66, 12); g.fill();
+    g.fillStyle = `rgba(10,9,11,${shade})`; g.beginPath(); g.roundRect(L - 6, titleTop, innerW + 12, 66, 12); g.fill();
     g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 2; g.stroke();
   } else {
-    const gr = g.createLinearGradient(0, 0, 0, 190);
+    const gr = g.createLinearGradient(0, 0, 0, titleTop + 144);
     gr.addColorStop(0, `rgba(0,0,0,${shade})`); gr.addColorStop(.55, `rgba(0,0,0,${shade * .55})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = gr; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, 190 + BLEED);
+    g.fillStyle = gr; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, titleTop + 144 + BLEED);
   }
-  const costLeft = cost.length ? drawCostRight(g, cost, R - 8, 79, costD) : R;
+  const costLeft = cost.length ? drawCostRight(g, cost, R - 8, costMid, costD) : R;
   if (o.name) {
     g.fillStyle = '#fff'; g.textBaseline = 'alphabetic';
     g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 6;
-    fitText(g, o.name, s => titleFont(o, s), 40, 18, costLeft - L - 24);
-    g.fillText(o.name, L + 10, 92);
+    const drawn = fitText(g, o.name, s => titleFont(o, s), 40, 18, costLeft - L - 24);
+    g.fillText(drawn, L + 10, safeTitleBase(g, drawn, titleBase, titleTop + 58));
     g.shadowBlur = 0;
   }
 
@@ -2243,8 +2337,7 @@ function renderFullArt(g, o, shade, size, bleed) {
   if (o.type) {
     const rw = drawRarity(g, o, boxL + boxW - padX, y + 21, 34);
     g.fillStyle = '#fff';
-    fitText(g, o.type, s => titleFont(o, s), 31, 16, textW - (rw ? rw + 12 : 0));
-    g.fillText(o.type, tx, y + 31);
+    g.fillText(fitText(g, o.type, s => titleFont(o, s), 31, 16, textW - (rw ? rw + 12 : 0)), tx, y + 31);
     y += typeH;
   }
   g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3;
@@ -2304,18 +2397,23 @@ function renderConsole(g, o, size) {
     }
     g.closePath(); g.fillStyle = col; g.fill();
   };
-  elbow(18, 18, 74, 96, 12, W - 36, 36, c1);
-  g.fillStyle = c2; g.fillRect(18, 74, 74, 4); // a dividing notch in the elbow
-  g.fillStyle = '#000'; g.fillRect(18, 74, 74, 3);
-  tiny('PNL ' + num(1), 24, 64); tiny('01-' + num(2), 24, 94);
-  g.fillStyle = c3; g.fillRect(W - 30, 18, 12, 96);
-  segLine(92, 104, W - 140, 6, [c2, c3, c1, c2]);
+  // Everything in the header — the elbow, the corner bar, the panel numbers, the name and the cost —
+  // is pushed down so it clears the ¼" line. The name and cost are the priority; the panel numbers go
+  // below it too rather than sitting in the strip that gets cut.
+  const hdr = SAFE - 42;
+  elbow(18, 18 + hdr, 74, 96, 12, W - 36, 36, c1);
+  g.fillStyle = c2; g.fillRect(18, 74 + hdr, 74, 4); // a dividing notch in the elbow
+  g.fillStyle = '#000'; g.fillRect(18, 74 + hdr, 74, 3);
+  tiny('PNL ' + num(1), 24, 64 + hdr); tiny('01-' + num(2), 24, 94 + hdr);
+  g.fillStyle = c3; g.fillRect(W - 30, 18 + hdr, 12, 96);
+  segLine(92, 104 + hdr, W - 140, 6, [c2, c3, c1, c2]);
   // cost on the right, name filling the rest
   const syms = parseCost(o.cost), d = 40;
-  const costLeft = syms.length ? drawCostRight(g, syms, W - 42, 64, d) : W - 42;
+  const nameBase = SAFE + 42;
+  const costLeft = syms.length ? drawCostRight(g, syms, W - SAFE, nameBase - 20, d) : W - SAFE;
   g.fillStyle = CON_TEXT; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, 20, costLeft - 110 - 14);
-  g.fillText(upper(o.name || ''), 108, 84);
+  const nameDrawn = fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, 20, costLeft - (SAFE + 26) - 14);
+  g.fillText(nameDrawn, 108, safeTitleBase(g, nameDrawn, nameBase, ar.y - 22));
 
   const bottomLine = () => {
     g.textBaseline = 'alphabetic';
@@ -2346,8 +2444,7 @@ function renderConsole(g, o, size) {
     ps.slice(0, 3).forEach((sy, i, a) => drawSym(g, sy, 40, y0 + (h - 12 - a.length * 36) / 2 + i * 36, 32, true));
     g.fillStyle = CON_TEXT; g.textAlign = 'left'; g.textBaseline = 'middle';
     const rw = drawRarity(g, o, W - 46, y0 + h / 2, 30);
-    fitText(g, upper(o.type || ''), px => conFont(px, 700), 46, 18, W - 46 - (rw ? rw + 16 : 0) - 130);
-    g.fillText(upper(o.type || ''), 128, y0 + h / 2 + 2);
+    g.fillText(fitText(g, upper(o.type || ''), px => conFont(px, 700), 46, 18, W - 46 - (rw ? rw + 16 : 0) - 130), 128, y0 + h / 2 + 2);
     g.textBaseline = 'alphabetic';
     bottomLine(); g.restore(); return;
   }
@@ -2360,21 +2457,27 @@ function renderConsole(g, o, size) {
   // bottom bar
   g.fillStyle = c3; g.fillRect(92, bottom - 12, W - 110 - (o.pt ? 140 : 0), 12);
   g.fillStyle = c1; g.fillRect(W - 30, ty, 12, bottom - ty - (o.pt ? 70 : 0));
-  // type tab
-  const tabY = ty + 24, tabH = 46;
-  g.beginPath(); g.roundRect(108, tabY, W - 108 - 42, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
+  // type tab: the tab and the type text both end on the ¼" line, not 42 units from the cut.
+  const tabY = ty + 24, tabH = 46, tabR = W - SAFE;
+  g.beginPath(); g.roundRect(108, tabY, tabR - 108, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
   g.textBaseline = 'middle';
-  const rw = drawRarity(g, o, W - 56, tabY + tabH / 2, 28);
+  const rw = drawRarity(g, o, tabR - 14, tabY + tabH / 2, 28);
   g.fillStyle = '#1a1a1a'; g.textAlign = 'left';
-  fitText(g, upper(o.type || ''), px => conFont(px, 600), 30, 14, W - 42 - 130 - (rw ? rw + 12 : 0));
-  g.fillText(upper(o.type || ''), 130, tabY + tabH / 2 + 2);
+  g.fillText(fitText(g, upper(o.type || ''), px => conFont(px, 600), 30, 14, tabR - 130 - (rw ? rw + 12 : 0)), 130, tabY + tabH / 2 + 2);
   g.textBaseline = 'alphabetic';
   // rules and flavor
+  // The power/toughness tab's geometry is settled first, because the rules have to stop above it: taking
+  // the reserve from the tab's real top rather than a guessed constant is what keeps the last line's
+  // descenders out of the tab when the text is long.
+  const pw = 128, ph = 50, py = H - SAFE - ph, pxl = W - SAFE - pw; // inside the ¼″ margin, right edge on the line
   curFam = FONTS.antonio; curLH = 1.12;
-  const tx = 116, tw = W - tx - 54, top = tabY + tabH + 18, avail = bottom - 22 - top - (o.pt ? 40 : 0);
+  const tx = 116, tw = W - SAFE - tx, top = tabY + tabH + 18;
+  const avail = bottom - 22 - top - (o.pt ? (bottom - 22 - py) + 14 : 0);
   const rules = parseRich(upper(o.rules || ''), false), flav = parseRich(upper(o.flavor || ''), true);
   let fs = Math.round(size * 1.05), lr, lf, hh;
-  for (; fs >= 13; fs--) {
+  // Floors at 11, not 13: past that the paragraph is taller than the band whatever it does, so stopping
+  // earlier only meant spilling into the tab while pretending to have fitted.
+  for (; fs >= 11; fs--) {
     lr = layoutRich(g, rules, fs, tw); lf = layoutRich(g, flav, fs, tw);
     hh = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? fs * .7 : 0) + lf.h : 0);
     if (hh <= avail) break;
@@ -2385,10 +2488,9 @@ function renderConsole(g, o, size) {
   curFam = { f: BODY, wt: 400 }; curLH = 1.16;
   // power/toughness tab
   if (o.pt) {
-    const px = W - 42 - 128, py = bottom - 34;
-    g.beginPath(); g.roundRect(px, py, 128, 50, [25, 6, 6, 25]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
+    g.beginPath(); g.roundRect(pxl, py, pw, ph, [25, 6, 6, 25]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
     g.fillStyle = '#1a1a1a'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    fitText(g, o.pt, p2 => conFont(p2, 700), 40, 16, 110); g.fillText(o.pt, px + 64, py + 27);
+    g.fillText(fitText(g, o.pt, p2 => conFont(p2, 700), 40, 16, pw - 18), pxl + pw / 2, py + ph / 2);
     g.textBaseline = 'alphabetic';
   }
   bottomLine();
@@ -2408,13 +2510,15 @@ function renderFramed(g, o, size, borderCol) {
     g.fillStyle = box; g.beginPath(); g.roundRect(x, y, w, h, 10); g.fill();
     g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 2.5; g.stroke();
   };
-  // title
-  bar(46, 46, 658, 62);
+  // title: bar and text both clear the ¼" line, so the name and cost survive an off-centre cut
+  const tbTop = SAFE - 14;
+  bar(46, tbTop, 658, 62);
   const cost = parseCost(o.cost);
-  const costLeft = cost.length ? drawCostRight(g, cost, 694, 77, 36) : 694;
+  const costLeft = cost.length ? drawCostRight(g, cost, W - SAFE, tbTop + 33, 36) : W - SAFE;
   if (o.name) {
-    g.fillStyle = dark; fitText(g, o.name, s => titleFont(o, s), 38, 18, costLeft - 66 - 14);
-    g.fillText(o.name, 64, 90);
+    g.fillStyle = dark;
+    const drawn = fitText(g, o.name, s => titleFont(o, s), 38, 18, costLeft - (SAFE + 10) - 14);
+    g.fillText(drawn, SAFE + 10, safeTitleBase(g, drawn, tbTop + 45, tbTop + 56));
   }
   // art
   const ar = artRect(o);
@@ -2423,8 +2527,9 @@ function renderFramed(g, o, size, borderCol) {
   // type
   bar(46, 598, 658, 56);
   if (o.type) {
-    const rw = drawRarity(g, o, 694, 626, 34);
-    g.fillStyle = dark; fitText(g, o.type, s => titleFont(o, s), 30, 16, 620 - (rw ? rw + 12 : 0)); g.fillText(o.type, 64, 637);
+    const rw = drawRarity(g, o, W - SAFE, 626, 34);
+    g.fillStyle = dark;
+    g.fillText(fitText(g, o.type, s => titleFont(o, s), 30, 16, (W - SAFE) - (SAFE + 10) - (rw ? rw + 12 : 0)), SAFE + 10, 637);
   }
   // text box
   const tb = { x: 58, y: 662, w: 634, h: 300 };
@@ -2446,10 +2551,15 @@ function renderFramed(g, o, size, borderCol) {
     drawRich(g, lf, fs, tb.x + padX, y, dark);
   }
   if (o.pt) {
-    bar(566, 940, 132, 58);
+    // Inside the ¼" safety margin, and matching the other layouts. The bar is a real card's P/T box,
+    // so it gets the safety clearance the printed original has.
+    const ph = 58, py = H - SAFE - ph, pw = 132;
+    bar(W - SAFE - pw, py, pw, ph);
     g.fillStyle = dark; g.font = titleFont(o, 38); g.textAlign = 'center';
-    g.fillText(o.pt, 632, 982); g.textAlign = 'left';
+    g.fillText(fitText(g, o.pt, s => titleFont(o, s), 38, 18, pw - 16), W - SAFE - pw / 2, py + ph / 2 + 13); g.textAlign = 'left';
   }
+  // The credit line sits at 1018, lower than ¼" up from the cut (75 units, i.e. y 975). That is fine:
+  // only the collector line is allowed to fall outside the safety margin, never the other text.
   drawFooter(g, o, lum(frame) > .55 ? '#1a1816' : '#f0ece6', 1018, null); // below the P/T box, so the note can sit at the right edge
 }
 
@@ -3130,6 +3240,16 @@ const fontTried = new Set();
 function fontSpec(fam) { return `${fam.wt} 40px ${fam.f}`; }
 // Title font for the fade, panel and classic layouts. The setting stores the family name.
 const famEntry = name => Object.values(FONTS).find(f => f.f.startsWith('"' + name + '"'));
+// Where a title baseline has to go for the *top* of the glyphs to sit on or below the ¼″ safety line.
+// A fixed offset from the line assumes a nominal cap height, which is true of the default serif but not
+// of tall display faces or accented capitals (È, Ñ, Å) — those rise higher and would poke past the
+// margin the title band exists to respect. So the real ascent of the string actually drawn is measured.
+// `cap` bounds how far the line may drop, which keeps the name clear of the art window below it; if a
+// face is so tall that both cannot hold, clearing the trim wins and the name is allowed to reach `cap`.
+function safeTitleBase(g, drawn, minBase, cap) {
+  const asc = g.measureText(drawn).actualBoundingBoxAscent;
+  return Math.min(Math.max(minBase, SAFE + (asc > 0 ? asc : 30)), cap);
+}
 function titleFont(o, px) {
   const fam = famEntry(o.titleFont);
   if (fam) { ensureFont(fam, o.name + o.type); return `${fam.wt} ${px}px ${fam.f}`; }
@@ -3977,6 +4097,7 @@ function drawSelection(g, o) {
 // Preview-only overlay: a dashed outline of where the art shows, and, while dragging,
 // a faint view of the parts of the image hidden under the border and frame.
 function drawGuides(g, o) {
+  drawSafeGuides(g, o);
   if (!$('guides').checked) return;
   const r = artRect(o);
   g.save();
@@ -3990,10 +4111,46 @@ function drawGuides(g, o) {
   g.setLineDash([]);
   const label = o.layout === 'framed' ? 'Art window' : o.border === 'none' ? 'Art area (whole card)' : 'Art area (inside the border)';
   g.font = '600 15px "IBM Plex Sans", system-ui, sans-serif';
-  const inBorder = o.layout !== 'framed' && r.y >= 26;
-  const tw = g.measureText(label).width, lx = r.x + 8, ly = inBorder ? r.y - 25 : r.y + 8;
+  // Inside the art's top-left corner. Above it is where the title band now sits, and this label must not
+  // be mistaken for card text even in a preview.
+  const tw = g.measureText(label).width, lx = r.x + 8, ly = r.y + 8;
   g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(lx, ly, tw + 14, 22);
   g.fillStyle = '#33e0ff'; g.fillText(label, lx + 7, ly + 16);
+  g.restore();
+}
+// The safety margin: a line ¼" in from the cut on every side, which is twice the ⅛" bleed. Print shops
+// cut a little off-centre, so anything that has to survive the guillotine belongs inside this line.
+// The card is 2.5 x 3.5 in and the sheet is in 300-unit inches, so the inset is 75 units.
+function drawSafeGuides(g, o) {
+  if (!$('safeGuides').checked) return;
+  const m = SAFE;
+  g.save();
+  // Shade the strip outside the line, so the safe area reads at a glance.
+  g.beginPath(); g.rect(0, 0, W, H); g.rect(m, m, W - 2 * m, H - 2 * m); g.clip('evenodd');
+  g.fillStyle = 'rgba(0, 180, 110, .16)'; g.fillRect(0, 0, W, H);
+  g.restore();
+  g.save();
+  g.setLineDash([10, 7]); g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeRect(m, m, W - 2 * m, H - 2 * m);
+  g.lineWidth = 2; g.strokeStyle = '#2fd07f'; g.strokeRect(m, m, W - 2 * m, H - 2 * m);
+  g.setLineDash([]);
+  // The labels sit in the shaded strip outside the line, which no card text may occupy, so they can never
+  // cover a name or a cost. Both go on one line in the top strip: the bottom strip is where the collector
+  // and artist block lives, and a second label there overlapped it in every layout. The row is kept clear
+  // of the very edge, and of the y=15 row the guide test samples.
+  const label = 'Safety margin · ¼″';
+  g.font = '600 15px "IBM Plex Sans", system-ui, sans-serif';
+  const lw = g.measureText(label).width;
+  // When both guides are on the two lines can sit close together, so say which is which on the same row.
+  const note = $('guides').checked ? '· dashed cyan = art area' : '';
+  g.font = '600 13px "IBM Plex Sans", system-ui, sans-serif';
+  const nw = g.measureText(note).width;
+  g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(m + 8, m - 49, lw + nw + 20, 22);
+  g.font = '600 15px "IBM Plex Sans", system-ui, sans-serif';
+  g.fillStyle = '#2fd07f'; g.fillText(label, m + 15, m - 33);
+  if (note) {
+    g.font = '600 13px "IBM Plex Sans", system-ui, sans-serif';
+    g.fillStyle = '#33e0ff'; g.fillText(note, m + 15 + lw + 4, m - 33);
+  }
   g.restore();
 }
 // Card space is 300 units per inch (750 units = 2.5"), so print dpi = 300 / (units per image pixel).
@@ -4274,6 +4431,8 @@ canvas.addEventListener('wheel', e => {
 }, { passive: false });
 $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
 $('guides').onchange = draw;
+$('safeGuides').onchange = () => { try { localStorage.setItem('proxyforge.safeGuides', $('safeGuides').checked ? '1' : ''); } catch (e) {} draw(); };
+try { if (localStorage.getItem('proxyforge.safeGuides')) $('safeGuides').checked = true; } catch (e) {}
 $('resetArt').onclick = () => { st.zoom = 1; st.ox = 0; st.oy = 0; $('zoom').value = 1; draw(); };
 $('save').onclick = () => exportPng(false);
 $('setCode').addEventListener('input', () => { $('setCodeHint').textContent = 'Uses the symbol from Scryfall instead of your own. Clear it to use your own symbol.'; });
@@ -4398,11 +4557,12 @@ const sheetStatus = () => $('status');
 const idb = (() => {
   let p;
   const open = () => p || (p = new Promise((res, rej) => {
-    const r = indexedDB.open('proxyforge', 2);
+    const r = indexedDB.open('proxyforge', 3);
     r.onupgradeneeded = () => {
       const db = r.result;
       if (!db.objectStoreNames.contains('cards')) db.createObjectStore('cards', { keyPath: 'id' });
       if (!db.objectStoreNames.contains('art')) db.createObjectStore('art', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('api')) db.createObjectStore('api', { keyPath: 'k' });
     };
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   }));
@@ -4416,6 +4576,8 @@ const idb = (() => {
   return {
     all: () => tx('readonly', s => s.getAll()), put: v => tx('readwrite', s => s.put(v)), del: id => tx('readwrite', s => s.delete(id)),
     artAll: () => tx('readonly', s => s.getAll(), 'art'), artPut: v => tx('readwrite', s => s.put(v), 'art'), artDel: id => tx('readwrite', s => s.delete(id), 'art'),
+    apiGet: k => tx('readonly', s => s.get(k), 'api'), apiPut: v => tx('readwrite', s => s.put(v), 'api'),
+    apiAll: () => tx('readonly', s => s.getAll(), 'api'), apiDel: k => tx('readwrite', s => s.delete(k), 'api'),
   };
 })();
 function persist(e) {
@@ -4822,12 +4984,41 @@ $('useDefault').onclick = $('defaultBtn').onclick = () => {
 // Scryfall's public API needs no key and allows browser requests. They ask for ~10 requests a second at most.
 const SF = 'https://api.scryfall.com';
 let sfLast = 0;
+// Named cards, printings and set info answer the same way for everyone, so they're cached on this device
+// (IndexedDB, store "api"). Random cards and one-off searches never are.
+const SF_CACHE_DAYS = 30, SF_CACHE_MAX = 4000;
+// Only answers that are the same for everyone: a named card, a search page, a set's info, or one card by id.
+// Random cards, /cards/collection and the bulk files are never stored.
+const sfCacheable = path => /^\/cards\/(named|search)\?/.test(path) || /^\/sets\/[a-z0-9]+\/?$/i.test(path) || /^\/cards\/[0-9a-f-]{8,}$/i.test(path);
+const sfMem = new Map();
+function sfTrimCache() { // keep the cache from growing without limit: drop the oldest half once it's full
+  idb.apiAll().then(rows => {
+    if (rows.length <= SF_CACHE_MAX) return;
+    rows.sort((a, b) => (a.t || 0) - (b.t || 0));
+    for (const row of rows.slice(0, rows.length - SF_CACHE_MAX)) idb.apiDel(row.k).catch(() => {});
+  }).catch(() => {});
+}
+async function sfCached(path) {
+  if (sfMem.has(path)) return sfMem.get(path);
+  const key = 'sf:' + path;
+  let row = null;
+  try { row = await idb.apiGet(key); } catch (e) { row = null; }
+  if (row && row.j && Date.now() - (row.t || 0) < SF_CACHE_DAYS * 864e5) { sfMem.set(path, row.j); return row.j; }
+  return null;
+}
+async function sfStore(path, j) {
+  sfMem.set(path, j);
+  try { await idb.apiPut({ k: 'sf:' + path, t: Date.now(), j }); sfTrimCache(); } catch (e) { /* full or blocked: the lookup still worked */ }
+}
 async function sf(path, opts = {}) {
+  const cacheable = sfCacheable(path) && (!opts.method || opts.method === 'GET');
+  if (cacheable) { const hit = await sfCached(path); if (hit) return hit; }
   const wait = sfLast + 110 - Date.now(); if (wait > 0) await new Promise(r => setTimeout(r, wait));
   sfLast = Date.now();
   const r = await fetch(path.startsWith('http') ? path : SF + path, { ...opts, headers: { Accept: 'application/json', ...(opts.headers || {}) } });
   const j = await r.json().catch(() => null);
   if (!r.ok || !j || j.object === 'error') throw new Error(j?.details || 'Scryfall didn’t answer. Check your connection.');
+  if (cacheable) sfStore(path, j);
   return j;
 }
 const RARITY_CODE = { common: 'C', uncommon: 'U', rare: 'R', mythic: 'M', special: 'R', bonus: 'M' };
@@ -5980,6 +6171,142 @@ function setBig(on) {
 }
 $('matSize').onclick = () => { const on = !$('mat').classList.contains('big'); setBig(on); if (on) $('mat').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
 try { if (localStorage.getItem('proxyforge.bigPreview')) setBig(true); } catch (e) {}
+
+// ---------- reference panel: built only into a local copy of the page (npm run build:local) ----------
+// The data is built into this page by tools/build.mjs out of the project's own markdown files,
+// so this stays one file that works from disk, from a web server or offline. Nothing is fetched.
+const refDocs = (() => {
+  try {
+    const el = $('refData');
+    const j = el && el.textContent.trim() ? JSON.parse(el.textContent) : null;
+    return j && Array.isArray(j.docs) ? j.docs : [];
+  } catch (e) { return []; }
+})();
+const esc0 = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// Reference lines are full of links, so bare URLs become real ones, and **bold** becomes bold.
+const escBold = s => esc0(s)
+  .replace(/(^|[\s(])(https?:\/\/[^\s)<]+)/g, (m, pre, url) => `${pre}<a href="${url}" target="_blank" rel="noopener">${url}</a>`)
+  .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+  .replace(/(^|\s)([a-z0-9-]+\.(?:exe|js|png|mtga|tga|zip)\b)/gi, '$1<code class="code">$2</code>');
+const escRx = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Search terms, with a hyphen-free twin so "bleed-edge" and "bleed edge" find each other.
+function refTerms() {
+  const out = [];
+  for (const raw of ($('refQ').value.match(/"[^"]*"|\S+/g) || [])) {
+    const t = raw.replace(/^"|"$/g, '');
+    if (!t) continue;
+    const v = [...new Set([t, t.replace(/[-_]+/g, ' ')])].filter(Boolean);
+    out.push(v.map(x => new RegExp(escRx(x), 'gi')));
+  }
+  return out;
+}
+function refRanges(text, variants) {
+  const out = [];
+  for (const rx of variants) {
+    rx.lastIndex = 0;
+    let m; while ((m = rx.exec(text))) { if (m[0]) out.push([m.index, m.index + m[0].length]); if (!m[0]) rx.lastIndex++; }
+  }
+  return out.sort((a, b) => a[0] - b[0]).reduce((acc, r) => { const p = acc[acc.length - 1]; if (p && r[0] <= p[1]) p[1] = Math.max(p[1], r[1]); else acc.push(r.slice()); return acc; }, []);
+}
+function refMark(text, ranges) {
+  let out = '', i = 0;
+  for (const [a, b] of ranges) { if (a < i) continue; out += escBold(String(text).slice(i, a)) + '<mark class="refmark">' + escBold(String(text).slice(a, b)) + '</mark>'; i = b; }
+  return out + escBold(String(text).slice(i));
+}
+const refOpen = new Set();   // section keys the reader opened by hand
+const refKey = (doc, i) => doc.id + ':' + i;
+function refCardFrom(sec) { return sec && sec.card ? sec.card : null; }
+// Fills the editor from a card entry in the local reference data.
+function refLoadCard(sec) {
+  const c = refCardFrom(sec); if (!c) return;
+  const name = sec.title.replace(/^\d+\s*·\s*/, '').trim();
+  if (st.layers.length && !confirm(`Load “${name}” into the editor?\n\nThis replaces the card you're editing, including its custom layers.`)) return;
+  st.layers = []; st.sel = null; st.blank = false;
+  st.editingId = null; updateSheetButtons();
+  writeForm({ ...BLANK, name, cost: c.cost || '', type: c.type || '', rules: c.rules || '', flavor: '', pt: c.pt || '',
+    artist: c.artist || '', info: c.info || '', note: '', layout: 'fade', border: 'none', round: true, rarity: '', setCode: '' });
+  saveDraft(); draw();
+  $('status').textContent = c.iko ? `Loaded ${name}. It plays as ${c.iko}.` : `Loaded ${name}.`;
+  $('name').scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+function refRender() {
+  const list = $('refList'), q = $('refQ').value.trim(), set = $('refSet').value;
+  const terms = refTerms();
+  list.innerHTML = '';
+  if (!refDocs.length) {
+    $('refCount').textContent = 'No reference data built in';
+    list.innerHTML = '<p class="refnone">This copy of the page has no reference data baked in. Run <code class="code">node tools/build.mjs</code> in the project folder, then reload.</p>';
+    return;
+  }
+  let secsShown = 0, secsAll = 0, hits = 0, anyOpen = false;
+  const frag = document.createDocumentFragment();
+  for (const doc of refDocs) {
+    if (set !== 'all' && doc.id !== set) continue;
+    const parts = [];
+    doc.sections.forEach((sec, i) => {
+      secsAll++;
+      const titleRanges = terms.length ? terms.flatMap(v => refRanges(sec.title, v)) : [];
+      const titleHit = terms.length ? terms.every(v => refRanges(sec.title, v).length) : false;
+      let items = sec.items.map(it => ({ ...it, r: terms.flatMap(v => refRanges(it.text, v)) }));
+      if (terms.length) {
+        items = items.map(it => {  // a term can also be satisfied by the section title
+          if (it.r.length) return it;
+          return titleHit ? { ...it, r: [] } : null;
+        }).filter(Boolean);
+        if (!items.length) return;
+      }
+      secsShown++;
+      hits += items.length;
+      const key = refKey(doc, i);
+      const open = terms.length ? true : refOpen.has(key);
+      if (open) anyOpen = true;
+      const d = document.createElement('details');
+      d.className = 'refsec'; d.dataset.key = key; d.open = open;
+      const card = refCardFrom(sec);
+      d.innerHTML = `<summary><span>${titleRanges.length ? refMark(sec.title, titleRanges) : escBold(sec.title)}</span>`
+        + `<span class="count">${items.length}</span></summary>`
+        + `<ul class="refitems">` + items.map(it =>
+            `<li class="${it.tag ? it.tag.split(' ')[0].toLowerCase() : ''}">`
+            + (it.tag ? `<span class="reftag">${esc0(it.tag)}</span>` : '')
+            + `${it.r.length ? refMark(it.text, it.r) : escBold(it.text)}</li>`).join('')
+        + `</ul>`
+        + (card ? `<div class="actions"><button type="button" class="refmore" data-load="${key}">Load into the editor</button></div>` : '');
+      d.addEventListener('toggle', () => { if (d.open) refOpen.add(key); else refOpen.delete(key); });
+      parts.push(d);
+    });
+    if (parts.length) for (const p of parts) frag.appendChild(p);
+  }
+  list.appendChild(frag);
+  $('refCount').textContent = terms.length
+    ? (secsShown ? `${secsShown} of ${secsAll} sections match “${q}” · ${hits} line${hits === 1 ? '' : 's'}` : `Nothing matches “${q}”`)
+    : `${secsAll} sections · ${refDocs.reduce((n, d) => n + d.sections.length, 0)} in all`;
+  $('refWhere').textContent = terms.length ? 'Highlighted below.' : 'Showing every section.';
+  if (!secsShown) list.innerHTML = `<p class="refnone">Nothing matches “${esc0(q)}”. Try fewer words, or switch Sections to Everything.</p>`;
+}
+$('refQ').addEventListener('input', () => refRender());
+$('refClear').onclick = () => { $('refQ').value = ''; refRender(); $('refQ').focus(); };
+$('refSet').addEventListener('change', refRender);
+$('refOpenAll').onclick = () => { for (const d of $('refList').querySelectorAll('.refsec')) { d.open = true; refOpen.add(d.dataset.key); } };
+$('refCloseAll').onclick = () => { for (const d of $('refList').querySelectorAll('.refsec')) { d.open = false; refOpen.delete(d.dataset.key); } };
+$('refList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-load]'); if (!b) return;
+  const [docId, i] = b.dataset.load.split(':');
+  const doc = refDocs.find(d => d.id === docId); if (!doc) return;
+  refLoadCard(doc.sections[+i]);
+});
+// The published page carries no reference data (it comes from private local files), so the panel stays hidden.
+if (refDocs.length) { $('ref').hidden = false; refRender(); } else $('refCount').textContent = 'No reference data built in';
+
+// One small, read-mostly surface for tests/*.test.mjs. This is not part of the app's UI contract:
+// nothing in this page reads it. It exists so the pure helpers can be exercised outside a browser, and
+// it sits here, after every helper it names, so nothing is touched before it's initialised.
+window.__pf = {
+  W, H, BLEED, SAFE,
+  fileBase, sfCacheable, refRanges, idb, cardCanvas, bleedSeam,
+  refDocs: () => refDocs,
+  parseDeck: (...a) => parseDeck(...a),
+  refTerms: (...a) => refTerms(...a),
+};
 
 // ---------- boot ----------
 const draft = loadDraft();

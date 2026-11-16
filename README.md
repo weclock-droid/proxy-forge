@@ -24,6 +24,7 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Playtest cards:** a plain cream card with black serif text, the mana cost written as letters (`2W`, `TAP`), and photocopied art in a pasted-in window, like a homemade playtest card.
 - **Print errors:** toner specks like a photocopy, a color misprint (some text and art printed in magenta or cyan, a yellow ghost of the card, color-bar stripes) or a bad print run with a miscut. Works with any style.
 - **Art window:** in the custom layout, an art window layer puts the picture in a box you can move and resize. Drag inside it to move the picture, or drag its edge to move the window.
+- **Safety margin:** a guide line ¼″ in from the cut, twice the bleed, with the strip outside it shaded. Print shops cut a little off-centre, so the name, mana cost, type line, rules and power/toughness are all placed inside this line by every ready-made layout, and a test enforces it. Art and plain background may cross it. The collector and artist line is deliberately allowed closer to the edge, since only the collector block is safe to lose, and the styles' own decoration (the `WRIST-COMP` tag, a panel's `PNL 12345`) sits out there too. The custom layout is the exception: you place the text there, so it is up to you to keep it inside the line.
 - **Neon street:** full-bleed art under a thin glowing frame with cut corners in the card's color, a cut-corner cost badge, a big condensed name low on the card, the artist credit running up the right edge and a dark fade behind the rules.
 - **Fan-favorite homemade looks:**
   - **Desktop dialog:** a 90s computer window. Basic lands ask "Tap for 1 mana?" with OK and Cancel buttons.
@@ -66,19 +67,49 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Print sheets:** add cards (or card images you already have), set copies, and save a PDF with 9 cards per page at real card size (2.5 × 3.5″), with cut marks. Print at 100% / "Actual size".
 - **Artist credit always visible:** the artist and collector line is drawn after wear, misprints and gloss, sits clear of the trim, other text and badges move out of its way, and over busy art or frame lines it switches to contrasting ink with a soft backing.
 - **Readable text:** text never shrinks below the smallest sizes used on printed cards (about 6 pt for rules, 5 pt for the type line and artist/collector line). When long rules won't fit, the text box gets taller and the type line and title above it move up, while the art gets shorter, like a real card.
-- **Single cards:** **Save PNG** saves the card as it looks, cut to size, at 600, 800 or 1200 dpi. **Print-shop PNG** saves it with a ⅛″ bleed and square corners at 800 dpi (2200 × 3000 px), which is what online print shops ask for. Whatever touches the cut line carries on to the edge of the bleed: art that reaches an edge is sized to cover the bleed too, so it's real art all the way out, and any side where a style's frame or paper stops at the cut is extended outward (borders stretched, details mirrored) instead of padded with a flat color. Full art, Noir and the default card are borderless, like most print-ready proxies.
+- **Single cards:** **Save PNG** saves the card as it looks, cut to size, at 600, 800 or 1200 dpi. **Print-shop PNG** saves it with a ⅛″ bleed and square corners at 800 dpi (2200 × 3000 px), which is what online print shops ask for. That is exactly 2.75 × 3.75″, this tool's 2.5 × 3.5″ card plus ⅛″ on every side. The community guidelines quote 2176 × 2960 as the largest image MakePlayingCards will take, so the export is about 1% larger and MPC scales it down on upload; the height that matches MPC's ratio exactly would be 2993. Whatever touches the cut line carries on to the edge of the bleed: art that reaches an edge is sized to cover the bleed too, so it's real art all the way out, and any side where a style's frame or paper stops at the cut is extended outward (borders stretched, details mirrored) instead of padded with a flat color. Full art, Noir and the default card are borderless, like most print-ready proxies.
 - **Whole sheet for a print shop:** **Save all as print-shop PNGs (zip)** saves every card on the print sheet as its own 800 dpi bleed PNG, named after the card, in one zip. Pick a **card back** (a plain playtest back or your own image) and it's added as `back.png`. Finished card images that already have a ⅛″ bleed edge are detected: the bleed is trimmed for home-printed PDFs and kept for print-shop zips.
 - **Blank template:** **New blank card** gives a completely empty card: plain white, square corners, no border, text, layers, art or effects. Add art or layers to build on it.
 - **Add bleed to images you already have:** **Add bleed to a saved PNG…** (next to Save PNG, and **Add bleed to images…** under the print sheet) takes card images saved without bleed and gives back the same image, at the same resolution, with a ⅛″ edge added, as PNGs (one file, or a zip for several). Cards with a solid border get that border stretched outward; full-art cards get their edges mirrored. Rounded corners (on white or transparent) are filled in with the border color first. Images that already have bleed are skipped.
 - **Artist credit:** you're reminded before saving a card with no artist credit, and an **AI-generated** tick box adds the model name to the credit.
 - **Sharpness meter** also shows the art sizes print-shop guides recommend (1200 × 900 for framed art, 1500 × 2000 for full-card art) and suggests upscaling smaller pictures.
 
-Everything runs in your browser. Nothing is uploaded anywhere, and your print sheet is saved in your own browser. Card lookups and deck lists send only the card names to Scryfall, Remix asks Scryfall for a random card and Wikimedia Commons for art, and art search sends only the words you type to the source you picked.
+- **Safety margin guide:** tick it and a green line is drawn ¼″ in from the cut on every side — twice the bleed, which is what print shops ask for. Anything that matters (name, mana cost, type line, rules, power/toughness) is laid out inside it, so a slightly off-centre cut can't clip it.
+
+Everything runs in your browser. Nothing is uploaded anywhere, and your print sheet is saved in your own browser. Card lookups and deck lists send only the card names to Scryfall, Remix asks Scryfall for a random card and Wikimedia Commons for art, and art search sends only the words you type to the source you picked. Scryfall's answers for named cards, searches and set info are kept on your device for 30 days, so looking the same card up again works offline; random cards are never stored.
 
 ## Run it offline
 
 Download `proxy-forge.html` and open it in your browser. It needs an internet connection for the fonts and for building PDFs.
 
+## Working on Proxy Forge
+
+The page is one file, so it works from disk, from a web server or offline. It has an optional reference panel whose data comes from private files that are not in this repository; the published page carries none of it and hides the panel. With those files present, build a local copy that includes them:
+
+```sh
+npm run build:local           # writes proxy-forge.local.html (git-ignored, never published)
+node tools/build.mjs --check  # CI: confirms proxy-forge.html carries no reference data
+```
+
+Tests drive a real browser with Playwright, stubbing the CDNs and Scryfall so nothing touches the network:
+
+```sh
+npm install
+npx playwright install chromium
+npm test          # or: npm run test:headed, to watch it
+npm run verify    # staleness check, then the tests
+```
+
+Other tools: `node tools/shot.mjs` writes screenshots of the page, `node tools/shot-layouts.mjs` renders one card per layout with the margin guide on, and `node tools/check-safe-area.mjs` reports how close each piece of text gets to the cut (it exits non-zero if anything that matters falls outside the ¼″ margin, so it can be used as a gate).
+
+A GitHub Actions workflow (`.github/workflows/verify.yml`) runs `npm run verify` on every push and pull
+request, so a stale build or a layout that pushes text past the margin is caught before it reaches the
+published page.
+
 ## Fine print
 
 Proxy Forge is an unofficial fan tool. It is not affiliated with, endorsed, or sponsored by Wizards of the Coast. Magic: The Gathering and its mana symbols are trademarks of Wizards of the Coast. The mana symbols here are simple drawings made for this tool. Proxies are for casual play and playtesting only, so please don't sell them, and respect the rights of the artists whose work you use.
+
+The code is [MIT licensed](LICENSE): fork it, change it, ship it. That covers this tool only, not the
+cards you make with it — the request above about not selling proxies is separate from the software license,
+and the art and card text you put on a proxy are governed by whoever owns them.

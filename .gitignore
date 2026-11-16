@@ -3,3 +3,12 @@ art/
 .claude/
 *.png
 *.pdf
+# Screenshots written by tools/shot.mjs and tools/shot-layouts.mjs.
+shots/
+node_modules/
+# Private reference material: never published. `npm run build:local` reads it into proxy-forge.local.html.
+godzilla-series.md
+playtest guides.txt
+RECOMMENDATIONS.md
+references/
+proxy-forge.local.html
