@@ -790,7 +790,7 @@ const SAMPLE = {
   rules: 'Flying, lifelink\nWhenever another Vampire you control enters, each opponent loses 1 life and you gain 1 life.\n{T}, Pay 2 life: Draw a card. (Lifelink means damage this creature deals also causes you to gain that much life.)',
   flavor: '“Come in, come in. Do wipe your feet. And your throat.”',
   pt: '3/3', artist: 'Sample art', info: '001 · PRX · EN', note: 'Playtest card — not for sale',
-  layout: 'fade', border: '#0b0b0c', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
+  layout: 'fade', border: 'none', color: 'B', titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true,
   pipStyle: 'classic', pipColor: '#ffffff', rarity: '', setTint: true,
   artFx: 'none', fxDark: '#1d1442', fxLight: '#ffcf70', fxAmt: '0.5', wear: 'none', wearSeed: '0', gloss: false, misprint: 'none', label: 'design', aiArt: false, aiModel: '', setCode: ''
 };
@@ -1307,7 +1307,15 @@ const FRAMES = {
 };
 function lum(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255; }
 
+// Art that reaches an edge of the card is sized to cover the 1/8" bleed past that edge too, so a print-shop
+// file has real art all the way out (the preview and the print match: the extra is just cut off on screen).
+function bleedRect(r) {
+  const l = r.x <= .5 ? -BLEED : r.x, t = r.y <= .5 ? -BLEED : r.y;
+  const rt = r.x + r.w >= W - .5 ? W + BLEED : r.x + r.w, b = r.y + r.h >= H - .5 ? H + BLEED : r.y + r.h;
+  return { x: l, y: t, w: rt - l, h: b - t };
+}
 function drawArt(g, rect, img) {
+  rect = bleedRect(rect);
   if (!img || !img.naturalWidth) { g.fillStyle = '#222'; g.fillRect(rect.x, rect.y, rect.w, rect.h); return; }
   const src = fxImage(img, curFx);
   const base = Math.max(rect.w / img.naturalWidth, rect.h / img.naturalHeight);
@@ -3801,7 +3809,7 @@ function updateQuality(o) {
   const q = $('quality'), img = st.img;
   if (!img || !img.naturalWidth || st.sample) { q.innerHTML = ''; return; }
   const r = artRect(o);
-  const dpi = Math.round(300 / (Math.max(r.w / img.naturalWidth, r.h / img.naturalHeight) * st.zoom));
+  const dpi = Math.round(300 / (Math.max(bleedRect(r).w / img.naturalWidth, bleedRect(r).h / img.naturalHeight) * st.zoom));
   const [cls, word] = dpi >= 300 ? ['good', 'Sharp'] : dpi >= 200 ? ['ok', 'Okay'] : ['bad', 'Soft'];
   const need = `${Math.round(r.w)} × ${Math.round(r.h)}`;
   const full = r.w * r.h > W * H * .6, target = full ? [1500, 2000] : [1200, 900];
@@ -3836,25 +3844,36 @@ function cardPng(o, art, dpi, bleed) {
     // Print shops need whatever touches the cut line to carry on to the bleed edge. Many styles only draw the card
     // itself and leave the bleed one flat color; when the bleed doesn't continue the card's edges, build it from
     // the card: render the card on its own (square corners) and extend its edges outward.
-    if (bleed && bleedSeam(c, Math.round(BLEED * k)) > 22) {
+    // Checked side by side: real art already reaching the bleed is kept, only the sides that stop at the cut are extended.
+    const M = Math.round(BLEED * k), seams = bleed ? bleedSeam(c, M) : [0, 0, 0, 0];
+    if (seams.some(v => v > 22)) {
       const cc = document.createElement('canvas'); cc.width = Math.round(W * k); cc.height = Math.round(H * k);
       const cg = cc.getContext('2d'); cg.setTransform(k, 0, 0, k, 0, 0);
       render(cg, { ...o, bleed: false, round: false }, false);
-      const b = addBleed(cc); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height); g.drawImage(b, 0, 0, c.width, c.height);
+      const b = addBleed(cc), ext = document.createElement('canvas'); ext.width = c.width; ext.height = c.height;
+      ext.getContext('2d').drawImage(b, 0, 0, c.width, c.height);
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      const strip = (x, y, w, h) => { g.clearRect(x, y, w, h); g.drawImage(ext, x, y, w, h, x, y, w, h); };
+      if (seams[0] > 22) strip(0, 0, c.width, M);
+      if (seams[1] > 22) strip(0, c.height - M, c.width, M);
+      if (seams[2] > 22) strip(0, 0, M, c.height);
+      if (seams[3] > 22) strip(c.width - M, 0, M, c.height);
     }
   } finally { Object.assign(st, saved); }
   return c;
 }
-// How different the bleed is from the card just inside the cut line, along all four sides (0 = continues seamlessly).
+// How different the bleed is from the card just inside the cut line, for each side [top, bottom, left, right]
+// (0 = continues seamlessly).
 function bleedSeam(c, M) {
   const w = c.width, h = c.height, d = c.getContext('2d').getImageData(0, 0, w, h).data;
   const px = (x, y) => (y * w + x) * 4, diff = (a, b) => Math.abs(d[a] - d[b]) + Math.abs(d[a + 1] - d[b + 1]) + Math.abs(d[a + 2] - d[b + 2]);
-  let sum = 0, n = 0;
+  const sum = [0, 0, 0, 0]; let n = 0;
   for (let t = .03; t < .97; t += .01) {
     const x = Math.round(M + (w - 2 * M) * t), y = Math.round(M + (h - 2 * M) * t), o = M >> 1, i = 6;
-    sum += diff(px(x, o), px(x, M + i)) + diff(px(x, h - 1 - o), px(x, h - 1 - M - i)) + diff(px(o, y), px(M + i, y)) + diff(px(w - 1 - o, y), px(w - 1 - M - i, y)); n += 4;
+    sum[0] += diff(px(x, o), px(x, M + i)); sum[1] += diff(px(x, h - 1 - o), px(x, h - 1 - M - i));
+    sum[2] += diff(px(o, y), px(M + i, y)); sum[3] += diff(px(w - 1 - o, y), px(w - 1 - M - i, y)); n++;
   }
-  return sum / n;
+  return sum.map(v => v / n);
 }
 // The playtest-card guidelines ask for accurate artist credit; remind (once per card) before saving without it.
 function creditOk(o) {
@@ -4569,7 +4588,8 @@ function randomLook() {
   const bold = lk[1] === 'comic' || lk[1] === 'poster';
   return {
     layout: lk[0],
-    border: lk[0] === 'custom' && RNG() < .5 ? 'none' : pick(['#0b0b0c', '#0b0b0c', '#0b0b0c', '#f3f1ec', '#a9abae', '#b8964c', 'none']),
+    // full-art looks run the art to the edge (and into the bleed); only framed layouts get a solid border
+    border: lk[0] === 'fade' || (lk[0] === 'custom' && RNG() < .5) ? 'none' : pick(['#0b0b0c', '#0b0b0c', '#0b0b0c', '#f3f1ec', '#a9abae', '#b8964c', 'none']),
     titleFont: RNG() < .6 ? pick(['Spectral', 'Cinzel', 'Cormorant SC', 'IM Fell English SC']) : famOf(pick(Object.values(FONTS).filter(f => f.g !== 'Handwritten' || RNG() < .3))),
     ...(RNG() < .35 ? (() => { const [a, b] = pick(FX_PAIRS); return { artFx: pick(['duotone', 'duotone', 'halftone', 'pop', 'bw', 'posterize', 'grain', 'paint']), fxDark: a, fxLight: b, fxAmt: String(Math.round((0.3 + RNG() * 0.4) * 100) / 100) }; })() : { artFx: 'none' }),
     shade: String(Math.round((0.6 + RNG() * 0.3) * 100) / 100),
@@ -5144,10 +5164,10 @@ const STYLES = [
   { id: 'classic', name: 'Classic', f: { layout: 'framed', border: '#0b0b0c', titleFont: 'Spectral', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'retro', name: 'Old school', f: { layout: 'framed', border: '#f3f1ec', titleFont: 'IM Fell English SC', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'gilded', name: 'Gilded', f: { layout: 'framed', border: '#b8964c', titleFont: 'Cinzel', shade: '0.78', pipStyle: 'flat', pipColor: '#ffffff' } },
-  { id: 'fullart', name: 'Full art', f: { layout: 'fade', border: '#0b0b0c', titleFont: 'Spectral', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
+  { id: 'fullart', name: 'Full art', f: { layout: 'fade', border: 'none', titleFont: 'Spectral', shade: '0.78', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'borderless', name: 'Borderless', f: { layout: 'fade', border: 'none', titleFont: 'Cormorant SC', shade: '0.85', pipStyle: 'classic', pipColor: '#ffffff' } },
   { id: 'showcase', name: 'Showcase', f: { layout: 'panel', border: '#a9abae', titleFont: 'Cinzel', shade: '0.8', pipStyle: 'flat', pipColor: '#ffffff' } },
-  { id: 'noir', name: 'Noir', f: { layout: 'fade', border: '#0b0b0c', titleFont: 'Playfair Display', shade: '0.85', pipStyle: 'glyph', pipColor: '#ffffff', artFx: 'bw', fxAmt: '0.7' } },
+  { id: 'noir', name: 'Noir', f: { layout: 'fade', border: 'none', titleFont: 'Playfair Display', shade: '0.85', pipStyle: 'glyph', pipColor: '#ffffff', artFx: 'bw', fxAmt: '0.7' } },
   { id: 'popart', name: 'Pop art', preset: 'comic', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'outline', pipColor: '#ffffff', artFx: 'pop', fxAmt: '0.45' } },
   { id: 'riso', name: 'Risograph', f: { layout: 'panel', border: '#f3f1ec', titleFont: 'Righteous', shade: '0.8', pipStyle: 'solid', pipColor: '#ff6b4a', artFx: 'duotone', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.55' } },
   { id: 'retrogame', name: 'Retro game', preset: 'retro', f: { layout: 'custom', border: '#0b0b0c', pipStyle: 'classic', pipColor: '#ffffff', wear: 'light' } },
