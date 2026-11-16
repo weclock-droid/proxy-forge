@@ -3357,7 +3357,7 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     bw = +L.w; bh = fixedH ? +L.h + grow : lay.h + 2 * pad;
     // The artist / collector line must stay readable whatever is behind it (it's drawn after every effect):
     // contrasting ink, and over busy art or a frame line a soft backing.
-    if (FOOT_SRC.includes(L.src) && !rot) {
+    if (FOOT_SRC.includes(L.src) && !rot && !(L.bg && L.bg !== 'none' && +(L.bgOp ?? 1) >= .6)) { // (a credit on its own badge keeps its own colours)
       const lw = widest * squeeze, tx = +L.x + pad + alignOff(avail, lw), ty = +L.y - grow + pad, th = lay.h;
       const behind = statsBehind(g, tx - 6, ty - 3, lw + 12, th + 6);
       if (behind) {
@@ -3791,7 +3791,7 @@ function reflowLayers(g, o) {
   const layers = (o.layers || []).map(L => ({ ...LDEF, ...L }));
   // The artist / collector line sits in a strip along the bottom, ~0.08" from the edge like printed cards.
   // Text, P/T badges and stickers that reach into that strip where the credit is get moved up or shortened.
-  const footSz = A => Math.max(+A.size || 20, TEXT_FLOOR[A.src] || 16);
+  const footSz = A => Math.max(+A.size || 20, TEXT_FLOOR[A.src] || 16), backs = [];
   for (const C of layers) {
     if (!FOOT_SRC.includes(C.src) || +C.rot) continue;
     const sz = footSz(C), pad = +C.pad || 0;
@@ -3803,18 +3803,68 @@ function reflowLayers(g, o) {
     const txt = C.src === 'note' ? (o.note || '') : C.src === 'illus' ? 'Illustrated by ' + (o.artist || '') : [o.info, o.artist && '✎ ' + o.artist].filter(Boolean).join('   ');
     const tw = Math.min(+C.w, g.measureText(txt).width * (C.upper ? 1.12 : 1) + 8);
     const x0 = +C.x + (C.align === 'center' ? (+C.w - tw) / 2 : C.align === 'right' ? +C.w - tw : 0), x1 = x0 + tw;
-    const top = +C.y - 6, bottom = +C.y + sz * 1.3 + pad * 2;
     if (+C.y < H * .7) continue; // a credit placed higher up (an "Illustrated by" line under the title) is left alone
+    // Keep the line off frame and panel edges: when an edge runs through it, centre it in the margin below that
+    // edge, or when that margin is too thin, set it just above the edge.
+    // (an outer border close to the trim is a floor instead: the line stays inside it)
+    const th = sz * 1.15, lines = [];
+    let floor = H - 22;
+    for (const A of layers) {
+      if (A === C || FOOT_SRC.includes(A.src) || +A.rot || !(+A.h > 0)) continue;
+      const bare = A.src !== 'custom' || !String(A.text || '').trim();
+      const strip = +A.h < 60 && !(+A.bdW > 0); // a thin decorative band: the line can sit on it (with a backing)
+      const box = A.src === 'art' || (bare && ((A.bg && A.bg !== 'none') || +A.bdW > 0));
+      if (!box || strip || +A.x >= x1 + 4 || +A.x + +A.w <= x0 - 4) continue;
+      const m = (+A.bdW || 0) / 2 + 6; // clearance from this line
+      for (const [e, bot] of [[+A.y, false], [+A.y + +A.h, true]]) {
+        if (bot && e >= H - 44 && e < H - 4 && +A.y < H * .5) floor = Math.min(floor, e - (+A.bdW || 0) - 6);
+        else if (e > H * .6 && e < H - 4) lines.push({ e, m, A, bot });
+      }
+    }
+    lines.sort((p, q) => p.e - q.e);
+    const t0 = Math.min(+C.y + pad, floor - th); // where the words would go
+    // the clear bands between frame lines, and the nearest spot in one that the words fit
+    let t = t0, best = Infinity;
+    for (let k = 0; k <= lines.length; k++) {
+      const s = k ? lines[k - 1].e + lines[k - 1].m : H * .6, e = k < lines.length ? Math.min(floor, lines[k].e - lines[k].m) : floor;
+      if (e - s < th) continue;
+      const pos = t0 >= s && t0 + th <= e ? t0 : e - s < th * 2.6 ? (s + e - th) / 2 : Math.min(Math.max(t0, s + 4), e - th - 4);
+      if (Math.abs(pos - t0) < best) { best = Math.abs(pos - t0); t = pos; }
+    }
+    // nowhere close: shorten the frames that end just above the trim so the line fits under them
+    if (best > 8) {
+      const low = lines.filter(L => L.e > floor - th - L.m - 1);
+      if (low.length && low.every(L => L.bot && floor - th - L.m - +L.A.y >= 80 && L.e - (floor - th - L.m) < 40)) {
+        for (const L of low) L.A.h = floor - th - L.m - +L.A.y;
+        t = floor - th;
+      }
+    }
+    C.y = t - pad;
+    const top = +C.y - 6, bottom = +C.y + sz * 1.3 + pad * 2;
     for (const A of layers) {
       if (A === C || FOOT_SRC.includes(A.src) || A.src === 'art' || +A.rot || A.vert) continue;
       if (A.src === 'custom' && (!String(A.text || '').trim() || +A.h >= 80)) continue; // backgrounds and frames
       const ah = +A.h > 0 ? +A.h : (+A.size || 30) * 1.3 + (+A.pad || 0) * 2;
       const aTop = +A.y, aBot = aTop + ah;
-      if (aBot <= top || aTop >= bottom || +A.x >= x1 + 8 || +A.x + +A.w <= x0 - 8) continue;
-      if (+A.h > 0 && aTop < top - 60) A.h = top - aTop;          // a text box: end above the strip
+      // a bare P/T only takes up the width of its numbers, not its whole box
+      let ax0 = +A.x, ax1 = ax0 + +A.w;
+      if (A.src === 'pt' && (!A.bg || A.bg === 'none') && o.pt) {
+        g.font = `700 ${+A.size || 30}px "IBM Plex Sans", system-ui, sans-serif`;
+        const pw = Math.min(+A.w, g.measureText(String(o.pt)).width * 1.15 + 2 * (+A.pad || 0));
+        if (A.align === 'right') ax0 = ax1 - pw; else if (A.align === 'center') { ax0 += (+A.w - pw) / 2; ax1 = ax0 + pw; } else ax1 = ax0 + pw;
+      }
+      if (aBot <= top || aTop >= bottom || ax0 >= x1 + 8 || ax1 <= x0 - 8) continue;
+      if (+A.h > 0 && aTop < top - 60) {                          // a text box: its words end above the strip,
+        if (A.bg && A.bg !== 'none') {                             // but its panel keeps its size, credit on top
+          backs.push([A, { ...A, src: 'custom', text: ' ', id: undefined }]);
+          A.bg = 'none'; A.bdW = 0;
+        }
+        A.h = top - aTop;
+      }
       else A.y = top - ah;                                       // a badge or a line: lift it above the strip
     }
   }
+  for (const [A, back] of backs) layers.splice(layers.indexOf(A), 0, back);
   // Backgrounds (plain panels, fades, washes) that reach an edge of the card carry on into the bleed, so the
   // print file continues them instead of stopping at the cut line.
   for (const A of layers) {
