@@ -65,12 +65,12 @@ custom-layout drawing code in `proxy-forge.html`, so they go to the same agent, 
 
 | # | Task | Owner | Depends on | Size | Status |
 |---|---|---|---|---|---|
-| 1 | Only publish the site when the checks pass | Copilot | — | S | Open |
-| 2 | Agent instructions file | Copilot | — | S | Open |
+| 1 | Only publish the site when the checks pass | Copilot | — | S | Done (PR #1) |
+| 2 | Agent instructions file | Copilot | — | S | Done (PR #1) |
 | 3 | Loyalty and defense shields in custom styles | Gemini | — | M | Open |
 | 4 | Flaky IndexedDB cache test | Nemo | — | S | Open |
 | 5 | Flaky safety-guide test | Nemo | — | S | Open |
-| 6 | GitHub Actions on Node 24 | Copilot | 1 | XS | Open |
+| 6 | GitHub Actions on Node 24 | Copilot | 1 | XS | Done (PR #1) |
 | 7 | Battles printed sideways | Gemini | 3, 8 | L | Later |
 | 8 | "Playtest card — not for sale" on every style | Gemini | 3 | M | Open |
 | H1 | Purge the old leaked commit from GitHub | Maintainer | — | — | Open |
@@ -94,7 +94,7 @@ whole page was broken for about three hours.
 **Done when.** A PR with a deliberately failing test shows a red check and does not deploy; a green merge
 to `main` deploys; the live page at https://weclock-droid.github.io/proxy-forge/ still loads.
 
-**Status:** Open
+**Status:** Done (PR #1). The Pages source is set to "GitHub Actions".
 
 ---
 
@@ -105,7 +105,7 @@ and point to this file.
 
 **Done when.** Both files exist, are short (under 60 lines), and match the rules in this file.
 
-**Status:** Open
+**Status:** Done (PR #1)
 
 ---
 
@@ -175,7 +175,7 @@ needs otherwise.
 
 **Done when.** The `verify` run shows no Node 20 deprecation warning and still passes.
 
-**Status:** Open
+**Status:** Done (PR #1)
 
 ---
 
