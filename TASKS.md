@@ -223,7 +223,7 @@ The note's text can be changed by the **Label** setting (`swapLabel`); keep that
 - `npm run verify`, `npm run real-cards` and `npm run safe-area` pass. Consider adding a test for the
   first two points.
 
-**Status:** Open
+**Status:** In progress (Copilot)
 
 ---
 

@@ -2848,6 +2848,37 @@ function footNote(g, text, x, y, leftEnd, font, size) {
   g.fillText(text, x, x - g.measureText(text).width < leftEnd + 18 ? y - size * 1.25 : y);
   g.restore();
 }
+function drawAutoNote(g, o, L) {
+  const text = o.note || '';
+  if (!text) return;
+  g.save();
+  let s = Math.max(15, +L.size || 18);
+  g.font = `600 ${s}px "IBM Plex Sans", system-ui, sans-serif`;
+  const avail = Math.max(30, +L.w);
+  while (s > 15 && g.measureText(text).width > avail) {
+    s--;
+    g.font = `600 ${s}px "IBM Plex Sans", system-ui, sans-serif`;
+  }
+  const align = L.align === 'left' ? 'left' : L.align === 'center' ? 'center' : 'right';
+  const x = align === 'left' ? +L.x : align === 'center' ? +L.x + +L.w / 2 : +L.x + +L.w;
+  const y = +L.y + s;
+  const tw = g.measureText(text).width;
+  const x0 = align === 'left' ? x : align === 'center' ? x - tw / 2 : x - tw;
+  const behind = statsBehind(g, x0 - 6, y - s - 3, tw + 12, s + 6);
+  if (behind) {
+    g.save();
+    g.fillStyle = behind.mean > 140 ? 'rgba(255,255,255,.82)' : 'rgba(0,0,0,.64)';
+    g.beginPath(); g.roundRect(x0 - 10, y - s - 4, tw + 20, s + 8, (s + 8) / 2); g.fill();
+    g.restore();
+    g.fillStyle = behind.mean > 140 ? '#1c1a18' : '#f4f1ea';
+  } else {
+    g.fillStyle = /^#[0-9a-f]{6}$/i.test(L.color) ? L.color : '#f4f1ea';
+  }
+  g.textAlign = align; g.textBaseline = 'alphabetic';
+  g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3;
+  g.fillText(text, x, y);
+  g.restore();
+}
 function drawFooter(g, o, color, y, rightLimit) {
   footerPass = () => drawFooterNow(g, o, color, y, rightLimit);
 }
@@ -4313,6 +4344,23 @@ function drawSticker(g, L, bx, by, bw, bh, size) {
 // column (type line, title bars) moves up with it, while the art window gets shorter.
 function reflowLayers(g, o) {
   const layers = (o.layers || []).map(L => ({ ...LDEF, ...L }));
+  // Styles with no explicit note layer get one in the footer strip. Build it here, not in each preset:
+  // it then receives the same last-pass drawing, contrast backing and collision reflow as authored notes.
+  if (o.note && !layers.some(L => L.src === 'note')) {
+    const credit = layers.find(L => FOOT_SRC.includes(L.src) && L.src !== 'note' && +L.y >= H * .7) ||
+      layers.find(L => L.src === 'credit' || L.src === 'illus');
+    let note = { src: 'note', x: 34, y: H - 52, w: W - 68, size: 18, font: 'plex',
+      color: '#f4f1ea', align: 'right', effect: 'shadow', effColor: '#000000', effSize: 1 };
+    if (credit && credit.align === 'center') {
+      note = { ...note, y: Math.min(+credit.y + 28, H - 52), align: 'center' };
+    } else if (credit && credit.align === 'right') {
+      note = { ...note, align: 'left' };
+    } else if (credit) {
+      const split = Math.max(34, Math.min(W - 34, +credit.x + +credit.w + 18));
+      note = { ...note, x: split, w: W - 34 - split };
+    }
+    layers.push({ ...LDEF, ...note, id: 'auto-note' });
+  }
   // The artist / collector line sits in a strip along the bottom, ~0.08" from the edge like printed cards.
   // Text, P/T badges and stickers that reach into that strip where the credit is get moved up or shortened.
   // Text that matters (name, cost, type, rules, P/T) stays inside the safety line, ⅛" inside the cut. It is
@@ -4441,7 +4489,13 @@ function reflowLayers(g, o) {
 function renderCustom(g, o, bleed) {
   o = { ...o, layers: reflowLayers(g, o) };
   const feet = o.layers.filter(L => FOOT_SRC.includes(L.src));
-  if (feet.length) footerPass = () => { for (const L of feet) { const b = drawLayer(g, { ...LDEF, ...L }, o); if (b && g === ctx) st.layerBounds.push(b); } };
+  if (feet.length) footerPass = () => {
+    for (const L of feet) {
+      if (L.id === 'auto-note') { drawAutoNote(g, o, L); continue; }
+      const b = drawLayer(g, { ...LDEF, ...L }, o);
+      if (b && g === ctx) st.layerBounds.push(b);
+    }
+  };
   const ar = artRect(o);
   g.save();
   if (ar.win) {
@@ -6725,6 +6779,7 @@ if (refDocs.length) { $('ref').hidden = false; refRender(); } else $('refCount')
 window.__pf = {
   W, H, BLEED, SAFE,
   fileBase, sfCacheable, refRanges, idb, cardCanvas, bleedSeam,
+  styles: () => STYLES.map(sty => ({ id: sty.id, preset: sty.preset || null, f: sty.f || {}, layers: styleLayers(sty) })),
   refDocs: () => refDocs,
   parseDeck: (...a) => parseDeck(...a),
   refTerms: (...a) => refTerms(...a),

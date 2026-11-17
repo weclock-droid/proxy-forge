@@ -495,6 +495,58 @@ describe('safety margin guide', () => {
   });
 });
 
+describe('playtest footer note', () => {
+  test('prints the note exactly once across every style, and nowhere with the field empty', async () => {
+    const { page, context } = await newPage();
+    const result = await page.evaluate(async () => {
+      const art = document.createElement('canvas'); art.width = 750; art.height = 1050;
+      const ag = art.getContext('2d'); ag.fillStyle = '#777777'; ag.fillRect(0, 0, 750, 1050);
+      const img = new Image(); img.src = art.toDataURL(); await img.decode();
+      const p = CanvasRenderingContext2D.prototype;
+      const fillText = p.fillText;
+      const counts = [], empty = [];
+      p.fillText = function (text, x, y, ...rest) {
+        if (this.canvas.width === 750 && this.canvas.height === 1050) {
+          const s = String(text);
+          if (s === 'Playtest card — not for sale') counts.push(s);
+          if (s === 'Proxy — not for sale') counts.push(s);
+        }
+        return fillText.call(this, text, x, y, ...rest);
+      };
+      try {
+        for (const sty of __pf.styles()) {
+          counts.length = 0;
+          const form = {
+            name: 'Test Golem', cost: '{3}{G}', type: 'Artifact Creature — Golem', rules: 'Trample',
+            flavor: '', pt: '4/4', artist: 'A. Painter', info: '001 · PRX · EN',
+            note: 'Playtest card — not for sale', border: '#0b0b0c', color: 'G', titleFont: 'Spectral',
+            shade: '0.78', size: '31', bleed: false, round: true, pipStyle: 'classic', pipColor: '#ffffff',
+            rarity: 'rare', setTint: true, artFx: 'none', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.5',
+            wear: 'none', misprint: 'none', gloss: false, aiArt: false, aiModel: '', setCode: '',
+            label: 'design', layout: sty.f.layout, layers: sty.layers, ...sty.f,
+          };
+          __pf.cardCanvas({ kind: 'made', form, img, zoom: 1, ox: 0, oy: 0 }, 1);
+          if (counts.length !== 1) empty.push({ id: sty.id, count: counts.length, why: 'nonempty' });
+
+          counts.length = 0;
+          __pf.cardCanvas({ kind: 'made', form: { ...form, note: '', label: 'design' }, img, zoom: 1, ox: 0, oy: 0 }, 1);
+          if (counts.length !== 0) empty.push({ id: sty.id, count: counts.length, why: 'empty' });
+
+          counts.length = 0;
+          __pf.cardCanvas({ kind: 'made', form: { ...form, label: 'proxy' }, img, zoom: 1, ox: 0, oy: 0 }, 1);
+          if (counts.length !== 1) empty.push({ id: sty.id, count: counts.length, why: 'proxy-label' });
+        }
+      } finally {
+        p.fillText = fillText;
+      }
+      return { styleCount: __pf.styles().length, failures: empty };
+    });
+    assert.equal(result.styleCount, 62);
+    assert.deepEqual(result.failures, []);
+    await context.close();
+  });
+});
+
 describe('reference panel', () => {
   test('is hidden on the published page, which has no reference data', async () => {
     const { page, context } = await newPage();
