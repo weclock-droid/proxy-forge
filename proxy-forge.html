@@ -3344,22 +3344,22 @@ const PRESETS = {
     // to be drawn straight onto the bar, so they collided with its bevel and each other.
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#008080', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 36, y: 42, w: 678, h: 918, bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 48, y: 54, w: 654, h: 54, bg: 'titlebar', bgColor: '#000080', bgOp: 1, pad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 48, y: 54, w: 654, h: 54, bg: 'titlebar', noBtns: true, bgColor: '#000080', bgOp: 1, pad: 0, effect: 'none' },
     { src: 'name', x: 90, y: 62, w: 306, size: 30, font: 'win95', color: '#ffffff', fit: true, effect: 'none' },
-    // The cost rides in the title bar, clear of the three window buttons the titlebar background draws at its
-    // right. A cost layer below the title bar would be painted under the sunken art well, which is an opaque
-    // fill — only the sliver left of the well's edge survived.
-    { src: 'cost', x: 396, y: 58, w: 162, size: 46, align: 'right', pip: 'pixel', effect: 'none' },
+    // The mana cost IS the window's buttons: each symbol sits on its own title-bar button where minimise,
+    // maximise and close would be, lined up from the right edge of the bar.
+    { src: 'cost', x: 400, y: 61, w: 296, size: 40, align: 'right', bg: 'winbtns', pad: 0, pip: 'classic', effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 66, y: 126, w: 618, h: 444, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
     { src: 'art', x: 78, y: 138, w: 594, h: 420, bg: 'box', effect: 'none' },
     { src: 'landmana', x: 84, y: 612, w: 120, h: 120, size: 100, align: 'center', vmid: true, pip: 'pixel', effect: 'none' },
     { src: 'dialog', x: 240, y: 606, w: 444, h: 216, size: 30, font: 'win95', color: '#111111', align: 'left', vmid: true, lh: 1.14, pip: 'pixel', effect: 'none' },
-    { src: 'custom', text: 'OK', x: 288, y: 846, w: 174, size: 30, font: 'win95', color: '#111111', align: 'center', bg: 'winbtn', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 14, effect: 'none' },
-    { src: 'custom', text: 'Cancel', x: 480, y: 846, w: 204, size: 30, font: 'win95', color: '#111111', align: 'center', bg: 'winbtn', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 14, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 54, y: 912, w: 642, h: 46, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
-    { src: 'type', x: 72, y: 918, w: 424, h: 34, size: 24, font: 'win95', color: '#111111', fit: true, vmid: true, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 528, y: 918, w: 162, h: 34, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
-    { src: 'pt', x: 540, y: 918, w: 138, h: 34, size: 24, font: 'win95', color: '#111111', align: 'right', vmid: true, effect: 'none' },
+    { src: 'custom', text: 'OK', x: 288, y: 834, w: 174, size: 30, font: 'win95', color: '#111111', align: 'center', bg: 'winbtn', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 14, effect: 'none' },
+    { src: 'custom', text: 'Cancel', x: 480, y: 834, w: 204, size: 30, font: 'win95', color: '#111111', align: 'center', bg: 'winbtn', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 14, effect: 'none' },
+    // A taller status bar, so the P/T (or a loyalty / defense shield) is printed at a readable size.
+    { src: 'custom', text: '\u00a0', x: 54, y: 900, w: 642, h: 58, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
+    { src: 'type', x: 72, y: 906, w: 420, h: 46, size: 26, font: 'win95', color: '#111111', fit: true, vmid: true, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 516, y: 906, w: 174, h: 46, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
+    { src: 'pt', x: 524, y: 906, w: 158, h: 46, size: 40, font: 'win95', color: '#111111', align: 'center', vmid: true, pad: 0, effect: 'none' },
     { src: 'credit', x: 48, y: 978, w: 654, size: 20, font: 'win95', color: '#e8f6f6', effect: 'none' },
   ],
   rpgitem: () => [
@@ -3776,7 +3776,7 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     ensureFont(fam, text);
     const rot = +L.rot || 0, pad = +L.pad || 0;
     // A layer with a set height (a slot in a status bar, say) keeps the shield inside that slot.
-    const slot = +L.h > 0 ? Math.max(30, +L.h) : 0;
+    const slot = +L.h > 0 ? Math.max(30, +L.h - 8) : 0; // a little inside the slot, clear of its bevel
     const h = slot ? Math.min(slot, Math.max(48, (+L.size || 30) * 1.3)) : Math.max(48, (+L.size || 30) * 1.3 + Math.min(pad, 12));
     const bw = shieldW(h);
     const ink = /^#[0-9a-f]{6}$/i.test(L.color) ? L.color : '#111111';
@@ -3787,7 +3787,7 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     // Where the layer's box and alignment put it, kept inside the safety line.
     let right = L.align === 'right' ? +L.x + +L.w : L.align === 'center' ? +L.x + (+L.w + bw) / 2 : +L.x + bw;
     right = Math.min(Math.max(right, SAFE + 2 + bw), W - SAFE - 2);
-    const top = Math.min(Math.max(+L.y + (slot ? (slot - h) / 2 : 0), SAFE + 2), H - SAFE - 2 - h);
+    const top = Math.min(Math.max(+L.y + (slot ? (+L.h - h) / 2 : 0), SAFE + 2), H - SAFE - 2 - h);
     const bx = right - bw, by = top, cx = bx + bw / 2, cy = by + h / 2;
     g.save();
     if (rot) { g.translate(cx, cy); g.rotate(rot * Math.PI / 180); g.translate(-cx, -cy); }
@@ -3851,6 +3851,28 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     // out of its own box and off the card for anything past four or five symbols. A vertical row is
     // measured against the card's height instead, so it cannot run past the bottom either.
     const room = L.vert ? H - SAFE - 2 - +L.y - 2 * pad : Math.max(40, +L.w - 2 * pad);
+    if (L.bg === 'winbtns' && !L.vert) {
+      // Each symbol on its own Windows 95 title-bar button (black outline around a two-step bevel), lined up
+      // from the right like minimise / maximise / close. The buttons shrink, never the gaps, when a long
+      // cost has to fit its box.
+      const t = Math.max(2, Math.round(size / 13)), gap = 2 * t + 2;
+      const b = Math.max(size * .5, Math.min(size, (room - (syms.length - 1) * gap) / syms.length));
+      const len = syms.length * b + (syms.length - 1) * gap;
+      bw = +L.w; bh = b + 2 * pad;
+      paintAll = (bx, by) => {
+        let px = bx + bw - pad - len; const py = by + pad;
+        for (const sy of syms) {
+          g.save(); g.shadowColor = 'transparent';
+          g.fillStyle = '#000000'; g.fillRect(px - t, py - t, b + 2 * t, b + 2 * t);
+          g.fillStyle = '#c0c0c0'; g.fillRect(px, py, b, b);
+          g.fillStyle = '#ffffff'; g.fillRect(px, py, b, t); g.fillRect(px, py, t, b);
+          g.fillStyle = '#808080'; g.fillRect(px, py + b - t, b, t); g.fillRect(px + b - t, py, t, b);
+          g.restore();
+          const d0 = b * .74; drawSym(g, sy, px + (b - d0) / 2, py + (b - d0) / 2, d0, true);
+          px += b + gap;
+        }
+      };
+    } else {
     const d = fitCostD(syms.length, size, room);
     const gap = d * .1 + (+L.ls || 0), len = syms.length * d + Math.max(0, syms.length - 1) * gap;
     bw = L.vert ? d + 2 * pad : +L.w; bh = (L.vert ? len : d) + 2 * pad;
@@ -3862,6 +3884,7 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
       let px = bx + pad + (L.vert ? 0 : alignOff(bw - 2 * pad, len)), py = by + pad;
       for (const s of syms) { drawSym(g, s, px, py, d, true); if (L.vert) py += d + gap; else px += d + gap; }
     };
+    }
   } else if (L.vert) {
     kind = 'vert';
     if (L.upper) text = upper(text);
@@ -4096,7 +4119,8 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     btn(bx + 7, t);
     g.strokeStyle = '#000'; g.lineWidth = Math.max(2, s0 * .07); g.beginPath(); // the system box's bar
     g.moveTo(bx + 7 + s0 * .3, y0 + s0 * .5); g.lineTo(bx + 7 + s0 * .7, y0 + s0 * .5); g.stroke();
-    [['min', bw - 3 * s0 - 18], ['max', bw - 2 * s0 - 14], ['x', bw - s0 - 6]].forEach(([k, xo]) => {
+    // (noBtns: the card's mana cost is drawn as the window buttons instead, by a `winbtns` cost layer)
+    if (!L.noBtns) [['min', bw - 3 * s0 - 18], ['max', bw - 2 * s0 - 14], ['x', bw - s0 - 6]].forEach(([k, xo]) => {
       const x0 = bx + xo; btn(x0, t);
       g.strokeStyle = '#000'; g.lineWidth = Math.max(2, s0 * .07); g.beginPath();
       if (k === 'min') { g.moveTo(x0 + s0 * .25, y0 + s0 * .68); g.lineTo(x0 + s0 * .62, y0 + s0 * .68); }
