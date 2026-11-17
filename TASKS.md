@@ -237,7 +237,7 @@ name band and the credit, inside the safety line). Task 3's shield then applies 
 
 **Done when.** Album prints a creature's P/T and Jace's loyalty shield, and the three checks pass.
 
-**Status:** Open
+**Status:** In review (PR #7)
 
 ---
 
