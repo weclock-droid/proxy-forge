@@ -1,0 +1,8 @@
+# Every text file is stored and checked out with LF line endings, on every OS. The build check
+# (`node tools/build.mjs --check`) compares proxy-forge.html byte for byte, so a Windows checkout with
+# CRLF endings failed it for no real reason.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.woff2 binary
