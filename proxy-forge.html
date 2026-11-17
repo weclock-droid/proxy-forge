@@ -418,7 +418,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
         </label>
         <label for="flavor">Flavor text <textarea id="flavor" rows="3"></textarea></label>
         <div class="row">
-          <label for="pt">Power / toughness <input type="text" id="pt" placeholder="2/3"></label>
+          <label for="pt"><span id="ptLabel">Power / toughness</span> <input type="text" id="pt" placeholder="2/3"></label>
           <label for="artist">Artist <input type="text" id="artist"></label>
           <div class="aiRow">
             <label class="inline"><input type="checkbox" id="aiArt"> AI-generated</label>
@@ -590,7 +590,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </div>
           <h3>Background</h3>
           <div class="row">
-            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="crt">Old TV screen, 4:3 (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="chamfer">Neon box (cut corners)</option><option value="bevel">Beveled picture frame</option><option value="drip">Paint drips</option><option value="raised">Raised button (90s computer)</option><option value="sunken">Sunken panel (90s computer)</option><option value="titlebar">Window title bar</option><option value="knotpanel">Game menu panel</option><option value="rays">Sunburst rays</option><option value="linofill">Carved color block</option><option value="shade">Dark fade (for text over art)</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
+            <label>Style <select id="L-bg"><option value="none">None</option><option value="box">Box</option><option value="strips">Strip behind each line</option><option value="sticker">Sticker</option><option value="barcode">Barcode sticker</option><option value="price">Price sticker</option><option value="burst">Starburst</option><option value="bands">Retro color bands</option><option value="ribbon">Ribbon banner</option><option value="pinstripe">Pinstripes</option><option value="pixel">Pixel box</option><option value="scales">Dragon scales</option><option value="parchment">Parchment</option><option value="mist">Parchment mist (soft top)</option><option value="balloon">Speech balloon</option><option value="scroll">Paper scroll</option><option value="breath">Dragon breath banner</option><option value="arch">Arched window (art window)</option><option value="crt">Old TV screen, 4:3 (art window)</option><option value="compass">Compass rose</option><option value="synth">Synthwave sunset</option><option value="chamfer">Neon box (cut corners)</option><option value="bevel">Beveled picture frame</option><option value="drip">Paint drips</option><option value="raised">Raised button (90s computer)</option><option value="sunken">Sunken panel (90s computer)</option><option value="titlebar">Window title bar</option><option value="winbtn">Windows button (95/98)</option><option value="knotpanel">Game menu panel</option><option value="rays">Sunburst rays</option><option value="linofill">Carved color block</option><option value="shade">Dark fade (for text over art)</option><option value="coil">Dragon coil (loops in from the edge)</option><option value="plaque">Ornate plaque</option></select></label>
             <label>Color <input type="color" id="L-bgColor"></label>
             <label>Opacity <input type="range" id="L-bgOp" min="0" max="1" step="0.01"></label>
           </div>
@@ -890,6 +890,9 @@ function readForm() {
 }
 function writeForm(o) {
   for (const k of FIELDS) { const el = $(k); if (!(k in o)) continue; if (el.type === 'checkbox') el.checked = !!o[k]; else el.value = o[k]; }
+  // The number's name comes from the type line, which writeForm has just set: a lookup for a planeswalker
+  // labels the box "Loyalty" the moment the card arrives.
+  syncNumberField();
   if (Array.isArray(o.layers)) {
     st.layers = o.layers.map(l => ({ ...LDEF, ...l }));
     st.blank = !st.layers.length && $('layout').value === 'custom'; // a blank template: keep it empty
@@ -978,9 +981,83 @@ function glyph(g, c) { // draws glyph c in a 100x100 box, fill already set
       g.lineWidth = 9; g.strokeStyle = g.fillStyle;
       g.moveTo(50, 16); g.quadraticCurveTo(54, 46, 84, 50); g.quadraticCurveTo(54, 54, 50, 84);
       g.quadraticCurveTo(46, 54, 16, 50); g.quadraticCurveTo(46, 46, 50, 16); g.stroke(); return;
+    // The codes below are all real Scryfall symbols (see list_card_symbols) that have no drawing of their
+    // own. Without a case they fell through to the serif text at the bottom of this switch, which drew them
+    // as letters — an {E} looked like a stray "E" rather than the energy symbol.
+    case 'E': { // energy: a four-point spark
+      g.beginPath();
+      g.moveTo(50, 8); g.quadraticCurveTo(58, 42, 92, 50); g.quadraticCurveTo(58, 58, 50, 92);
+      g.quadraticCurveTo(42, 58, 8, 50); g.quadraticCurveTo(42, 42, 50, 8);
+      g.fill(); return;
+    }
+    case 'A': { // acorn, the Un-set's basic land
+      g.beginPath(); g.ellipse(50, 60, 27, 30, 0, 0, 7); g.fill();
+      g.beginPath(); g.moveTo(18, 34); g.quadraticCurveTo(50, 12, 82, 34); g.quadraticCurveTo(50, 46, 18, 34); g.fill();
+      g.beginPath(); g.roundRect(46, 4, 8, 18, 4); g.fill(); return;
+    }
+    case 'TK': { // ticket, from Unfinity
+      g.beginPath(); g.roundRect(12, 28, 76, 44, 6); g.fill();
+      g.save(); g.globalCompositeOperation = 'destination-out';
+      for (const [x, y] of [[16, 50], [84, 50]]) { g.beginPath(); g.arc(x, y, 9, 0, 7); g.fill(); }
+      g.beginPath(); g.arc(46, 24, 8, 0, 7); g.arc(46, 76, 8, 0, 7); g.fill();
+      g.restore(); return;
+    }
+    case 'Y': case 'Z': { // the two halves of a half-and-half card's cost
+      g.beginPath(); g.moveTo(50, 12); g.lineTo(88, 50); g.lineTo(50, 88); g.lineTo(50, 12); g.fill();
+      if (c === 'Z') { g.save(); g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.moveTo(50, 12); g.lineTo(12, 50); g.lineTo(50, 88); g.lineTo(50, 12); g.fill(); g.restore(); }
+      g.lineWidth = 8; g.strokeStyle = g.fillStyle; g.beginPath(); g.moveTo(50, 10); g.lineTo(50, 90); g.stroke(); return;
+    }
+    case 'CHAOS': { // the planar-die arrow
+      g.beginPath(); g.moveTo(50, 10); g.lineTo(74, 44); g.lineTo(60, 44); g.lineTo(60, 84); g.lineTo(40, 84); g.lineTo(40, 44); g.lineTo(26, 44); g.closePath(); g.fill();
+      g.lineWidth = 7; g.strokeStyle = g.fillStyle;
+      g.beginPath(); g.moveTo(16, 30); g.lineTo(30, 16); g.moveTo(84, 30); g.lineTo(70, 16); g.stroke(); return;
+    }
+    case 'PW': { // planeswalker: a spark over a shield
+      g.beginPath(); g.moveTo(50, 12); g.lineTo(80, 42); g.lineTo(50, 84); g.lineTo(20, 42); g.closePath(); g.fill();
+      g.save(); g.globalCompositeOperation = 'destination-out';
+      g.beginPath(); g.moveTo(50, 30); g.quadraticCurveTo(56, 44, 70, 48); g.quadraticCurveTo(56, 52, 50, 66); g.quadraticCurveTo(44, 52, 30, 48); g.quadraticCurveTo(44, 44, 50, 30); g.fill();
+      g.restore(); return;
+    }
+    case 'HW': case 'HR': { // half a white / red symbol, the other half supplied by the card
+      const pts = [[50, 10], [86, 30], [86, 70], [50, 90]];
+      g.beginPath(); g.moveTo(...pts[0]);
+      for (const p of pts.slice(1)) g.lineTo(...p);
+      g.closePath(); g.fill();
+      g.lineWidth = 7; g.strokeStyle = g.fillStyle;
+      g.beginPath(); g.moveTo(50, 8); g.lineTo(50, 92); g.stroke(); return;
+    }
+    case 'S': { // snow
+      g.lineWidth = 8; g.strokeStyle = g.fillStyle; g.lineCap = 'round';
+      for (let i = 0; i < 3; i++) {
+        const a = i * Math.PI / 3;
+        g.beginPath(); g.moveTo(50 - Math.cos(a) * 38, 50 - Math.sin(a) * 38); g.lineTo(50 + Math.cos(a) * 38, 50 + Math.sin(a) * 38); g.stroke();
+      }
+      for (let i = 0; i < 6; i++) { // the little barbs on each arm
+        const a = i * Math.PI / 3, bx = 50 + Math.cos(a) * 26, by = 50 + Math.sin(a) * 26;
+        for (const d2 of [-1, 1]) {
+          const b = a + d2 * Math.PI * .75;
+          g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + Math.cos(b) * 12, by + Math.sin(b) * 12); g.stroke();
+        }
+      }
+      g.lineCap = 'butt'; return;
+    }
+    case '∞': { // infinity, the Un-set's "any number"
+      g.lineWidth = 11; g.strokeStyle = g.fillStyle;
+      for (const dx of [-1, 1]) { g.beginPath(); g.arc(50 + dx * 19, 50, 19, 0, 7); g.stroke(); } return;
+    }
+    case '½': { // half a mana
+      g.font = `700 84px Spectral, Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      g.fillText('½', 50, 82); g.textAlign = 'left'; return;
+    }
     default: {
-      const s = c.length > 1 ? 50 : 66;
-      g.font = `700 ${s}px Spectral, Georgia, serif`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      // Anything else — a generic like 2, 10 or 100, or a code with no drawing of its own — is set in the
+      // serif face and shrunk until it fits the 100-unit box, so a long number stays inside its pip instead
+      // of being clipped by it.
+      const face = `700 66px Spectral, Georgia, serif`;
+      g.font = face; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+      const w = g.measureText(c).width, room = 82;
+      const s = w > room ? Math.max(20, 66 * room / w) : 66;
+      if (s !== 66) g.font = `700 ${s}px Spectral, Georgia, serif`;
       g.fillText(c, 50, 50 + s * 0.35); g.textAlign = 'left'; return;
     }
   }
@@ -1222,6 +1299,12 @@ function parseRich(text, baseItalic) {
     const chunks = [];
     const ch = line.match(/^\s*((?:I|II|III|IV|V|VI)(?:\s*,\s*(?:I|II|III|IV|V|VI))*)\s+[—–-]\s+/);
     if (ch) { chunks.chapter = ch[1].split(/\s*,\s*/); line = line.slice(ch[0].length); }
+    // A planeswalker's loyalty abilities read "+1: …" / "−3: …" / "0: …" / "−X: …". The cost is not the
+    // first words of the line: drawn inline it is a sign the reader has to notice before the ability, and it
+    // wraps as though it were prose. Kept apart, it can be drawn as the badge it is — which is what a real
+    // card does. A line that merely mentions a colon ("{T}: Add {G}.") has no cost and is left alone.
+    const lc = line.match(/^\s*([+−-]\s*(?:\d+|X)|\d+|X)\s*:\s*/i);
+    if (lc && richCosts) { chunks.cost = lc[1].replace(/\s+/g, ''); line = line.slice(lc[0].length); }
     for (const word of line.split(/ +/)) {
       if (!word) continue;
       const segs = []; let buf = '', bufIt = null;
@@ -1264,6 +1347,15 @@ function markKeywords(chunks) {
   }
 }
 let curKw = null; // { mode: 'color' | 'chip', color, ink } while a layer that highlights keywords is drawn
+// Whether the rules text being parsed starts its lines with loyalty costs. Only a planeswalker's does: the
+// same "+1: …" shape in a creature's text is a triggered ability or a reminder, and must be left as it is.
+let richCosts = false;
+// Rules text for a card: a planeswalker's lines are loyalty abilities, and their costs are badges.
+function parseRules(o, text, italic) {
+  const walker = numberKind(o) === 'loyalty';
+  const was = richCosts; richCosts = walker;
+  try { return parseRich(text, italic); } finally { richCosts = was; }
+}
 function measureChunk(g, chunk, size) {
   let w = 0;
   for (const s of chunk) {
@@ -1280,7 +1372,7 @@ function layoutRich(g, paras, size, maxW) {
   const out = [];
   for (const chunks of paras) {
     const lines = []; let cur = [], curW = 0;
-    const room = chunks.chapter ? maxW - chapterIndent(size) : maxW;
+    const room = maxW - (chunks.chapter ? chapterIndent(size) : chunks.cost ? costIndent(chunks.cost, size) : 0);
     for (const ch of chunks) {
       const w = measureChunk(g, ch, size);
       if (cur.length && curW + space + w > room) { lines.push(cur); cur = []; curW = 0; }
@@ -1288,10 +1380,11 @@ function layoutRich(g, paras, size, maxW) {
     }
     if (cur.length) lines.push(cur);
     if (chunks.chapter) lines.chapter = chunks.chapter;
+    if (chunks.cost) lines.cost = chunks.cost;
     out.push(lines);
   }
   const lh = size * curLH, pg = size * .32;
-  const paraH = p => Math.max(Math.max(1, p.length) * lh, p.chapter ? chapterH(p.chapter.length, size) : 0);
+  const paraH = p => Math.max(Math.max(1, p.length) * lh, p.chapter ? chapterH(p.chapter.length, size) : 0, p.cost ? costBadgeH(size) : 0);
   let h = 0; out.forEach((p, i) => { h += paraH(p) + (i ? (p.chapter ? pg * 2 : pg) : 0); });
   return { paras: out, h, lh, pg, space, maxW, paraH };
 }
@@ -1306,6 +1399,94 @@ function drawChapter(g, num, x, y, w, h, color) {
   g.font = `700 ${h * .62}px "Spectral", Georgia, serif`; g.fillText(num, x + w / 2, y + h * .54);
   g.restore();
 }
+
+// ---------- the number in the corner ----------
+// Scryfall keeps a creature's power and toughness, a planeswalker's loyalty and a battle's defense in three
+// different JSON keys. The tool carries all three in the one `pt` field, so drafts, print-sheet cards and
+// saved styles keep working — which means what the number *means* has to come from the type line, the one
+// place that says which of the three this card prints.
+function numberKind(o) {
+  const t = String(o.type_line ?? o.type ?? '');
+  if (/\bPlaneswalker\b/i.test(t)) return 'loyalty';
+  if (/\bBattle\b/i.test(t)) return 'defense';
+  // A creature is the only card that prints a power and a toughness, so anything else — an artifact, an
+  // instant, a land — has no number to name. Returning 'pt' for those labelled the field "Power / toughness"
+  // for a value the card will never print.
+  if (/\bCreature\b/i.test(t)) return 'pt';
+  if (/\bVehicle\b/i.test(t)) return 'pt';
+  return String(o.pt || '').includes('/') ? 'pt' : 'none';
+}
+const NUMBER_LABEL = { pt: 'Power / toughness', loyalty: 'Loyalty', defense: 'Defense', none: 'Number (this card prints none)' };
+const NUMBER_HINT = { pt: '2/3', loyalty: '4', defense: '3', none: '—' };
+// No word is printed on the card for any of the three kinds. A power and a toughness in a corner is
+// unambiguous, and a loyalty or a defense is read from its shield the way a mana cost is read from its
+// pips — printing "LOYALTY 5" states what the shape already says. The field label in the editor still
+// names it (NUMBER_LABEL), because that is where a reader needs telling.
+// How far a text box may grow up into the art before the text is shrunk below the readable floor instead.
+const RULES_GROW = 240;
+// The shield a loyalty and a defense are printed in: a wide top tapering to a point. Using the plate a
+// creature's power/toughness uses is what makes a planeswalker proxy read as a creature with a strange
+// power, so for these two the shape is the part that matters.
+function shieldPath(g, x, y, w, h) {
+  g.beginPath();
+  g.moveTo(x + w * .5, y + h);
+  g.lineTo(x + w * .07, y + h * .61);
+  g.quadraticCurveTo(x, y + h * .55, x, y + h * .45);
+  g.lineTo(x, y + h * .16);
+  g.quadraticCurveTo(x, y, x + w * .16, y);
+  g.lineTo(x + w * .84, y);
+  g.quadraticCurveTo(x + w, y, x + w, y + h * .16);
+  g.lineTo(x + w, y + h * .45);
+  g.quadraticCurveTo(x + w, y + h * .55, x + w * .93, y + h * .61);
+  g.closePath();
+}
+const shieldW = h => h * .84;
+// The number in its shield, right-aligned at `right` with its top at `top`. Returns the width drawn.
+function drawShield(g, text, right, top, h, face, ink, font) {
+  const w = shieldW(h);
+  g.save();
+  shieldPath(g, right - w, top, w, h);
+  g.fillStyle = face; g.fill();
+  g.lineWidth = Math.max(1.5, h * .07); g.strokeStyle = ink; g.stroke();
+  g.fillStyle = ink; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  g.fillText(fitText(g, text, font, h * .62, h * .34, w - h * .2), right - w / 2, top + h * .54);
+  g.restore();
+  return w;
+}
+// A loyalty or a defense. Right-aligned at `right`, top at `top`, `h` tall. The shape is what says which
+// number this is, so no word is printed: the shield is to a planeswalker what a pip is to a mana cost, and
+// a card that spells it out reads as a proxy explaining itself. A creature's P/T keeps the layout's own
+// plate, which is the same argument in the other direction — a power and a toughness need no label either.
+function drawNumberShield(g, o, kind, right, top, h, face, ink, font) {
+  return drawShield(g, o.pt, right, top, h, face, ink, font);
+}
+// The number's name follows the type line as it is typed, not only after a lookup.
+function syncNumberField() {
+  const k = numberKind({ type: $('type')?.value || '' });
+  const lab = $('ptLabel'); if (lab) lab.textContent = NUMBER_LABEL[k];
+  $('pt').placeholder = NUMBER_HINT[k];
+  return k;
+}
+// A loyalty ability's cost — +1, −3, 0, −X — is a cost, not the first words of a sentence, so it is drawn in
+// a badge beside the ability the way a saga's chapter numeral is. Scryfall writes the minus as U+2212 rather
+// than a hyphen, so both are accepted wherever these costs are read.
+const LOYALTY_COST = /^\s*([+−-]?(?:\d+|X))\s*:\s*/i;
+const costBadgeH = size => size * 1.3;
+const costBadgeW = (cost, size) => Math.max(costBadgeH(size) * .84, size * (.34 + .5 * String(cost).length));
+const costIndent = (cost, size) => costBadgeW(cost, size) + size * .34;
+function drawCostBadge(g, cost, x, y, size, color) {
+  const h = costBadgeH(size), w = costBadgeW(cost, size);
+  const darkText = lum(/^#[0-9a-f]{6}$/i.test(color) ? color : '#ffffff') < .5;
+  g.save();
+  shieldPath(g, x, y, w, h);
+  g.fillStyle = darkText ? '#2b2620' : '#ece5d4'; g.fill();
+  g.lineWidth = Math.max(1, h * .07); g.strokeStyle = darkText ? '#8b7d64' : '#2b2620'; g.stroke();
+  g.fillStyle = darkText ? '#f3ecdc' : '#1d1a15'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `700 ${h * .5}px "Spectral", Georgia, serif`;
+  g.fillText(cost, x + w / 2, y + h * .47);
+  g.restore();
+}
+
 const lineW = (line, lay) => line.reduce((s, it, i) => s + it.w + (i ? lay.space : 0), 0);
 // opt: align/w (align lines inside width w), paint(text,x,y) for effects, boxes (collects line rects), dry (measure only)
 function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
@@ -1315,7 +1496,10 @@ function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
   lay.paras.forEach((lines, pi) => {
     if (pi) cy += lines.chapter ? lay.pg * 2 : lay.pg;
     if (!lines.length) { cy += lay.lh; return; }
-    const top = cy, ind = lines.chapter ? chapterIndent(size) : 0, room = (w || lay.maxW || 0) - ind;
+    const top = cy;
+    const ind = lines.chapter ? chapterIndent(size) : lines.cost ? costIndent(lines.cost, size) : 0;
+    const room = (w || lay.maxW || 0) - ind;
+    if (lines.cost && !dry) drawCostBadge(g, lines.cost, x, cy + (lay.lh * Math.max(1, lines.length) - costBadgeH(size)) / 2, size, color);
     if (lines.chapter && !dry) {
       if (pi && lay.paras[pi - 1].chapter) { // a rule between chapters
         g.save(); g.globalAlpha = .35; g.fillStyle = color; g.fillRect(x, cy - lay.pg - 1, w || lay.maxW || 0, Math.max(1, size * .05)); g.restore();
@@ -1378,8 +1562,20 @@ function fitText(g, text, font, maxSize, minSize, maxW) {
   while (cut.length > 1 && g.measureText(cut + '…').width > maxW) cut = cut.slice(0, -1);
   return cut + '…';
 }
+// A cost row is right-aligned at `right` with pips `d` across, 10% of the diameter apart. A cost can be far
+// wider than the band it sits in — the rules allow fifteen symbols, even though no printed card has them —
+// so callers ask for the diameter that fits their room first (fitCostD). Without that the row walks left
+// over the name and then off the card, which is what a long cost used to do in every layout.
+function costRowW(n, d) { return n * d + Math.max(0, n - 1) * d * .1; }
+// The largest diameter, never above the authored one, whose row of `n` pips fits `room`. Half size is the
+// floor: below that a symbol stops being readable as a symbol, and an absurd cost is better slightly long
+// than unreadable. n pips and n-1 gaps of 10% need d * (n + (n-1) * .1).
+function fitCostD(n, d, room) {
+  if (n < 2 || !(room > 0)) return d;
+  return Math.max(d * .5, Math.min(d, room / (n + (n - 1) * .1)));
+}
 function drawCostRight(g, syms, right, cy, d) {
-  const gap = d * .1; let x = right - syms.length * (d + gap) + gap;
+  const gap = d * .1; let x = right - costRowW(syms.length, d) + gap;
   const start = x;
   for (const s of syms) { drawSym(g, s, x, cy - d / 2, d, true); x += d + gap; }
   return start;
@@ -1729,9 +1925,12 @@ function renderWrist(g, o) {
   piece(box(48, 12 + hdr, 124, 26, 5), '#4b4a31', { shadow: 3, hi: .3, lo: .3, line: 2.5 });
   g.font = `400 20px ${HUD.f}`; g.fillStyle = '#d8d5ae'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WRIST-COMP', 110, 26 + hdr);
   piece(box(40, 38 + hdr, W - 80, 78, 14), dark, { hi: .16, lo: .5 });
-  const costLeft = syms.length ? drawCostRight(g, syms, W - 56, 77, 42) : W - 56;
+  // The cost row is right-aligned at W-56 and the name starts at x64, so the two share the band between
+  // them; the pips shrink rather than the name being pushed off the left of it.
+  const costPip = fitCostD(syms.length, 42, W - 120 - 96);
+  const costLeft = syms.length ? drawCostRight(g, syms, W - 56, 77, costPip) : W - 56;
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  g.fillText(fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, 18, costLeft - 64 - 18), 64, 92);
+  g.fillText(fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, TEXT_FLOOR.name, costLeft - 64 - 18), 64, 92);
 
   // the screen
   piece(box(88, 124 + hdr, W - 176, 432 - hdr, 38), '#1a1b15', { hi: .2, lo: .5 });
@@ -1812,7 +2011,7 @@ function renderWrist(g, o) {
     g.restore();
     rr(x, 670, w, 262, 8); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke();
   }
-  const paras = [...(o.rules ? parseRich(o.rules, false) : []), ...(o.flavor ? parseRich(o.flavor, true) : [])];
+  const paras = [...(o.rules ? parseRules(o, o.rules, false) : []), ...(o.flavor ? parseRich(o.flavor, true) : [])];
   if (paras.length) {
     curFam = SANS; curLH = 1.14;
     const ptW = o.pt ? 132 : 0, room = 236, wid = W - 2 * 84;
@@ -1826,12 +2025,22 @@ function renderWrist(g, o) {
   // bottom notch with a brass arrow
   piece(() => { g.beginPath(); g.moveTo(W / 2 - 50, 940); g.lineTo(W / 2 + 50, 940); g.lineTo(W / 2 + 38, 974); g.lineTo(W / 2 - 38, 974); g.closePath(); }, dark, { shadow: 4, hi: .15, lo: .5, line: 3 });
   piece(() => { g.beginPath(); g.moveTo(W / 2 - 18, 950); g.lineTo(W / 2 + 18, 950); g.lineTo(W / 2, 966); g.closePath(); }, '#c9b27a', { shadow: 0, hi: .5, lo: .3, line: 2 });
-  // power / toughness
-  if (o.pt) {
+  // power / toughness, or the shield a loyalty or a defense is printed in
+  const numKind = numberKind(o);
+  if (o.pt && numKind === 'pt') {
     piece(box(W - 172, 922, 128, 68, 8), '#e9e6d6', { shadow: 5, hi: .5, lo: .3, line: 3.5 });
     piece(box(W - 165, 929, 114, 54, 5), dark, { shadow: 0, hi: .15, lo: .4, line: 2 });
     g.fillStyle = '#f2f2ea'; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText(fitText(g, o.pt, px => `400 ${px}px ${HUD.f}`, 56, 20, 108), W - 108, 958);
+    g.textBaseline = 'alphabetic';
+  } else if (o.pt) {
+    // The readout plate is sized to the shield and its margin. It used to reserve room for the word
+    // "LOYALTY" beside the number; the shape carries that now, so the plate is only as wide as it needs.
+    g.textBaseline = 'alphabetic'; g.textAlign = 'left';
+    const h = 64, font = px => `400 ${px}px ${HUD.f}`;
+    const plateW = shieldW(h) + 24;
+    piece(box(W - 60 - plateW, 922, plateW, h, 6), dark, { shadow: 5, hi: .18, lo: .45, line: 3 });
+    drawNumberShield(g, o, numKind, W - 72, 922, h, '#1e2a1e', '#8dff85', font);
     g.textBaseline = 'alphabetic';
   }
   const info = [o.info, o.artist ? '✎ ' + o.artist : ''].filter(Boolean).join('   ');
@@ -2282,6 +2491,10 @@ function renderFullArt(g, o, shade, size, bleed) {
   // ---- title ----
   const cost = parseCost(o.cost), costD = 38;
   const titleTop = 46, titleBase = 92, costMid = 79;
+  // The cost row may take at most 55% of the band; the name keeps the rest. Without this a fifteen-symbol
+  // cost ate the whole title, then the card (see fitCostD).
+  const costRight = R - 8, costRoom = innerW * .55;
+  const costPip = fitCostD(cost.length, costD, costRoom);
   if (o.layout === 'panel') {
     g.fillStyle = `rgba(10,9,11,${shade})`; g.beginPath(); g.roundRect(L - 6, titleTop, innerW + 12, 66, 12); g.fill();
     g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 2; g.stroke();
@@ -2290,11 +2503,11 @@ function renderFullArt(g, o, shade, size, bleed) {
     gr.addColorStop(0, `rgba(0,0,0,${shade})`); gr.addColorStop(.55, `rgba(0,0,0,${shade * .55})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = gr; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, titleTop + 144 + BLEED);
   }
-  const costLeft = cost.length ? drawCostRight(g, cost, R - 8, costMid, costD) : R;
+  const costLeft = cost.length ? drawCostRight(g, cost, costRight, costMid, costPip) : costRight;
   if (o.name) {
     g.fillStyle = '#fff'; g.textBaseline = 'alphabetic';
     g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 6;
-    const drawn = fitText(g, o.name, s => titleFont(o, s), 40, 18, costLeft - L - 24);
+    const drawn = fitText(g, o.name, s => titleFont(o, s), 40, TEXT_FLOOR.name, costLeft - L - 24);
     g.fillText(drawn, L + 10, safeTitleBase(g, drawn, titleBase, titleTop + 58));
     g.shadowBlur = 0;
   }
@@ -2302,15 +2515,21 @@ function renderFullArt(g, o, shade, size, bleed) {
   // ---- text box ----
   const padX = 22, boxL = L - 6, boxW = innerW + 12, textW = boxW - padX * 2;
   const bottom = 975, maxH = 520, minH = 250;
-  const rules = parseRich(o.rules, false), flav = parseRich(o.flavor, true);
+  const rules = parseRules(o, o.rules, false), flav = parseRich(o.flavor, true);
   const typeH = o.type ? 50 : 0;
   let fs = size, lr, lf, contentH;
-  for (; fs >= 14; fs -= 1) {
+  // The loop stops *at* the floor: `fs >= TEXT_FLOOR.rules` with a decrement after means the last pass can
+  // leave fs at 23 against a promised 24, and the text is then drawn at the size the loop rejected.
+  for (fs = Math.max(size, TEXT_FLOOR.rules); fs > TEXT_FLOOR.rules; fs -= 1) {
     lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
     contentH = 22 + typeH + (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 26 : 0) + lf.h : 0) + (o.pt ? 52 : 18);
     if (contentH <= maxH) break;
   }
-  const boxH = Math.max(minH, contentH), top = bottom - boxH;
+  lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
+  contentH = 22 + typeH + (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 26 : 0) + lf.h : 0) + (o.pt ? 52 : 18);
+  // Still too tall at the readable floor: the box grows up into the art rather than shrinking the text past
+  // the size the tool promises, which is the trade the README describes.
+  const boxH = Math.max(minH, Math.min(contentH, maxH + RULES_GROW)), top = bottom - boxH;
 
   if (o.layout === 'panel') {
     g.fillStyle = `rgba(10,9,11,${shade})`; g.beginPath(); g.roundRect(boxL, top, boxW, boxH, 14); g.fill();
@@ -2337,9 +2556,13 @@ function renderFullArt(g, o, shade, size, bleed) {
     y = drawRich(g, lf, fs, tx, y, '#e9e4dc');
   }
   if (o.pt) {
-    g.fillStyle = '#fff';
-    g.font = titleFont(o, 40); g.textAlign = 'right';
-    g.fillText(o.pt, boxL + boxW - padX + 2, bottom - 16); g.textAlign = 'left';
+    const k = numberKind(o);
+    g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 4;
+    if (k === 'pt') {
+      g.fillStyle = '#fff';
+      g.font = titleFont(o, 40); g.textAlign = 'right';
+      g.fillText(o.pt, boxL + boxW - padX + 2, bottom - 16); g.textAlign = 'left';
+    } else drawNumberShield(g, o, k, boxL + boxW - padX + 2, bottom - 54, 42, 'rgba(18,17,20,.86)', '#f6f3ee', px => titleFont(o, px));
   }
   g.shadowBlur = 0;
   g.restore();
@@ -2397,9 +2620,12 @@ function renderConsole(g, o, size) {
   // cost on the right, name filling the rest
   const syms = parseCost(o.cost), d = 40;
   const nameBase = 84;
-  const costLeft = syms.length ? drawCostRight(g, syms, W - 42, 64, d) : W - 42;
+  // The console band runs from the name at x108 to the right edge, and the name needs 110 of that; the rest
+  // is the cost row's room. A long cost shrinks here rather than pushing the name off the left of the band.
+  const costPip = fitCostD(syms.length, d, W - 42 - 124);
+  const costLeft = syms.length ? drawCostRight(g, syms, W - 42, 64, costPip) : W - 42;
   g.fillStyle = CON_TEXT; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  const nameDrawn = fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, 20, costLeft - 110 - 14);
+  const nameDrawn = fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, TEXT_FLOOR.name, costLeft - 110 - 14);
   g.fillText(nameDrawn, 108, safeTitleBase(g, nameDrawn, nameBase, ar.y - 22));
 
   const bottomLine = () => {
@@ -2471,12 +2697,19 @@ function renderConsole(g, o, size) {
   if (o.rules) y = drawRich(g, lr, fs, tx, y, CON_TEXT);
   if (o.flavor) { if (o.rules) y += fs * .7; drawRich(g, lf, fs, tx, y, '#ffc58a'); }
   curFam = { f: BODY, wt: 400 }; curLH = 1.16;
-  // power/toughness tab
+  // power/toughness tab, or a shield for a loyalty or a defense
   if (o.pt) {
-    g.beginPath(); g.roundRect(pxl, py, pw, ph, [25, 6, 6, 25]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
-    g.fillStyle = '#1a1a1a'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(fitText(g, o.pt, p2 => conFont(p2, 700), 40, 16, pw - 18), pxl + pw / 2, py + ph / 2);
-    g.textBaseline = 'alphabetic';
+    const k = numberKind(o);
+    if (k === 'pt') {
+      g.beginPath(); g.roundRect(pxl, py, pw, ph, [25, 6, 6, 25]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
+      g.fillStyle = '#1a1a1a'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(fitText(g, o.pt, p2 => conFont(p2, 700), 40, 16, pw - 18), pxl + pw / 2, py + ph / 2);
+      g.textBaseline = 'alphabetic';
+    } else {
+      g.save(); g.textBaseline = 'alphabetic';
+      drawNumberShield(g, o, k, W - 42, py - 14, 62, mixHex(c1, '#ffffff', .35), '#1a1a1a', px => conFont(px, 700));
+      g.restore();
+    }
   }
   bottomLine();
   g.restore();
@@ -2499,46 +2732,62 @@ function renderFramed(g, o, size, borderCol) {
   const tbTop = 46;
   bar(46, tbTop, 658, 62);
   const cost = parseCost(o.cost);
-  const costLeft = cost.length ? drawCostRight(g, cost, 694, 77, 36) : 694;
+  // Same split as the full-art layouts: the cost row takes at most 55% of the title bar, and the pips
+  // shrink to fit it rather than running over the name and off the card.
+  const costPip = fitCostD(cost.length, 36, 648 * .55);
+  const costLeft = cost.length ? drawCostRight(g, cost, 694, 77, costPip) : 694;
   if (o.name) {
     g.fillStyle = dark;
-    const drawn = fitText(g, o.name, s => titleFont(o, s), 38, 18, costLeft - 66 - 14);
+    const drawn = fitText(g, o.name, s => titleFont(o, s), 38, TEXT_FLOOR.name, costLeft - 66 - 14);
     g.fillText(drawn, 64, safeTitleBase(g, drawn, 90, tbTop + 56));
   }
   // art
   const ar = artRect(o);
   g.save(); g.beginPath(); g.rect(ar.x, ar.y, ar.w, ar.h); g.clip(); drawArt(g, ar, st.img); g.restore();
   g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 3; g.strokeRect(ar.x, ar.y, ar.w, ar.h);
-  // type
-  bar(46, 598, 658, 56);
-  if (o.type) {
-    const rw = drawRarity(g, o, 694, 626, 34);
-    g.fillStyle = dark;
-    g.fillText(fitText(g, o.type, s => titleFont(o, s), 30, 16, 620 - (rw ? rw + 12 : 0)), 64, 637);
-  }
-  // text box
+  // The text is measured before the type bar is drawn, because a text box that has to grow upward takes
+  // the type bar with it — the same trade the full-art layouts make, and the one the README describes.
   const tb = { x: 58, y: 662, w: 634, h: 300 };
-  g.fillStyle = box; g.fillRect(tb.x, tb.y, tb.w, tb.h);
-  g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 2; g.strokeRect(tb.x, tb.y, tb.w, tb.h);
   const padX = 20, textW = tb.w - padX * 2, avail = tb.h - 28 - (o.pt ? 22 : 0);
-  const rules = parseRich(o.rules, false), flav = parseRich(o.flavor, true);
+  const rules = parseRules(o, o.rules, false), flav = parseRich(o.flavor, true);
   let fs = size, lr, lf, h;
-  for (; fs >= 14; fs -= 1) {
+  // Stops *at* the floor, like the full-art loop: `fs >= floor` with a decrement after leaves 23 behind.
+  for (fs = Math.max(size, TEXT_FLOOR.rules); fs > TEXT_FLOOR.rules; fs -= 1) {
     lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
     h = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 24 : 0) + lf.h : 0);
     if (h <= avail) break;
   }
-  let y = tb.y + 14 + Math.max(0, (avail - h) / 2) * (o.flavor ? 0 : 1);
-  if (!o.rules && !o.flavor) y = tb.y + 14;
+  lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
+  h = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 24 : 0) + lf.h : 0);
+  // Still too tall at the readable floor: the box grows up into the art rather than shrinking the text
+  // past the size the tool promises. The type bar moves up with the box, leaving the art window shorter.
+  const grow = Math.max(0, Math.min(Math.ceil(h - avail), RULES_GROW));
+  const typeY = 598 - grow;
+  // type
+  bar(46, typeY, 658, 56);
+  if (o.type) {
+    const rw = drawRarity(g, o, 694, typeY + 28, 34);
+    g.fillStyle = dark;
+    g.fillText(fitText(g, o.type, s => titleFont(o, s), 30, 16, 620 - (rw ? rw + 12 : 0)), 64, typeY + 39);
+  }
+  // text box
+  const tbY = tb.y - grow, tbH = tb.h + grow, availBox = tbH - 28 - (o.pt ? 22 : 0);
+  g.fillStyle = box; g.fillRect(tb.x, tbY, tb.w, tbH);
+  g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 2; g.strokeRect(tb.x, tbY, tb.w, tbH);
+  let y = tbY + 14 + Math.max(0, (availBox - h) / 2) * (o.flavor ? 0 : 1);
+  if (!o.rules && !o.flavor) y = tbY + 14;
   if (o.rules) y = drawRich(g, lr, fs, tb.x + padX, y, dark);
   if (o.flavor) {
     if (o.rules) { y += 10; g.fillStyle = 'rgba(0,0,0,.3)'; g.fillRect(tb.x + padX + 10, y, textW - 20, 1.5); y += 14; }
     drawRich(g, lf, fs, tb.x + padX, y, dark);
   }
   if (o.pt) {
-    bar(566, 940, 132, 58);
-    g.fillStyle = dark; g.font = titleFont(o, 38); g.textAlign = 'center';
-    g.fillText(fitText(g, o.pt, s => titleFont(o, s), 38, 18, 116), 632, 982); g.textAlign = 'left';
+    const k = numberKind(o);
+    if (k === 'pt') {
+      bar(566, 940, 132, 58);
+      g.fillStyle = dark; g.font = titleFont(o, 38); g.textAlign = 'center';
+      g.fillText(fitText(g, o.pt, s => titleFont(o, s), 38, 18, 116), 632, 982); g.textAlign = 'left';
+    } else drawNumberShield(g, o, k, 698, 940, 54, box, dark, px => titleFont(o, px));
   }
   // The credit line at 1018 sits outside the ⅛″ safety line; the collector line is allowed to.
   drawFooter(g, o, lum(frame) > .55 ? '#1a1816' : '#f0ece6', 1018, null); // below the P/T box, so the note can sit at the right edge
@@ -2629,6 +2878,7 @@ const FONTS = {
   shadows: { label: 'Shadows Into Light (pen)', f: '"Shadows Into Light", Georgia, serif', wt: 400, g: 'Handwritten' },
   antonio: { label: 'Antonio (console caps)', f: '"Antonio", "Arial Narrow", sans-serif', wt: 600, g: 'Sci-fi & retro' },
   notojp: { label: 'Noto Sans JP (Japanese)', f: '"Noto Sans JP", system-ui, sans-serif', wt: 700, g: 'Display' },
+  win95: { label: 'MS Sans Serif (Windows 95)', f: '"MS Sans Serif", Tahoma, Verdana, sans-serif', wt: 400, g: 'Sci-fi & retro' },
 };
 const FOOT_SRC = ['credit', 'illus', 'note'];
 // Average brightness (0-255) and how much it varies, for the pixels already drawn in a box (card units).
@@ -2643,10 +2893,14 @@ function statsBehind(g, x, y, w, h) {
     const mean = sum / n; return { mean, dev: Math.sqrt(Math.max(0, sq / n - mean * mean)) };
   } catch (e) { return null; }
 }
-const TEXT_FLOOR = { rules: 24, rulesflavor: 24, rulesx: 24, dialog: 22, flavor: 22, type: 20, maintype: 20, subtype: 20, typeleft: 20, credit: 20, illus: 20, artist: 20, note: 18, name: 26 };
+const TEXT_FLOOR = { rules: 24, rulesflavor: 24, rulesx: 24, dialog: 22, flavor: 22, type: 20, maintype: 20, subtype: 20, typeleft: 20, credit: 20, illus: 20, artist: 20, note: 18, name: 26, loyalty: 26, ptline: 20 };
+// `name` and `loyalty` are the two entries nothing reads. A title is placed by safeTitleBase and shrunk by
+// fitText against the band's own width, and the shield draws the number in its own geometry; neither path
+// consults this table, so the 26s were a promise the code did not make. Kept as the record of the intended
+// floor — see RECOMMENDATIONS.md, "TEXT_FLOOR is advisory".
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
-  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', kanji: 'Name in Japanese (basic lands)', stars: 'Level stars (mana value)', mv: 'Mana value (number)', subtype: 'Subtypes (after the dash)', typeleft: 'Card type (before the dash)', rulesx: 'Rules + flavor (blank for basics)', paymv: '“PAY” and the mana value', maintype: 'Main card type (BASIC LAND, CREATURE…)', illus: '“Illustrated by” the artist', dialog: 'Rules, or “Tap for 1 mana?” for basics', atkdef: 'Power / toughness as ATK / DEF', landmana: 'Card color as one mana symbol', pt: 'Power / toughness', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
+  rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', kanji: 'Name in Japanese (basic lands)', stars: 'Level stars (mana value)', mv: 'Mana value (number)', subtype: 'Subtypes (after the dash)', typeleft: 'Card type (before the dash)', rulesx: 'Rules + flavor (blank for basics)', paymv: '“PAY” and the mana value', maintype: 'Main card type (BASIC LAND, CREATURE…)', illus: '“Illustrated by” the artist', dialog: 'Rules, or “Tap for 1 mana?” for basics', atkdef: 'Power / toughness as ATK / DEF', landmana: 'Card color as one mana symbol', pt: 'The number (power/toughness, loyalty or defense)', loyalty: 'Loyalty or defense, and nothing for a creature', ptline: 'The number, whichever it is', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
 };
 const LDEF = {
   src: 'custom', text: '', x: 60, y: 60, w: 630, h: 0, rot: 0, font: 'spectral', size: 40, color: '#ffffff', align: 'left',
@@ -2664,7 +2918,7 @@ const PRESETS = {
     { src: 'name', x: 36, y: 548, w: 678, size: 104, font: 'bebas', upper: true, color: '#ffffff', align: 'center', fit: true, lh: .9, ls: 2, effect: 'shadow', effColor: '#000000', effSize: 1.6 },
     { src: 'type', x: 60, y: 664, w: 630, size: 24, font: 'oswald', upper: true, color: '#e6ecff', align: 'center', fit: true, ls: 4, effect: 'shadow' },
     { src: 'rulesflavor', x: 40, y: 742, w: 670, h: 184, size: 23, font: 'plex', color: '#f2f4f8', bg: 'box', bgColor: '#0b0e14', bgOp: .74, pad: 18, rad: 14, effect: 'none' },
-    { src: 'pt', x: 40, y: 944, w: 84, size: 32, font: 'oswald', color: '#111111', align: 'center', bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 9, rad: 4, bdW: 3, bdColor: '#111111', effect: 'none' },
+    { src: 'ptline', x: 40, y: 944, w: 180, size: 32, font: 'oswald', color: '#111111', align: 'left', bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 9, rad: 4, bdW: 3, bdColor: '#111111', effect: 'none' },
     { src: 'credit', x: 150, y: 984, w: 560, size: 13, font: 'plex', color: '#e6ecff', align: 'right', effect: 'shadow' },
   ],
   vhs: () => [
@@ -2761,7 +3015,7 @@ const PRESETS = {
     { src: 'credit', x: 40, y: 1004, w: 670, size: 13, font: 'plex', color: '#f2efe6', effect: 'shadow' },
   ],
   scales: () => [
-    { src: 'custom', text: ' ', x: -150, y: 330, w: 230, h: 460, bg: 'coil', tintBg: 'pale', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'custom', text: ' ', x: 28, y: 140, w: 170, h: 790, rot: 180, bg: 'scales', tintBg: 'pale', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: ' ', x: 6, y: 4, w: 744, h: 152, bg: 'breath', bgColor: '#e6e2d8', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: ' ', x: 600, y: 140, w: 170, h: 790, bg: 'scales', tintBg: 'pale', bgColor: '#c8c2b0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'name', x: 64, y: 26, w: 440, size: 44, font: 'spectral', color: '#2a2118', fit: true, effect: 'none' },
@@ -2785,7 +3039,7 @@ const PRESETS = {
     { src: 'custom', text: '25¢\nNo. 20', x: 16, y: 20, w: 104, h: 116, size: 34, font: 'bangers', color: '#111111', align: 'center', lh: 1, bg: 'box', bgColor: '#f6d32a', bgOp: 1, pad: 12, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
     { src: 'custom', text: 'PROXY\nCOMICS\nGROUP', x: 16, y: 146, w: 104, h: 100, size: 22, font: 'bangers', color: '#c8161d', align: 'center', lh: 1, bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 10, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
     { src: 'custom', text: 'PROXY SUPER-TALES PRESENTS:', x: 134, y: 20, w: 470, size: 36, font: 'bangers', color: '#111111', fit: true, ls: 1, bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 8, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
-    { src: 'cost', x: 610, y: 26, w: 120, size: 34, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'cost', x: 16, y: 262, w: 104, size: 44, vert: true, align: 'center', bg: 'box', bgColor: '#ffffff', bgOp: 1, pad: 12, rad: 0, bdW: 3, bdColor: '#111111', rot: -2, pip: 'classic', effect: 'none' },
     { src: 'name', x: 134, y: 84, w: 600, size: 128, font: 'bangers', upper: true, color: '#f6d32a', align: 'center', fit: true, lh: .88, ls: 2, effect: 'extrude', effColor: '#c8161d', effSize: 1.2 },
     { src: 'flavor', x: 470, y: 330, w: 240, size: 24, font: 'comic', upper: true, color: '#111111', align: 'center', lh: 1.05, bg: 'balloon', bgColor: '#ffffff', bgOp: 1, pad: 18, bdW: 3, bdColor: '#111111', effect: 'none' },
     { src: 'type', x: 40, y: 700, w: 420, size: 24, font: 'comic', upper: true, italic: true, color: '#c8161d', fit: true, rot: -1, bg: 'box', bgColor: '#fff7d6', bgOp: 1, pad: 10, rad: 0, bdW: 3, bdColor: '#111111', effect: 'none' },
@@ -2890,10 +3144,13 @@ const PRESETS = {
     { src: 'credit', x: 52, y: 1012, w: 540, size: 12, font: 'plex', color: '#8a8a8a', effect: 'none' },
   ],
   token: () => [
-    { src: 'name', x: 120, y: 30, w: 510, size: 52, font: 'cinzel', upper: true, color: '#1b1b1b', align: 'center', fit: true, bg: 'box', bgColor: '#f3efe4', bgOp: .95, pad: 14, rad: 40, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
+    { src: 'name', x: 40, y: 30, w: 470, size: 52, font: 'cinzel', upper: true, color: '#1b1b1b', align: 'center', fit: true, bg: 'box', bgColor: '#f3efe4', bgOp: .95, pad: 14, rad: 40, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
+    // A cost row in the top-right, where a printed card puts it. The name plate gave up 40 units of width
+    // to make room for it.
+    { src: 'cost', x: 520, y: 46, w: 190, size: 34, align: 'right', pip: 'classic', effect: 'none' },
     { src: 'type', x: 40, y: 836, w: 670, size: 30, font: 'spectral', color: '#1b1b1b', align: 'center', fit: true, bg: 'box', bgColor: '#f3efe4', bgOp: .95, pad: 12, rad: 8, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
     { src: 'rulesflavor', x: 70, y: 900, w: 500, h: 100, size: 24, font: 'crimson', color: '#1b1b1b', align: 'center', vmid: true, bg: 'box', bgColor: '#f3efe4', bgOp: .85, pad: 12, rad: 8, pip: 'classic', effect: 'none' },
-    { src: 'pt', x: 600, y: 920, w: 110, size: 40, font: 'spectral', color: '#1b1b1b', align: 'center', bg: 'box', bgColor: '#f3efe4', bgOp: 1, pad: 10, rad: 8, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
+    { src: 'ptline', x: 590, y: 920, w: 130, size: 38, font: 'spectral', color: '#1b1b1b', align: 'center', bg: 'box', bgColor: '#f3efe4', bgOp: 1, pad: 10, rad: 8, bdW: 3, bdColor: '#1b1b1b', effect: 'none' },
     { src: 'credit', x: 40, y: 1010, w: 540, size: 13, font: 'plex', color: '#ffffff', effect: 'shadow' },
   ],
   neon: () => [
@@ -2931,6 +3188,9 @@ const PRESETS = {
     { src: 'custom', text: '\u00a0', x: 0, y: 900, w: 750, h: 150, bg: 'shade', bgColor: '#000000', bgOp: .6, pad: 0, rad: 0, effect: 'none' },
     { src: 'kanji', x: 52, y: 52, w: 124, h: 310, size: 96, font: 'notojp', color: '#f6f2e8', align: 'center', vert: true, fit: true, lh: 1.08, bg: 'box', tintBg: 'deep', bgColor: '#4a443c', bgOp: .95, pad: 18, rad: 62, bdW: 5, bdColor: '#e8e2d2', effect: 'none' },
     { src: 'landmana', x: 52, y: 376, w: 124, h: 124, size: 88, align: 'center', vmid: true, bg: 'box', tintBg: 'deep', bgColor: '#4a443c', bgOp: .95, pad: 12, rad: 28, bdW: 5, bdColor: '#e8e2d2', pip: 'glyph', pipColor: '#f6f2e8', effect: 'none' },
+    // The card's own name and cost, down the right edge in the vertical band the design leaves free.
+    { src: 'name', x: 500, y: 60, w: 210, size: 30, font: 'notojp', color: '#f6f2e8', align: 'right', fit: true, effect: 'shadow', effColor: '#000000', effSize: 1 },
+    { src: 'cost', x: 500, y: 104, w: 210, size: 32, align: 'right', pip: 'glyph', pipColor: '#f6f2e8', effect: 'shadow', effColor: '#000000', effSize: 1 },
     { src: 'rulesflavor', x: 200, y: 860, w: 510, h: 100, size: 22, font: 'crimson', color: '#ffffff', align: 'right', vmid: true, pip: 'classic', effect: 'shadow', effColor: '#000000', effSize: 1 },
     { src: 'pt', x: 40, y: 900, w: 120, size: 38, font: 'spectral', color: '#ffffff', effect: 'shadow' },
     { src: 'credit', x: 40, y: 1004, w: 670, size: 14, font: 'plex', color: '#f2eee4', effect: 'shadow' },
@@ -2961,36 +3221,53 @@ const PRESETS = {
     { src: 'credit', x: 44, y: 984, w: 470, size: 20, font: 'plex', italic: true, color: '#3a3d42', effect: 'none' },
   ],
   desktop: () => [
+    // A Windows 95 dialog on a teal desktop. Everything sits on a 3-unit grid, the way the real thing did:
+    // the window is raised, the art well and the status bar are sunken, and the buttons are the `winbtn`
+    // kind so they get the black outline a Win95 push button has. The type line and the P/T share the
+    // status bar's inner well, and the number sits on its own sunken field at the right of it \u2014 the two used
+    // to be drawn straight onto the bar, so they collided with its bevel and each other.
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#008080', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 40, y: 46, w: 670, h: 912, bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, pad: 0, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 50, y: 56, w: 650, h: 54, bg: 'titlebar', bgColor: '#000080', bgOp: 1, pad: 0, effect: 'none' },
-    { src: 'name', x: 62, y: 64, w: 400, size: 34, font: 'plex', color: '#ffffff', fit: true, effect: 'none' },
-    { src: 'cost', x: 430, y: 64, w: 120, size: 32, align: 'right', pip: 'pixel', effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 72, y: 126, w: 606, h: 440, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, pad: 0, effect: 'none' },
-    { src: 'art', x: 80, y: 134, w: 590, h: 424, bg: 'box', effect: 'none' },
-    { src: 'landmana', x: 76, y: 600, w: 120, h: 120, size: 100, align: 'center', vmid: true, pip: 'pixel', effect: 'none' },
-    { src: 'dialog', x: 206, y: 582, w: 480, h: 240, size: 30, font: 'plex', color: '#111111', align: 'left', vmid: true, lh: 1.12, pip: 'pixel', effect: 'none' },
-    { src: 'custom', text: 'OK', x: 262, y: 838, w: 186, size: 30, font: 'plex', color: '#111111', align: 'center', bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, pad: 12, effect: 'none' },
-    { src: 'custom', text: 'Cancel', x: 476, y: 838, w: 196, size: 30, font: 'plex', color: '#111111', align: 'center', bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, pad: 12, effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 52, y: 902, w: 646, h: 46, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, pad: 0, effect: 'none' },
-    { src: 'type', x: 64, y: 910, w: 470, size: 24, font: 'plex', color: '#111111', fit: true, effect: 'none' },
-    { src: 'pt', x: 560, y: 910, w: 126, size: 24, font: 'plex', color: '#111111', align: 'right', effect: 'none' },
-    { src: 'credit', x: 50, y: 976, w: 650, size: 20, font: 'plex', color: '#e8f6f6', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 36, y: 42, w: 678, h: 918, bg: 'raised', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 48, y: 54, w: 654, h: 54, bg: 'titlebar', bgColor: '#000080', bgOp: 1, pad: 0, effect: 'none' },
+    { src: 'name', x: 90, y: 62, w: 306, size: 30, font: 'win95', color: '#ffffff', fit: true, effect: 'none' },
+    // The cost rides in the title bar, clear of the three window buttons the titlebar background draws at its
+    // right. A cost layer below the title bar would be painted under the sunken art well, which is an opaque
+    // fill — only the sliver left of the well's edge survived.
+    { src: 'cost', x: 396, y: 58, w: 162, size: 46, align: 'right', pip: 'pixel', effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 66, y: 126, w: 618, h: 444, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
+    { src: 'art', x: 78, y: 138, w: 594, h: 420, bg: 'box', effect: 'none' },
+    { src: 'landmana', x: 84, y: 612, w: 120, h: 120, size: 100, align: 'center', vmid: true, pip: 'pixel', effect: 'none' },
+    { src: 'dialog', x: 240, y: 606, w: 444, h: 216, size: 30, font: 'win95', color: '#111111', align: 'left', vmid: true, lh: 1.14, pip: 'pixel', effect: 'none' },
+    { src: 'custom', text: 'OK', x: 288, y: 846, w: 174, size: 30, font: 'win95', color: '#111111', align: 'center', bg: 'winbtn', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 14, effect: 'none' },
+    { src: 'custom', text: 'Cancel', x: 480, y: 846, w: 204, size: 30, font: 'win95', color: '#111111', align: 'center', bg: 'winbtn', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 14, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 54, y: 912, w: 642, h: 46, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
+    { src: 'type', x: 72, y: 918, w: 424, h: 34, size: 24, font: 'win95', color: '#111111', fit: true, vmid: true, effect: 'none' },
+    { src: 'custom', text: '\u00a0', x: 528, y: 918, w: 162, h: 34, bg: 'sunken', bgColor: '#c0c0c0', bgOp: 1, bdW: 3, pad: 0, effect: 'none' },
+    { src: 'pt', x: 540, y: 918, w: 138, h: 34, size: 24, font: 'win95', color: '#111111', align: 'right', vmid: true, effect: 'none' },
+    { src: 'credit', x: 48, y: 978, w: 654, size: 20, font: 'win95', color: '#e8f6f6', effect: 'none' },
   ],
   rpgitem: () => [
-    { src: 'cost', x: 520, y: 40, w: 190, size: 50, align: 'right', pip: 'classic', effect: 'none' },
-    { src: 'custom', text: '\u00a0', x: 14, y: 462, w: 722, h: 488, bg: 'knotpanel', bgColor: '#2a2c30', bgOp: .86, pad: 0, bdColor: '#c9ccd0', effect: 'none' },
-    { src: 'type', x: 70, y: 490, w: 610, size: 30, font: 'antonio', color: '#c9ccd0', align: 'center', fit: true, effect: 'shadow', effColor: '#000000', effSize: .8 },
-    { src: 'name', x: 70, y: 526, w: 610, size: 70, font: 'antonio', upper: true, color: '#ffffff', align: 'center', fit: true, effect: 'shadow', effColor: '#000000', effSize: 1.2 },
-    { src: 'custom', text: '\u00a0', x: 90, y: 614, w: 570, h: 3, bg: 'box', bgColor: '#c9ccd0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'custom', text: 'MANA', x: 100, y: 634, w: 110, size: 34, font: 'antonio', color: '#bfc2c6', effect: 'shadow' },
-    { src: 'cost', x: 196, y: 630, w: 200, size: 38, align: 'left', pip: 'classic', effect: 'none' },
-    { src: 'custom', text: 'MANA VALUE', x: 380, y: 634, w: 230, size: 34, font: 'antonio', color: '#bfc2c6', align: 'right', effect: 'shadow' },
-    { src: 'mv', x: 620, y: 624, w: 70, size: 52, font: 'antonio', color: '#ffffff', effect: 'shadow', effColor: '#000000', effSize: 1 },
-    { src: 'rulesflavor', x: 70, y: 700, w: 610, h: 186, size: 32, font: 'antonio', color: '#e6e8ea', align: 'center', vmid: true, lh: 1.12, pip: 'classic', kw: 'color', kwColor: '#ffffff', effect: 'shadow', effColor: '#000000', effSize: .8 },
-    { src: 'pt', x: 590, y: 892, w: 110, size: 38, font: 'antonio', color: '#ffffff', align: 'right', effect: 'shadow' },
-    { src: 'custom', text: '\u00a0', x: 0, y: 962, w: 750, h: 88, bg: 'box', bgColor: '#000000', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'credit', x: 40, y: 986, w: 560, size: 20, font: 'plex', color: '#f2f2f2', effect: 'none' },
+    // Every layer that carries the card s words sits inside the panel s inner border (x36-714, y484-928),
+    // because that is the only part of the panel the corner knots and the border lines do not cross. The
+    // panel is first so the name plate is drawn on top of it.
+    { src: "custom", text: " ", x: 14, y: 462, w: 722, h: 488, bg: "knotpanel", bgColor: "#2a2c30", bgOp: .86, pad: 0, bdColor: "#c9ccd0", effect: "none" },
+    { src: "name", x: 56, y: 484, w: 638, size: 52, font: "antonio", upper: true, color: "#ffffff", align: "center", fit: true, bg: "box", bgColor: "#3a3d42", bgOp: .95, pad: 12, rad: 8, bdW: 3, bdColor: "#c9ccd0", effect: "shadow", effColor: "#000000", effSize: 1 },
+    { src: "type", x: 56, y: 588, w: 638, size: 26, font: "antonio", color: "#c9ccd0", align: "center", fit: true, effect: "shadow", effColor: "#000000", effSize: .8 },
+    { src: "custom", text: " ", x: 66, y: 638, w: 618, h: 3, bg: "box", bgColor: "#c9ccd0", bgOp: 1, pad: 0, rad: 0, effect: "none" },
+    { src: "custom", text: "MANA", x: 66, y: 648, w: 110, size: 32, font: "antonio", color: "#bfc2c6", effect: "shadow" },
+    // The card s cost, left-aligned after the MANA label. This is the design s only cost row: a second one
+    // in the top-right corner read as a duplicate, so there is none up there.
+    { src: "cost", x: 172, y: 642, w: 396, size: 42, align: "left", pip: "classic", effect: "none" },
+    { src: "custom", text: "MANA VALUE", x: 568, y: 648, w: 100, size: 24, font: "antonio", color: "#bfc2c6", align: "right", effect: "shadow" },
+    { src: "mv", x: 674, y: 638, w: 40, size: 46, font: "antonio", color: "#ffffff", align: "right", effect: "shadow", effColor: "#000000", effSize: 1 },
+    { src: "rulesflavor", x: 66, y: 700, w: 618, h: 148, size: 32, font: "antonio", color: "#e6e8ea", align: "center", vmid: true, lh: 1.12, pip: "classic", kw: "color", kwColor: "#ffffff", effect: "shadow", effColor: "#000000", effSize: .8 },
+    // The stat line. It used to be a bare pt at x590-700, which put it under the panel s bottom-right
+    // knot (x686-736, y900-950) and printed a planeswalker s loyalty as a lone unlabelled number. The plate
+    // stops at x672, clear of the knot, and ptline names the number when it needs a name.
+    { src: "custom", text: " ", x: 416, y: 876, w: 256, h: 48, bg: "box", bgColor: "#15161a", bgOp: .92, pad: 0, rad: 8, bdW: 2, bdColor: "#c9ccd0", effect: "none" },
+    { src: "ptline", x: 428, y: 870, w: 232, size: 32, font: "antonio", color: "#ffffff", align: "right", fit: true, effect: "shadow", effColor: "#000000", effSize: .8 },
+    { src: "custom", text: " ", x: 0, y: 962, w: 750, h: 88, bg: "box", bgColor: "#000000", bgOp: 1, pad: 0, rad: 0, effect: "none" },
+    { src: "credit", x: 40, y: 986, w: 560, size: 20, font: "plex", color: "#f2f2f2", effect: "none" },
   ],
   boardgame: () => [
     { src: 'custom', text: '\u00a0', x: 30, y: 30, w: 690, h: 990, bg: 'box', tintBg: 'pastel', bgColor: '#cfe3dc', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
@@ -3006,8 +3283,11 @@ const PRESETS = {
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', tintBg: 'pastel', bgColor: '#bdeeee', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'art', x: 100, y: 250, w: 570, h: 470, bdW: 3, bdColor: '#333338', effect: 'none' },
     { src: 'maintype', x: 100, y: 22, w: 510, size: 160, font: 'antonio', upper: true, color: '#3c3c40', fit: true, lh: .88, effect: 'extrude', effColor: '#a8a8ac', effSize: 1.2 },
-    { src: 'illus', x: 230, y: 206, w: 390, size: 22, font: 'plex', upper: true, color: '#333338', align: 'center', fit: true, effect: 'none' },
+    { src: 'illus', x: 100, y: 206, w: 340, size: 22, font: 'plex', upper: true, color: '#333338', align: 'left', fit: true, effect: 'none' },
     { src: 'landmana', x: 540, y: 50, w: 210, h: 210, size: 200, align: 'center', vmid: true, pip: 'glyph', tintPip: 'main', pipColor: '#3a7bd5', effect: 'none' },
+    // The big symbol above says what colour the card is; this says what it costs. Without it a gold card
+    // printed no cost at all, because the colour symbol for a multicolour card is empty.
+    { src: 'cost', x: 440, y: 198, w: 280, size: 36, align: 'right', pip: 'glyph', tintPip: 'main', pipColor: '#3a7bd5', effect: 'none' },
     { src: 'rulesflavor', x: 100, y: 734, w: 570, h: 146, size: 26, font: 'plex', color: '#333338', align: 'center', vmid: true, pad: 6, pip: 'classic', effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 100, y: 890, w: 570, h: 8, bg: 'box', tintBg: 'main', bgColor: '#3a7bd5', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'name', x: 100, y: 902, w: 570, size: 76, font: 'plex', upper: true, tintInk: 'deep', color: '#2a3a6a', align: 'center', fit: true, ls: 18, effect: 'none' },
@@ -3030,7 +3310,7 @@ const PRESETS = {
   altered: () => [
     { src: 'custom', text: '\u00a0', x: 26, y: 26, w: 698, h: 998, bg: 'box', bgColor: '#4a4b50', bgOp: 1, pad: 0, rad: 10, bdW: 3, bdColor: '#1a1a1c', effect: 'none' },
     { src: 'art', x: 66, y: 76, w: 618, h: 540, bdW: 6, bdColor: '#141416', effect: 'none' },
-    { src: 'cost', x: 560, y: 34, w: 140, size: 34, align: 'right', pip: 'classic', effect: 'none' },
+    { src: 'cost', x: 500, y: 26, w: 200, size: 52, align: 'right', pip: 'classic', effect: 'none' },
     { src: 'name', x: 60, y: 82, w: 630, size: 104, font: 'fraktur', color: '#f490b8', align: 'center', fit: true, lh: .92, effect: 'outline', effColor: '#26101c', effSize: 1.4 },
     { src: 'custom', text: '\u00a0', x: 66, y: 638, w: 618, h: 342, bg: 'box', bgColor: '#141416', bgOp: 1, pad: 0, rad: 12, bdW: 5, bdColor: '#66676c', effect: 'none' },
     { src: 'rules', x: 90, y: 654, w: 570, h: 236, size: 30, font: 'marker', upper: true, color: '#f6f6f2', lh: 1.12, vmid: true, pip: 'classic', effect: 'none' },
@@ -3041,7 +3321,9 @@ const PRESETS = {
   linocut: () => [
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#2b2b6e', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 22, y: 22, w: 706, h: 1006, bg: 'linofill', tintBg: 'main', bgColor: '#2f9fc2', bgOp: 1, pad: 0, rad: 8, effect: 'none' },
-    { src: 'name', x: 56, y: 46, w: 638, size: 52, font: 'medieval', tintInk: 'main', color: '#2f9fc2', fit: true, bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 14, rad: 34, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', effect: 'none' },
+    { src: 'name', x: 56, y: 46, w: 442, size: 52, font: 'medieval', tintInk: 'main', color: '#2f9fc2', fit: true, bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 14, rad: 34, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', effect: 'none' },
+    // The cost row shares the name's plaque row, on its own white plate to the right of it.
+    { src: 'cost', x: 514, y: 50, w: 180, size: 46, align: 'right', bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 10, rad: 34, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', pip: 'outline', tintPip: 'main', pipColor: '#2f9fc2', effect: 'none' },
     { src: 'art', x: 56, y: 142, w: 638, h: 450, rad: 18, bdW: 5, bdColor: '#fbfbf7', effect: 'none' },
     { src: 'type', x: 56, y: 610, w: 638, size: 34, font: 'medieval', tintInk: 'main', color: '#2f9fc2', fit: true, bg: 'box', bgColor: '#fbfbf7', bgOp: 1, pad: 12, rad: 34, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 56, y: 690, w: 638, h: 312, bg: 'rays', bgColor: '#fbfbf7', bgOp: 1, pad: 0, rad: 18, bdW: 5, tintBd: 'main', bdColor: '#2f9fc2', effect: 'none' },
@@ -3053,8 +3335,8 @@ const PRESETS = {
   handdrawn: () => [
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#f6f5f0', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 10, y: 10, w: 730, h: 1030, bg: 'box', bgColor: '#000000', bgOp: 0, pad: 0, rad: 46, bdW: 10, bdColor: '#151515', effect: 'none' },
-    { src: 'name', x: 40, y: 34, w: 600, size: 64, font: 'shadows', upper: true, color: '#3a3a3c', align: 'center', fit: true, effect: 'none' },
-    { src: 'cost', x: 600, y: 44, w: 110, size: 34, align: 'right', pip: 'outline', pipColor: '#3a3a3c', effect: 'none' },
+    { src: 'name', x: 40, y: 34, w: 540, size: 64, font: 'shadows', upper: true, color: '#3a3a3c', align: 'center', fit: true, effect: 'none' },
+    { src: 'cost', x: 552, y: 34, w: 172, size: 42, align: 'right', pip: 'outline', pipColor: '#3a3a3c', effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 26, y: 128, w: 698, h: 3, bg: 'box', bgColor: '#2a2a2c', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'art', x: 26, y: 132, w: 698, h: 560, bg: 'box', effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 26, y: 692, w: 698, h: 3, bg: 'box', bgColor: '#2a2a2c', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
@@ -3102,12 +3384,14 @@ const PRESETS = {
   ],
   retroposter: () => [
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', tintBg: 'pastel', bgColor: '#a6d6ae', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
-    { src: 'art', x: 52, y: 120, w: 646, h: 760, rad: 34, bdW: 16, tintBd: 'main', bdColor: '#2f6b5a', effect: 'none' },
-    { src: 'name', x: 34, y: 14, w: 682, size: 170, font: 'righteous', upper: true, tintInk: 'main', color: '#2f6b5a', align: 'center', fit: true, lh: .9, effect: 'outline', effColor: '#fff6dc', effSize: 2.2 },
+    { src: 'art', x: 52, y: 262, w: 646, h: 618, rad: 34, bdW: 16, tintBd: 'main', bdColor: '#2f6b5a', effect: 'none' },
+    { src: 'name', x: 34, y: 6, w: 682, size: 118, font: 'righteous', upper: true, tintInk: 'main', color: '#2f6b5a', align: 'center', fit: true, lh: .9, effect: 'outline', effColor: '#fff6dc', effSize: 2.2 },
+    // Under the big title, right-aligned in the gutter the poster leaves above the art window.
+    { src: 'cost', x: 34, y: 190, w: 682, size: 56, align: 'right', pip: 'glyph', tintPip: 'main', pipColor: '#2f6b5a', effect: 'outline', effColor: '#fff6dc', effSize: 1.6 },
     { src: 'landmana', x: 300, y: 806, w: 150, h: 150, size: 96, align: 'center', vmid: true, bg: 'box', tintBg: 'pale', bgColor: '#e3eccb', bgOp: 1, pad: 0, rad: 75, bdW: 12, tintBd: 'main', bdColor: '#2f6b5a', pip: 'glyph', tintPip: 'main', pipColor: '#2f6b5a', effect: 'none' },
     { src: 'typeleft', x: 60, y: 900, w: 240, size: 34, font: 'righteous', tintInk: 'main', color: '#2f6b5a', fit: true, effect: 'none' },
     { src: 'subtype', x: 450, y: 900, w: 240, size: 34, font: 'righteous', tintInk: 'main', color: '#2f6b5a', align: 'right', fit: true, effect: 'none' },
-    { src: 'rulesx', x: 90, y: 640, w: 570, h: 150, size: 24, font: 'crimson', color: '#2a2a2a', align: 'center', vmid: true, bg: 'box', bgColor: '#fffaf0', bgOp: .92, pad: 14, rad: 18, pip: 'classic', effect: 'none' },
+    { src: 'rulesx', x: 90, y: 626, w: 570, h: 150, size: 24, font: 'crimson', color: '#2a2a2a', align: 'center', vmid: true, bg: 'box', bgColor: '#fffaf0', bgOp: .92, pad: 14, rad: 18, pip: 'classic', effect: 'none' },
     { src: 'pt', x: 590, y: 960, w: 110, size: 40, font: 'righteous', tintInk: 'main', color: '#2f6b5a', align: 'right', effect: 'none' },
     { src: 'credit', x: 200, y: 976, w: 350, size: 15, font: 'crimson', color: '#fffaf0', align: 'center', bg: 'box', tintBg: 'main', bgColor: '#2f6b5a', bgOp: 1, pad: 10, rad: 16, effect: 'none' },
   ],
@@ -3166,7 +3450,9 @@ const PRESETS = {
   scrawl: () => [
     { src: 'name', x: 30, y: 36, w: 690, size: 74, font: 'pacifico', color: '#3fb6ff', align: 'center', fit: true, effect: 'outline', effColor: '#0b1a33' },
     { src: 'type', x: 480, y: 160, w: 230, size: 34, font: 'marker', color: '#ffffff', align: 'center', effect: 'shadow' },
-    { src: 'cost', x: 40, y: 170, w: 220, size: 40, pip: 'glyph', pipColor: '#ffffff', effect: 'shadow' },
+    // Right-aligned from x470: at x40 the row ran from x52 leftward for any cost past a couple of symbols,
+    // which put the first pip off the card.
+    { src: 'cost', x: 250, y: 170, w: 220, size: 40, align: 'right', pip: 'glyph', pipColor: '#ffffff', effect: 'shadow' },
     { src: 'rules', x: 30, y: 300, w: 250, size: 32, font: 'caveat', color: '#ffffff', effect: 'shadow' },
     { src: 'flavor', x: 470, y: 520, w: 250, size: 30, font: 'caveat', color: '#ffffff', effect: 'shadow' },
     { src: 'pt', x: 590, y: 880, w: 120, size: 60, font: 'marker', color: '#ffffff', align: 'center', effect: 'shadow' },
@@ -3204,6 +3490,17 @@ function layerText(L, o) {
       const [pw, tg] = String(o.pt || '').split('/').map(x => x.trim());
       return pw && tg ? `ATK  ${pw}\nDEF  ${tg}` : o.pt || '';
     }
+    // A planeswalker's or a battle's number, bare — the same number the `pt` layer draws, so a custom
+    // layout that wants the shield shape can ask for it by name. No word goes with it: the shield says
+    // which number this is the way a pip says what a mana cost costs.
+    case 'loyalty': {
+      return numberKind(o) === 'pt' ? '' : o.pt || '';
+    }
+    // One layer that always prints the right number: a creature's power/toughness, or a planeswalker's or a
+    // battle's single number. `pt` prints the number whatever it means, which in a design with its own stat
+    // panel reads as a creature's power with half of it missing.
+    case 'ptline':
+      return o.pt || '';
     case 'kanji': { // the land's name in Japanese; any other card keeps its own name
       const KANJI = { plains: '平地', island: '島', swamp: '沼', mountain: '山', forest: '森', wastes: '荒地' };
       const n = (o.name || '').toLowerCase().replace(/^snow-covered\s+/, '');
@@ -3361,6 +3658,10 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
   let text = layerText(L, o);
   // a custom layer with no text but a background and a set height is a plain panel or stripe band
   const panel = L.src === 'custom' && L.bg && L.bg !== 'none' && +L.h > 0;
+  // A layer with no text of its own and a height is a shape — a panel, a stripe, a divider rule — and its
+  // height is the height that was authored. Letting it fall through to the text path gave it a line box
+  // instead, so the rpgitem design's 3-unit divider drew as a 33-unit slab and covered the type line above it.
+  const shape = panel && (!text || !String(text).trim());
   if (!text || !String(text).trim()) { if (!panel) return null; text = ' '; }
   const fam = FONTS[L.font] || FONTS.spectral;
   ensureFont(fam, text);
@@ -3392,7 +3693,12 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     kind = 'cost';
     const syms = parseCost(text);
     if (!syms.length) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; return null; }
-    const d = size, gap = d * .1 + (+L.ls || 0), len = syms.length * d + Math.max(0, syms.length - 1) * gap;
+    // A design's cost layer has a box, and the row has to live inside it: without this the row grew left
+    // out of its own box and off the card for anything past four or five symbols. A vertical row is
+    // measured against the card's height instead, so it cannot run past the bottom either.
+    const room = L.vert ? H - SAFE - 2 - +L.y - 2 * pad : Math.max(40, +L.w - 2 * pad);
+    const d = fitCostD(syms.length, size, room);
+    const gap = d * .1 + (+L.ls || 0), len = syms.length * d + Math.max(0, syms.length - 1) * gap;
     bw = L.vert ? d + 2 * pad : +L.w; bh = (L.vert ? len : d) + 2 * pad;
     if (!L.vert && L.bg && L.bg !== 'none') {
       const fit = Math.max(len + 2 * pad, L.bg === 'price' ? size * 2.8 : 0);
@@ -3442,8 +3748,10 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     curKw = L.kw === 'color' || L.kw === 'chip' ? { mode: L.kw, color: L.kwColor, ink: lum(/^#[0-9a-f]{6}$/i.test(L.kwColor) ? L.kwColor : '#f5e663') > .55 ? '#0a0a0a' : '#ffffff' } : null;
     const up = s => lz(L.upper ? upper(s || '') : (s || ''));
     const paras = L.src === 'rulesflavor'
-      ? [...(o.rules ? parseRich(up(o.rules), !!L.italic) : []), ...(o.flavor ? parseRich(up(o.flavor), true) : [])]
-      : parseRich(up(text), L.src === 'flavor' || !!L.italic);
+      ? [...(o.rules ? parseRules(o, up(o.rules), !!L.italic) : []), ...(o.flavor ? parseRich(up(o.flavor), true) : [])]
+      : L.src === 'rules' || L.src === 'rulesx' || L.src === 'dialog'
+        ? parseRules(o, up(text), !!L.italic)
+        : parseRich(up(text), L.src === 'flavor' || !!L.italic);
     avail = Math.max(10, +L.w - 2 * pad);
     const fixedH = +L.h > 0 ? Math.max(4, +L.h - 2 * pad) : 0;
     for (;;) {
@@ -3454,7 +3762,7 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
       if ((over || wraps || tall) && size > minSize) size = Math.max(minSize, size - Math.max(1, size * .04)); else break;
     }
     // still too tall at the smallest readable size: the box grows upward (the bottom stays put)
-    if (fixedH && lay.h > fixedH) grow = lay.h - fixedH;
+    if (fixedH && lay.h > fixedH) grow = shape ? 0 : lay.h - fixedH;
     // a one-line layer (fit) that still wraps at the smallest size: keep it on one line and narrow the letters
     if (L.fit && lay.paras.some(p => p.length > 1)) lay = layoutRich(g, paras, size, 1e6);
     // still too wide (a single line that can't wrap): narrow the letters a little instead of shrinking them
@@ -3603,25 +3911,54 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     g.restore();
   }
   else if (L.bg === 'raised' || L.bg === 'sunken') { // classic 3D edges: light top-left, dark bottom-right (or the other way round)
-    const up = L.bg === 'raised', lt = '#ffffff', dk = '#404040', md = '#808080';
+    // The Windows 95 edge is two one-pixel steps, and which colour goes where is not symmetric: raised is
+    // hilight then light on the top and left, dkshadow then shadow on the bottom and right; sunken is the
+    // same four colours with the shadow pairs moved to the top and left. The old code used #404040 for both
+    // kinds of dark, so a sunken panel's outer shadow was nearly black and read as a drawn outline rather
+    // than as depth. `bdW` is the step width — it is not used for anything else on these two kinds.
+    const up = L.bg === 'raised';
+    const a0 = up ? '#ffffff' : '#808080', a1 = up ? '#000000' : '#ffffff';
+    const b0 = up ? '#dfdfdf' : '#000000', b1 = up ? '#808080' : '#dfdfdf';
+    const w0 = Math.max(1, +L.bdW || 3);
     g.save(); g.fillStyle = hexA(L.bgColor || '#c0c0c0', +L.bgOp || 1); g.fillRect(bx, by, bw, bh);
-    const edge = (a, b, w0) => { g.fillStyle = a; g.fillRect(bx, by, bw, w0); g.fillRect(bx, by, w0, bh); g.fillStyle = b; g.fillRect(bx, by + bh - w0, bw, w0); g.fillRect(bx + bw - w0, by, w0, bh); };
-    edge(up ? lt : dk, up ? dk : lt, 3); g.save(); g.translate(3, 3); bw -= 6; bh -= 6; edge(up ? '#dfdfdf' : md, up ? md : '#dfdfdf', 3); bw += 6; bh += 6; g.restore();
+    const edge = (a, b, t) => { g.fillStyle = a; g.fillRect(bx, by, bw, t); g.fillRect(bx, by, t, bh); g.fillStyle = b; g.fillRect(bx, by + bh - t, bw, t); g.fillRect(bx + bw - t, by, t, bh); };
+    edge(a0, a1, w0); g.save(); g.translate(w0, w0); bw -= 2 * w0; bh -= 2 * w0; edge(b0, b1, w0); bw += 2 * w0; bh += 2 * w0; g.restore();
     g.restore();
   }
-  else if (L.bg === 'titlebar') { // a window title bar with minimise, maximise and close buttons
+  else if (L.bg === 'titlebar') { // a window title bar: system menu box, title, minimise/maximise/close
     g.save(); const gr = g.createLinearGradient(bx, 0, bx + bw, 0); gr.addColorStop(0, '#000080'); gr.addColorStop(1, '#1084d0');
     g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
     const s0 = bh - 14, y0 = by + 7;
+    // One button, used for the system menu box at the left and the three window buttons at the right. A
+    // Win95 button is a black 1px outline around a two-step bevel: white then the face colour on the top
+    // and left, the face colour then near-black on the bottom and right.
+    const btn = (x0, t) => {
+      g.fillStyle = '#000000'; g.fillRect(x0 - t, y0 - t, s0 + 2 * t, s0 + 2 * t);
+      g.fillStyle = '#c0c0c0'; g.fillRect(x0, y0, s0, s0);
+      g.fillStyle = '#ffffff'; g.fillRect(x0, y0, s0, t); g.fillRect(x0, y0, t, s0);
+      g.fillStyle = '#808080'; g.fillRect(x0, y0 + s0 - t, s0, t); g.fillRect(x0 + s0 - t, y0, t, s0);
+    };
+    const t = Math.max(2, Math.round(s0 / 12));
+    btn(bx + 7, t);
+    g.strokeStyle = '#000'; g.lineWidth = Math.max(2, s0 * .07); g.beginPath(); // the system box's bar
+    g.moveTo(bx + 7 + s0 * .3, y0 + s0 * .5); g.lineTo(bx + 7 + s0 * .7, y0 + s0 * .5); g.stroke();
     [['min', bw - 3 * s0 - 18], ['max', bw - 2 * s0 - 14], ['x', bw - s0 - 6]].forEach(([k, xo]) => {
-      const x0 = bx + xo; g.fillStyle = '#c0c0c0'; g.fillRect(x0, y0, s0, s0);
-      g.fillStyle = '#fff'; g.fillRect(x0, y0, s0, 2); g.fillRect(x0, y0, 2, s0); g.fillStyle = '#404040'; g.fillRect(x0, y0 + s0 - 2, s0, 2); g.fillRect(x0 + s0 - 2, y0, 2, s0);
-      g.strokeStyle = '#000'; g.lineWidth = 3; g.beginPath();
-      if (k === 'min') { g.moveTo(x0 + s0 * .25, y0 + s0 * .72); g.lineTo(x0 + s0 * .6, y0 + s0 * .72); }
+      const x0 = bx + xo; btn(x0, t);
+      g.strokeStyle = '#000'; g.lineWidth = Math.max(2, s0 * .07); g.beginPath();
+      if (k === 'min') { g.moveTo(x0 + s0 * .25, y0 + s0 * .68); g.lineTo(x0 + s0 * .62, y0 + s0 * .68); }
       else if (k === 'max') { g.rect(x0 + s0 * .22, y0 + s0 * .22, s0 * .56, s0 * .52); g.moveTo(x0 + s0 * .22, y0 + s0 * .3); g.lineTo(x0 + s0 * .78, y0 + s0 * .3); }
       else { g.moveTo(x0 + s0 * .27, y0 + s0 * .27); g.lineTo(x0 + s0 * .73, y0 + s0 * .73); g.moveTo(x0 + s0 * .73, y0 + s0 * .27); g.lineTo(x0 + s0 * .27, y0 + s0 * .73); }
       g.stroke();
     });
+    g.restore();
+  }
+  else if (L.bg === 'winbtn') { // a Windows push button: black outline around the same two-step bevel
+    const t = Math.max(2, +L.bdW || 3);
+    g.save(); g.fillStyle = '#000000'; g.fillRect(bx, by, bw, bh);
+    const x0 = bx + t, y0 = by + t, w0 = bw - 2 * t, h0 = bh - 2 * t;
+    g.fillStyle = hexA(L.bgColor || '#c0c0c0', +L.bgOp || 1); g.fillRect(x0, y0, w0, h0);
+    g.fillStyle = '#ffffff'; g.fillRect(x0, y0, w0, t); g.fillRect(x0, y0, t, h0);
+    g.fillStyle = '#808080'; g.fillRect(x0, y0 + h0 - t, w0, t); g.fillRect(x0 + w0 - t, y0, t, h0);
     g.restore();
   }
   else if (L.bg === 'knotpanel') { // a game menu panel: dark glass, a double line border and knotted corners
@@ -4550,6 +4887,9 @@ $('delLayer').onclick = () => {
   st.sel = st.layers.length ? st.layers[Math.min(i, st.layers.length - 1)].id : null; layersChanged();
 };
 $('layout').addEventListener('input', () => { st.blank = false; updateLook(); });
+// Typing the type line is what tells the tool whether the number in the corner is a power and a toughness,
+// a loyalty or a defense, so the label follows it as it is typed.
+$('type').addEventListener('input', syncNumberField);
 for (const k of [...TEXT_KEYS, 'rarity']) $(k).addEventListener('input', renderLayerList);
 
 $('clear').onclick = () => { // a completely blank template: no text, layers, border, art or effects
@@ -5027,7 +5367,10 @@ async function sf(path, opts = {}) {
   const r = await fetch(path.startsWith('http') ? path : SF + path, { ...opts, headers: { Accept: 'application/json', ...(opts.headers || {}) } });
   const j = await r.json().catch(() => null);
   if (!r.ok || !j || j.object === 'error') throw new Error(j?.details || 'Scryfall didn’t answer. Check your connection.');
-  if (cacheable) sfStore(path, j);
+  // Awaited, not fired and forgotten: the caller fills the form as soon as this returns, and a reload
+  // between that and the IndexedDB write landed would miss the reply that was supposed to be cached —
+  // which is exactly what the "second lookup is served from IndexedDB" test caught, one run in four.
+  if (cacheable) await sfStore(path, j);
   return j;
 }
 const RARITY_CODE = { common: 'C', uncommon: 'U', rare: 'R', mythic: 'M', special: 'R', bonus: 'M' };
@@ -5040,7 +5383,8 @@ function cardText(card, i = 0) {
   const colors = f.colors || card.colors || [], type = pick('type_line') || '';
   const color = colors.length > 1 ? 'M' : colors[0] || (/\bLand\b/.test(type) ? 'L' : /\bArtifact\b/.test(type) ? 'A' : 'C');
   return {
-    name: pick('name') || '', cost: pick('mana_cost') || '', type, rules: pick('oracle_text') || '', flavor: pick('flavor_text') || '', pt: String(pt),
+    name: pick('name') || '', cost: pick('mana_cost') || '', type, type_line: type,
+    rules: pick('oracle_text') || '', flavor: pick('flavor_text') || '', pt: String(pt),
     info: [card.collector_number, (card.set || '').toUpperCase(), (card.lang || 'en').toUpperCase()].filter(Boolean).join(' · '),
     rarity: RARITY_CODE[card.rarity] || '', setCode: (card.set || '').toUpperCase(), color, artist: pick('artist') || '',
     art: (f.image_uris || card.image_uris || {}).art_crop || '',

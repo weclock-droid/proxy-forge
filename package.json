@@ -11,6 +11,10 @@
     "test": "node --test \"tests/**/*.test.mjs\"",
     "test:headed": "PWHEADED=1 node --test \"tests/**/*.test.mjs\"",
     "refs": "node tools/dump-refs.mjs",
+    "safe-area": "node tools/check-safe-area.mjs",
+    "real-cards": "node tools/check-real-cards.mjs",
+    "real-cards:strict": "node tools/check-real-cards.mjs --strict",
+    "fixtures": "node tools/fetch-fixtures.mjs",
     "verify": "npm run check && npm test"
   },
   "devDependencies": {

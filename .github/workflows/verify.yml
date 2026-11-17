@@ -3,7 +3,10 @@ name: verify
 # The page is published from this repo, so a stale build or a broken layout should fail here rather
 # than reach the live site. `--check` fails if proxy-forge.html no longer matches the markdown it is
 # built from; the tests drive a real browser with the CDNs and Scryfall stubbed, so nothing hits the
-# network and the run is deterministic.
+# network and the run is deterministic. The real-card pass renders the committed Scryfall fixtures,
+# which is the same stub-and-render trick over 48 real cards instead of the hand-written ones — it
+# fails on text pushed outside the safety margin, and reports (without failing) the planeswalker and
+# battle fields the tool does not understand yet.
 on:
   push:
     branches: [main]
@@ -22,3 +25,4 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run verify
+      - run: npm run real-cards

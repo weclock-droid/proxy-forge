@@ -1,0 +1,4039 @@
+[
+ {
+  "object": "card",
+  "resource_id": "B7AEC87F0A44C4F520448285CB2260C3115A6011FA39EC54251DCEBC72333ABB",
+  "name": "Chandra, Torch of Defiance",
+  "lang": "en",
+  "released_at": "2026-10-02",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-09-02T06:08:45Z",
+  "mana_cost": "{2}{R}{R}",
+  "cmc": 4,
+  "type_line": "Legendary Planeswalker — Chandra",
+  "oracle_text": "+1: Exile the top card of your library. You may cast that card. If you don't, Chandra deals 2 damage to each opponent.\n+1: Add {R}{R}.\n−3: Chandra deals 4 damage to target creature.\n−7: You get an emblem with \"Whenever you cast a spell, this emblem deals 5 damage to any target.\"",
+  "loyalty": "4",
+  "colors": [
+   "R"
+  ],
+  "color_identity": [
+   "R"
+  ],
+  "keywords": [],
+  "produced_mana": [
+   "R"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "1913788b-36d3-4488-a744-71e52b1ecb5c",
+    "component": "combo_piece",
+    "name": "Chandra, Torch of Defiance",
+    "type_line": "Legendary Planeswalker — Chandra",
+    "uri": "https://api.scryfall.com/cards/1913788b-36d3-4488-a744-71e52b1ecb5c"
+   },
+   {
+    "object": "related_card",
+    "id": "5fdc53ba-e023-4ee4-bb14-fd8c52955ee9",
+    "component": "combo_piece",
+    "name": "Chandra, Torch of Defiance Emblem",
+    "type_line": "Emblem — Chandra",
+    "uri": "https://api.scryfall.com/cards/5fdc53ba-e023-4ee4-bb14-fd8c52955ee9"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "fra",
+  "set_name": "Reality Fracture",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/6595985e-39cf-4ca3-b43d-dd3e64749fdc",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afra&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/fra?utm_source=api",
+  "collector_number": "244",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Kieran Yanner",
+  "artist_ids": [
+   "aa7e89ed-d294-4633-9057-ce04dacfcfa4"
+  ],
+  "illustration_id": "a4309b19-227c-49d8-8202-ce1fb6befa3d",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 1417
+ },
+ {
+  "object": "card",
+  "name": "Nissa, Steward of Elements",
+  "lang": "en",
+  "released_at": "2020-04-17",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:25:45Z",
+  "mana_cost": "{X}{G}{U}",
+  "cmc": 2,
+  "type_line": "Legendary Planeswalker — Nissa",
+  "oracle_text": "+2: Scry 2.\n0: Look at the top card of your library. If it's a land card or a creature card with mana value less than or equal to the number of loyalty counters on Nissa, you may put that card onto the battlefield.\n−6: Untap up to two target lands you control. They become 5/5 Elemental creatures with flying and haste until end of turn. They're still lands.",
+  "loyalty": "X",
+  "colors": [
+   "G",
+   "U"
+  ],
+  "color_identity": [
+   "G",
+   "U"
+  ],
+  "keywords": [
+   "Scry"
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "c20",
+  "set_name": "Commander 2020",
+  "set_type": "commander",
+  "set_uri": "https://api.scryfall.com/sets/f60ec786-1f8d-42f7-9abc-0d880fe243f6",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Ac20&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/c20?utm_source=api",
+  "collector_number": "224",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Howard Lyon",
+  "artist_ids": [
+   "6dd06426-59fe-4b9c-aad5-6da8446a5c3d"
+  ],
+  "illustration_id": "13d2f913-8d69-4811-8eb0-5f90e5d44823",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 7083,
+  "penny_rank": 3120,
+  "preview": {
+   "source": "Olivia Gobert-Hicks",
+   "source_uri": "https://twitter.com/goberthicks/status/1246894948110069761",
+   "previewed_at": "2020-04-05"
+  }
+ },
+ {
+  "object": "card",
+  "resource_id": "3E09513108507316D1A3B214A0365782E95E294BD6F8A275F2CACF7142ABC239",
+  "name": "Sarkhan the Masterless",
+  "lang": "en",
+  "released_at": "2023-08-04",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:03:51Z",
+  "mana_cost": "{3}{R}{R}",
+  "cmc": 5,
+  "type_line": "Legendary Planeswalker — Sarkhan",
+  "oracle_text": "Whenever a creature attacks you or a planeswalker you control, each Dragon you control deals 1 damage to that creature.\n+1: Until end of turn, each planeswalker you control becomes a 4/4 red Dragon creature and gains flying.\n−3: Create a 4/4 red Dragon creature token with flying.",
+  "loyalty": "5",
+  "colors": [
+   "R"
+  ],
+  "color_identity": [
+   "R"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "2aced16a-ebbd-47bb-a4c4-9454afa9971c",
+    "component": "combo_piece",
+    "name": "Sarkhan the Masterless",
+    "type_line": "Legendary Planeswalker — Sarkhan",
+    "uri": "https://api.scryfall.com/cards/2aced16a-ebbd-47bb-a4c4-9454afa9971c"
+   },
+   {
+    "object": "related_card",
+    "id": "9b3ed483-a6c9-4f12-bd76-e205ffb8afd4",
+    "component": "token",
+    "name": "Dragon",
+    "type_line": "Token Creature — Dragon",
+    "uri": "https://api.scryfall.com/cards/9b3ed483-a6c9-4f12-bd76-e205ffb8afd4"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "cmm",
+  "set_name": "Commander Masters",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/cd05036f-2698-43e6-a48e-5c8d82f0a551",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Acmm&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/cmm?utm_source=api",
+  "collector_number": "880",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Kieran Yanner",
+  "artist_ids": [
+   "aa7e89ed-d294-4633-9057-ce04dacfcfa4"
+  ],
+  "illustration_id": "ca4e62d2-c4d9-4ff0-9e6b-2661f604493a",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 5692,
+  "penny_rank": 1552
+ },
+ {
+  "object": "card",
+  "name": "Jace, the Mind Sculptor",
+  "lang": "en",
+  "released_at": "2020-08-07",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:09:56Z",
+  "mana_cost": "{2}{U}{U}",
+  "cmc": 4,
+  "type_line": "Legendary Planeswalker — Jace",
+  "oracle_text": "+2: Look at the top card of target player's library. You may put that card on the bottom of that player's library.\n0: Draw three cards, then put two cards from your hand on top of your library in any order.\n−1: Return target creature to its owner's hand.\n−12: Exile all cards from target player's library, then that player shuffles their hand into their library.",
+  "loyalty": "3",
+  "colors": [
+   "U"
+  ],
+  "color_identity": [
+   "U"
+  ],
+  "keywords": [],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "2xm",
+  "set_name": "Double Masters",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/372dafe8-b5d1-4b81-998f-3ae96b59498a",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3A2xm&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/2xm?utm_source=api",
+  "collector_number": "56",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Jason Chan",
+  "artist_ids": [
+   "8062d5a9-51b6-4822-933f-fa9e9dba8416"
+  ],
+  "illustration_id": "b0ab416a-c7a8-4531-8e6a-00a167db4f76",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 3247,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://magic.wizards.com/en/articles/archive/card-preview/jace-mind-sculptor-double-masters-2020-07-20",
+   "previewed_at": "2020-07-20"
+  }
+ },
+ {
+  "object": "card",
+  "mtgo_foil_id": 53565,
+  "name": "Garruk, Apex Predator",
+  "lang": "en",
+  "released_at": "2014-07-18",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T10:39:19Z",
+  "mana_cost": "{5}{B}{G}",
+  "cmc": 7,
+  "type_line": "Legendary Planeswalker — Garruk",
+  "oracle_text": "+1: Destroy another target planeswalker.\n+1: Create a 3/3 black Beast creature token with deathtouch.\n−3: Destroy target creature. You gain life equal to its toughness.\n−8: Target opponent gets an emblem with \"Whenever a creature attacks you, it gets +5/+5 and gains trample until end of turn.\"",
+  "loyalty": "5",
+  "colors": [
+   "B",
+   "G"
+  ],
+  "color_identity": [
+   "B",
+   "G"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "fc48bf5f-5fe1-41ef-a63d-85daacd941f7",
+    "component": "token",
+    "name": "Beast",
+    "type_line": "Token Creature — Beast",
+    "uri": "https://api.scryfall.com/cards/fc48bf5f-5fe1-41ef-a63d-85daacd941f7"
+   },
+   {
+    "object": "related_card",
+    "id": "a3957b43-4d7e-41f9-b7a1-6f57d6603ab8",
+    "component": "combo_piece",
+    "name": "Garruk, Apex Predator",
+    "type_line": "Legendary Planeswalker — Garruk",
+    "uri": "https://api.scryfall.com/cards/a3957b43-4d7e-41f9-b7a1-6f57d6603ab8"
+   },
+   {
+    "object": "related_card",
+    "id": "5a6fa6ba-045a-43f8-8b04-579ffe24f927",
+    "component": "combo_piece",
+    "name": "Garruk, Apex Predator Emblem",
+    "type_line": "Emblem — Garruk",
+    "uri": "https://api.scryfall.com/cards/5a6fa6ba-045a-43f8-8b04-579ffe24f927"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "m15",
+  "set_name": "Magic 2015",
+  "set_type": "core",
+  "set_uri": "https://api.scryfall.com/sets/6ce49890-3b37-42a5-8932-dbeef1d7b62c",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am15&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/m15?utm_source=api",
+  "collector_number": "210",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Tyler Jacobson",
+  "artist_ids": [
+   "522af130-8db4-4b4b-950c-6e2b246339cf"
+  ],
+  "illustration_id": "82a1f7d9-ffe6-4620-b7d1-f7a975e1d48c",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 9119,
+  "penny_rank": 5981
+ },
+ {
+  "object": "card",
+  "name": "Wrenn and Six",
+  "lang": "en",
+  "released_at": "2022-07-08",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-10-12T11:17:49Z",
+  "mana_cost": "{R}{G}",
+  "cmc": 2,
+  "type_line": "Legendary Planeswalker — Wrenn",
+  "oracle_text": "+1: Return up to one target land card from your graveyard to your hand.\n−1: Wrenn and Six deals 1 damage to any target.\n−7: You get an emblem with \"Instant and sorcery cards in your graveyard have retrace.\" (You may cast instant and sorcery cards from your graveyard by discarding a land card in addition to paying their other costs.)",
+  "loyalty": "3",
+  "colors": [
+   "G",
+   "R"
+  ],
+  "color_identity": [
+   "G",
+   "R"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "24b1203f-1f4c-4d02-a79f-1f6486904ea6",
+    "component": "combo_piece",
+    "name": "Wrenn and Six",
+    "type_line": "Legendary Planeswalker — Wrenn",
+    "uri": "https://api.scryfall.com/cards/24b1203f-1f4c-4d02-a79f-1f6486904ea6"
+   },
+   {
+    "object": "related_card",
+    "id": "35578c3f-e818-4887-83c4-dc3a89e28ed4",
+    "component": "combo_piece",
+    "name": "Wrenn and Six Emblem",
+    "type_line": "Emblem — Wrenn",
+    "uri": "https://api.scryfall.com/cards/35578c3f-e818-4887-83c4-dc3a89e28ed4"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "2x2",
+  "set_name": "Double Masters 2022",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/5a645837-b050-449f-ac90-1e7ccbf45031",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3A2x2&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/2x2?utm_source=api",
+  "collector_number": "296",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Chase Stone",
+  "artist_ids": [
+   "2d753f61-5f5b-468e-97ea-8e0fdd347340"
+  ],
+  "illustration_id": "d0930da0-02bd-44a7-a183-507c49b8ef17",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 6607,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://magic.wizards.com/en/articles/archive/news/your-sneak-peek-double-masters-2022-dominaria-united-and-beyond-2022-05-12",
+   "previewed_at": "2022-05-12"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Ajani, Nacatl Pariah // Ajani, Nacatl Avenger",
+  "lang": "en",
+  "released_at": "2024-06-14",
+  "layout": "transform",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-10-12T11:16:18Z",
+  "cmc": 2,
+  "type_line": "Legendary Creature — Cat Warrior // Legendary Planeswalker — Ajani",
+  "color_identity": [
+   "R",
+   "W"
+  ],
+  "keywords": [
+   "Transform"
+  ],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Ajani, Nacatl Pariah",
+    "mana_cost": "{1}{W}",
+    "type_line": "Legendary Creature — Cat Warrior",
+    "oracle_text": "When Ajani enters, create a 2/1 white Cat Warrior creature token.\nWhenever one or more other Cats you control die, you may exile Ajani, then return him to the battlefield transformed under his owner's control.",
+    "colors": [
+     "W"
+    ],
+    "power": "1",
+    "toughness": "2",
+    "flavor_text": "His pride denied him; his brother did not.",
+    "artist": "Chris Rallis",
+    "artist_id": "a8e7b854-b15a-421a-b66d-6e68187ae285",
+    "illustration_id": "3dff950b-68c7-4b2d-a8e5-419b140d897e",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "normal": "https://cards.scryfall.io/normal/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "large": "https://cards.scryfall.io/large/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "png": "https://cards.scryfall.io/png/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.png?1791803778",
+     "art_crop": "https://cards.scryfall.io/art_crop/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "border_crop": "https://cards.scryfall.io/border_crop/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "thumb": "https://cards.scryfall.io/thumb/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "grid": "https://cards.scryfall.io/grid/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "display": "https://cards.scryfall.io/display/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "art": "https://cards.scryfall.io/art/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "crop": "https://cards.scryfall.io/crop/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "jpeg": "https://cards.scryfall.io/normal/front/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778"
+    }
+   },
+   {
+    "object": "card_face",
+    "name": "Ajani, Nacatl Avenger",
+    "mana_cost": "",
+    "type_line": "Legendary Planeswalker — Ajani",
+    "oracle_text": "+2: Put a +1/+1 counter on each Cat you control.\n0: Create a 2/1 white Cat Warrior creature token. When you do, if you control a red permanent other than Ajani, he deals damage equal to the number of creatures you control to any target.\n−4: Each opponent chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest.",
+    "colors": [
+     "R",
+     "W"
+    ],
+    "color_indicator": [
+     "R",
+     "W"
+    ],
+    "loyalty": "3",
+    "artist": "Chris Rallis",
+    "artist_id": "a8e7b854-b15a-421a-b66d-6e68187ae285",
+    "illustration_id": "941b8c13-e0db-4ef8-8182-17ae977e65a7",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "normal": "https://cards.scryfall.io/normal/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "large": "https://cards.scryfall.io/large/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "png": "https://cards.scryfall.io/png/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.png?1791803778",
+     "art_crop": "https://cards.scryfall.io/art_crop/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "border_crop": "https://cards.scryfall.io/border_crop/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778",
+     "thumb": "https://cards.scryfall.io/thumb/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "grid": "https://cards.scryfall.io/grid/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "display": "https://cards.scryfall.io/display/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "art": "https://cards.scryfall.io/art/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "crop": "https://cards.scryfall.io/crop/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.webp?1791803778",
+     "jpeg": "https://cards.scryfall.io/normal/back/0/d/0d16e8e0-31b2-4389-afd6-783c501f6fa0.jpg?1791803778"
+    }
+   }
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "f897d650-f1a2-4366-a025-f12c10310d96",
+    "component": "combo_piece",
+    "name": "Ajani, Nacatl Pariah // Ajani, Nacatl Avenger",
+    "type_line": "Legendary Creature — Cat Warrior // Legendary Planeswalker — Ajani",
+    "uri": "https://api.scryfall.com/cards/f897d650-f1a2-4366-a025-f12c10310d96"
+   },
+   {
+    "object": "related_card",
+    "id": "ce5c5bcf-1fdd-4d73-a92b-223292da00ca",
+    "component": "token",
+    "name": "Cat Warrior",
+    "type_line": "Token Creature — Cat Warrior",
+    "uri": "https://api.scryfall.com/cards/ce5c5bcf-1fdd-4d73-a92b-223292da00ca"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "mh3",
+  "set_name": "Modern Horizons 3",
+  "set_type": "draft_innovation",
+  "set_uri": "https://api.scryfall.com/sets/3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amh3&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/mh3?utm_source=api",
+  "collector_number": "237",
+  "digital": false,
+  "rarity": "mythic",
+  "artist": "Chris Rallis",
+  "artist_ids": [
+   "a8e7b854-b15a-421a-b66d-6e68187ae285"
+  ],
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 4528
+ },
+ {
+  "object": "card",
+  "name": "Nicol Bolas, Dragon-God",
+  "lang": "en",
+  "released_at": "2024-01-12",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T03:28:02Z",
+  "mana_cost": "{U}{B}{B}{B}{R}",
+  "cmc": 5,
+  "type_line": "Legendary Planeswalker — Bolas",
+  "oracle_text": "Nicol Bolas has all loyalty abilities of all other planeswalkers on the battlefield.\n+1: You draw a card. Each opponent exiles a card from their hand or a permanent they control.\n−3: Destroy target creature or planeswalker.\n−8: Each opponent who doesn't control a legendary creature or planeswalker loses the game.",
+  "loyalty": "4",
+  "colors": [
+   "B",
+   "R",
+   "U"
+  ],
+  "color_identity": [
+   "B",
+   "R",
+   "U"
+  ],
+  "keywords": [],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "rvr",
+  "set_name": "Ravnica Remastered",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/fed2c8cd-ab92-44f6-808a-41e7809bcfe2",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Arvr&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/rvr?utm_source=api",
+  "collector_number": "205",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Raymond Swanland",
+  "artist_ids": [
+   "e956bacc-077d-4c12-b6bc-ba798b718af9"
+  ],
+  "illustration_id": "4b8dd521-ee16-4f41-910e-c94db63d03c7",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 3624,
+  "penny_rank": 2477
+ },
+ {
+  "object": "card",
+  "name": "Oko, Thief of Crowns",
+  "lang": "en",
+  "released_at": "2019-10-04",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-10-12T11:16:50Z",
+  "mana_cost": "{1}{G}{U}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Oko",
+  "oracle_text": "+2: Create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\n+1: Target artifact or creature loses all abilities and becomes a green Elk creature with base power and toughness 3/3.\n−5: Exchange control of target artifact or creature you control and target creature an opponent controls with power 3 or less.",
+  "loyalty": "4",
+  "colors": [
+   "G",
+   "U"
+  ],
+  "color_identity": [
+   "G",
+   "U"
+  ],
+  "keywords": [
+   "Food"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "95da027e-34c1-4098-827d-1647693ad8f4",
+    "component": "combo_piece",
+    "name": "Oko, Thief of Crowns",
+    "type_line": "Legendary Planeswalker — Oko",
+    "uri": "https://api.scryfall.com/cards/95da027e-34c1-4098-827d-1647693ad8f4"
+   },
+   {
+    "object": "related_card",
+    "id": "261aed78-2d57-4ed4-b3d2-53b139b6bd44",
+    "component": "token",
+    "name": "Food",
+    "type_line": "Token Artifact — Food",
+    "uri": "https://api.scryfall.com/cards/261aed78-2d57-4ed4-b3d2-53b139b6bd44"
+   }
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "eld",
+  "set_name": "Throne of Eldraine",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/a90a7b2f-9dd8-4fc7-9f7d-8ea2797ec782",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aeld&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/eld?utm_source=api",
+  "collector_number": "197",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Yongjae Choi",
+  "artist_ids": [
+   "5ab91c3b-a6da-4751-a56e-81d0f61a67ab"
+  ],
+  "illustration_id": "a7e6d58e-e8da-445c-8375-1f1dac564eed",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 2102,
+  "preview": {
+   "source": "Card Kingdom",
+   "source_uri": "https://twitter.com/Card_Kingdom/status/1168967403805511680",
+   "previewed_at": "2019-09-03"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Kaito, Bane of Nightmares",
+  "lang": "en",
+  "released_at": "2024-09-27",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-25T07:06:30Z",
+  "mana_cost": "{2}{U}{B}",
+  "cmc": 4,
+  "type_line": "Legendary Planeswalker — Kaito",
+  "oracle_text": "Ninjutsu {1}{U}{B} ({1}{U}{B}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)\nDuring your turn, as long as Kaito has one or more loyalty counters on him, he's a 3/4 Ninja creature and has hexproof.\n+1: You get an emblem with \"Ninjas you control get +1/+1.\"\n0: Surveil 2. Then draw a card for each opponent who lost life this turn.\n−2: Tap target creature. Put two stun counters on it.",
+  "loyalty": "4",
+  "colors": [
+   "B",
+   "U"
+  ],
+  "color_identity": [
+   "B",
+   "U"
+  ],
+  "keywords": [
+   "Surveil",
+   "Ninjutsu"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "435e707c-2b1d-48a7-ba75-c3c67824b50d",
+    "component": "combo_piece",
+    "name": "Kaito, Bane of Nightmares Emblem",
+    "type_line": "Emblem",
+    "uri": "https://api.scryfall.com/cards/435e707c-2b1d-48a7-ba75-c3c67824b50d"
+   },
+   {
+    "object": "related_card",
+    "id": "14901700-881a-4c79-b162-aeeb1579757e",
+    "component": "combo_piece",
+    "name": "Kaito, Bane of Nightmares",
+    "type_line": "Legendary Planeswalker — Kaito",
+    "uri": "https://api.scryfall.com/cards/14901700-881a-4c79-b162-aeeb1579757e"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "dsk",
+  "set_name": "Duskmourn: House of Horror",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/a111d8a9-b647-48ec-afab-2b78f92173f5",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Adsk&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/dsk?utm_source=api",
+  "collector_number": "220",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Joshua Raphael",
+  "artist_ids": [
+   "553b2a73-780f-414b-b2d7-3b7888821082"
+  ],
+  "illustration_id": "a1ee2a49-c207-4e41-8a72-fdad57fec225",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 4964
+ },
+ {
+  "object": "card",
+  "name": "Tyvar, Jubilant Brawler",
+  "lang": "en",
+  "released_at": "2023-02-10",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:46:35Z",
+  "mana_cost": "{1}{B}{G}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Tyvar",
+  "oracle_text": "You may activate abilities of creatures you control as though those creatures had haste.\n+1: Untap up to one target creature.\n−2: Mill three cards, then you may return a creature card with mana value 2 or less from your graveyard to the battlefield.",
+  "loyalty": "3",
+  "colors": [
+   "B",
+   "G"
+  ],
+  "color_identity": [
+   "B",
+   "G"
+  ],
+  "keywords": [
+   "Mill"
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "one",
+  "set_name": "Phyrexia: All Will Be One",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/04bef644-343f-4230-95ee-255f29aa67a2",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aone&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/one?utm_source=api",
+  "collector_number": "218",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Victor Adame Minguez",
+  "artist_ids": [
+   "bd8f7368-5b10-4554-b6b8-d052c6aca89f"
+  ],
+  "illustration_id": "a723495f-3316-417f-91f3-f2b98721bf7f",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 2235,
+  "penny_rank": 916,
+  "preview": {
+   "source": "Seanan McGuire",
+   "source_uri": "https://twitter.com/seananmcguire/status/1615018097370628096",
+   "previewed_at": "2023-01-16"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Basri Ket",
+  "lang": "en",
+  "released_at": "2020-07-03",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:19:05Z",
+  "mana_cost": "{1}{W}{W}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Basri",
+  "oracle_text": "+1: Put a +1/+1 counter on up to one target creature. It gains indestructible until end of turn.\n−2: Whenever one or more nontoken creatures attack this turn, create that many 1/1 white Soldier creature tokens that are tapped and attacking.\n−6: You get an emblem with \"At the beginning of combat on your turn, create a 1/1 white Soldier creature token, then put a +1/+1 counter on each creature you control.\"",
+  "loyalty": "3",
+  "colors": [
+   "W"
+  ],
+  "color_identity": [
+   "W"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "ca854101-5a9b-455d-bf47-ad8f3d57afa7",
+    "component": "combo_piece",
+    "name": "Basri Ket",
+    "type_line": "Legendary Planeswalker — Basri",
+    "uri": "https://api.scryfall.com/cards/ca854101-5a9b-455d-bf47-ad8f3d57afa7"
+   },
+   {
+    "object": "related_card",
+    "id": "0d37b555-5931-4084-8f83-e9853e14eccf",
+    "component": "combo_piece",
+    "name": "Basri Ket Emblem",
+    "type_line": "Emblem",
+    "uri": "https://api.scryfall.com/cards/0d37b555-5931-4084-8f83-e9853e14eccf"
+   },
+   {
+    "object": "related_card",
+    "id": "1bdb2914-bba2-4cb6-802e-af2aeef46de8",
+    "component": "token",
+    "name": "Soldier",
+    "type_line": "Token Creature — Soldier",
+    "uri": "https://api.scryfall.com/cards/1bdb2914-bba2-4cb6-802e-af2aeef46de8"
+   }
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "m21",
+  "set_name": "Core Set 2021",
+  "set_type": "core",
+  "set_uri": "https://api.scryfall.com/sets/bc94aba1-7376-4e02-a12d-3a2efb66ab0f",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am21&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/m21?utm_source=api",
+  "collector_number": "7",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Kieran Yanner",
+  "artist_ids": [
+   "aa7e89ed-d294-4633-9057-ce04dacfcfa4"
+  ],
+  "illustration_id": "860fdf62-6f84-493f-a74d-3cc37d0b9c61",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 7138,
+  "penny_rank": 4154,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://magic.wizards.com/en/articles/archive/making-magic/need-i-say-core-2020-06-08",
+   "previewed_at": "2020-06-08"
+  }
+ },
+ {
+  "object": "card",
+  "name": "The Wandering Emperor",
+  "lang": "en",
+  "released_at": "2022-02-18",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T06:25:09Z",
+  "mana_cost": "{2}{W}{W}",
+  "cmc": 4,
+  "type_line": "Legendary Planeswalker",
+  "oracle_text": "Flash\nAs long as The Wandering Emperor entered this turn, you may activate her loyalty abilities any time you could cast an instant.\n+1: Put a +1/+1 counter on up to one target creature. It gains first strike until end of turn.\n−1: Create a 2/2 white Samurai creature token with vigilance.\n−2: Exile target tapped creature. You gain 2 life.",
+  "loyalty": "3",
+  "colors": [
+   "W"
+  ],
+  "color_identity": [
+   "W"
+  ],
+  "keywords": [
+   "Flash"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "22edc832-993b-432a-8435-8d8a72799122",
+    "component": "combo_piece",
+    "name": "The Wandering Emperor",
+    "type_line": "Legendary Planeswalker",
+    "uri": "https://api.scryfall.com/cards/22edc832-993b-432a-8435-8d8a72799122"
+   },
+   {
+    "object": "related_card",
+    "id": "f68e5337-6e44-4f8f-a102-2f97b433beea",
+    "component": "token",
+    "name": "Samurai",
+    "type_line": "Token Creature — Samurai",
+    "uri": "https://api.scryfall.com/cards/f68e5337-6e44-4f8f-a102-2f97b433beea"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "neo",
+  "set_name": "Kamigawa: Neon Dynasty",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/59a2059f-5482-433f-8761-eb2e17859b71",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aneo&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/neo?utm_source=api",
+  "collector_number": "42",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Tommy Arnold",
+  "artist_ids": [
+   "1130bcd0-c8b1-48be-85d7-3ddb2abc6b1a"
+  ],
+  "illustration_id": "31645909-383b-48bd-b015-f14ea2679e04",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 5503,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://www.twitch.tv/videos/1277767538",
+   "previewed_at": "2022-01-27"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Nissa, Who Shakes the World",
+  "lang": "en",
+  "released_at": "2019-05-03",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T09:03:30Z",
+  "mana_cost": "{3}{G}{G}",
+  "cmc": 5,
+  "type_line": "Legendary Planeswalker — Nissa",
+  "oracle_text": "Whenever you tap a Forest for mana, add an additional {G}.\n+1: Put three +1/+1 counters on up to one target noncreature land you control. Untap it. It becomes a 0/0 Elemental creature with vigilance and haste that's still a land.\n−8: You get an emblem with \"Lands you control have indestructible.\" Search your library for any number of Forest cards, put them onto the battlefield tapped, then shuffle.",
+  "loyalty": "5",
+  "colors": [
+   "G"
+  ],
+  "color_identity": [
+   "G"
+  ],
+  "keywords": [],
+  "produced_mana": [
+   "G"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "f857bbe4-5619-4733-a0c7-69700f2ef4f3",
+    "component": "combo_piece",
+    "name": "Nissa, Who Shakes the World",
+    "type_line": "Legendary Planeswalker — Nissa",
+    "uri": "https://api.scryfall.com/cards/f857bbe4-5619-4733-a0c7-69700f2ef4f3"
+   },
+   {
+    "object": "related_card",
+    "id": "56b191fe-7a92-4d08-91a4-036699d08bc4",
+    "component": "combo_piece",
+    "name": "Nissa, Who Shakes the World Emblem",
+    "type_line": "Emblem — Nissa",
+    "uri": "https://api.scryfall.com/cards/56b191fe-7a92-4d08-91a4-036699d08bc4"
+   }
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "war",
+  "set_name": "War of the Spark",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/ee044f0b-e101-4ead-8d0e-aa510aad4277",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Awar&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/war?utm_source=api",
+  "collector_number": "169",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Chris Rallis",
+  "artist_ids": [
+   "a8e7b854-b15a-421a-b66d-6e68187ae285"
+  ],
+  "illustration_id": "76ad4b35-2969-44f7-900b-09c13e1c827b",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 1703,
+  "penny_rank": 1705,
+  "preview": {
+   "source": "Nissa Cosplay",
+   "source_uri": "https://twitter.com/NissaCosplay/status/1116067435004796928",
+   "previewed_at": "2019-04-10"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Liliana of the Veil",
+  "lang": "en",
+  "released_at": "2025-01-24",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T01:59:37Z",
+  "mana_cost": "{1}{B}{B}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Liliana",
+  "oracle_text": "+1: Each player discards a card.\n−2: Target player sacrifices a creature.\n−6: Separate all permanents target player controls into two piles. That player sacrifices all permanents in the pile of their choice.",
+  "loyalty": "3",
+  "colors": [
+   "B"
+  ],
+  "color_identity": [
+   "B"
+  ],
+  "keywords": [],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "inr",
+  "set_name": "Innistrad Remastered",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/b9618c8c-9f31-4b42-9798-2991893c27bf",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Ainr&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/inr?utm_source=api",
+  "collector_number": "475",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Steve Argyle",
+  "artist_ids": [
+   "a44ddda4-5331-4f83-aac9-3e00ed36bd7b"
+  ],
+  "illustration_id": "a94586a3-7e4b-4c8f-be23-3416547fdeed",
+  "border_color": "black",
+  "frame": "1997",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 3022,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "",
+   "previewed_at": "2024-12-03"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Karn Liberated",
+  "lang": "en",
+  "released_at": "2020-08-07",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:10:22Z",
+  "mana_cost": "{7}",
+  "cmc": 7,
+  "type_line": "Legendary Planeswalker — Karn",
+  "oracle_text": "+4: Target player exiles a card from their hand.\n−3: Exile target permanent.\n−14: Restart the game, leaving in exile all non-Aura permanent cards exiled with Karn. Then put those cards onto the battlefield under your control.",
+  "loyalty": "6",
+  "colors": [],
+  "color_identity": [],
+  "keywords": [],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "2xm",
+  "set_name": "Double Masters",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/372dafe8-b5d1-4b81-998f-3ae96b59498a",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3A2xm&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/2xm?utm_source=api",
+  "collector_number": "1",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Jason Chan",
+  "artist_ids": [
+   "8062d5a9-51b6-4822-933f-fa9e9dba8416"
+  ],
+  "illustration_id": "8716b016-e464-4301-b181-2f21fc93b2a8",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 7157,
+  "preview": {
+   "source": "GameSpot",
+   "source_uri": "https://www.gamespot.com/articles/magic-the-gathering-reveals-new-cards-for-double-m/1100-6479858/",
+   "previewed_at": "2020-07-20"
+  }
+ },
+ {
+  "object": "card",
+  "resource_id": "3061C0A4CFF9E52DD8E8E646AE4242CAE86060A83E467E6372FDC3A33CC17784",
+  "name": "Saheeli, Sublime Artificer",
+  "lang": "en",
+  "released_at": "2023-08-04",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:03:30Z",
+  "mana_cost": "{1}{U/R}{U/R}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Saheeli",
+  "oracle_text": "Whenever you cast a noncreature spell, create a 1/1 colorless Servo artifact creature token.\n−2: Target artifact you control becomes a copy of another target artifact or creature you control until end of turn, except it's an artifact in addition to its other types.",
+  "loyalty": "5",
+  "colors": [
+   "R",
+   "U"
+  ],
+  "color_identity": [
+   "R",
+   "U"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "ce35a39a-6dcd-4bbc-b43b-bd1a5425cb05",
+    "component": "combo_piece",
+    "name": "Saheeli, Sublime Artificer",
+    "type_line": "Legendary Planeswalker — Saheeli",
+    "uri": "https://api.scryfall.com/cards/ce35a39a-6dcd-4bbc-b43b-bd1a5425cb05"
+   },
+   {
+    "object": "related_card",
+    "id": "e6a5faa3-b86e-4e05-93db-5db9507ae7d0",
+    "component": "token",
+    "name": "Servo",
+    "type_line": "Token Artifact Creature — Servo",
+    "uri": "https://api.scryfall.com/cards/e6a5faa3-b86e-4e05-93db-5db9507ae7d0"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "cmm",
+  "set_name": "Commander Masters",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/cd05036f-2698-43e6-a48e-5c8d82f0a551",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Acmm&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/cmm?utm_source=api",
+  "collector_number": "935",
+  "digital": false,
+  "rarity": "uncommon",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Wesley Burt",
+  "artist_ids": [
+   "b98c9d94-8bdb-49af-871d-7bac92274535"
+  ],
+  "illustration_id": "b41a053d-5921-44f3-8719-9dd2fc042c91",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 2476,
+  "penny_rank": 616
+ },
+ {
+  "object": "card",
+  "resource_id": "E62E41BEF061080A3EBAF258B822102188E3D95907A193F175003E4A159F2FD9",
+  "name": "Vivien, Champion of the Wilds",
+  "lang": "en",
+  "released_at": "2022-06-10",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T06:00:00Z",
+  "mana_cost": "{2}{G}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Vivien",
+  "oracle_text": "You may cast creature spells as though they had flash.\n+1: Until your next turn, up to one target creature gains reach and vigilance.\n−2: Look at the top three cards of your library. Exile one face down and put the rest on the bottom of your library in any order. For as long as it remains exiled, you may cast it if it's a creature spell.",
+  "loyalty": "4",
+  "colors": [
+   "G"
+  ],
+  "color_identity": [
+   "G"
+  ],
+  "keywords": [],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "clb",
+  "set_name": "Commander Legends: Battle for Baldur's Gate",
+  "set_type": "draft_innovation",
+  "set_uri": "https://api.scryfall.com/sets/5e4c3fe8-fd57-4b20-ad56-c03790a16cea",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aclb&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/clb?utm_source=api",
+  "collector_number": "838",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Magali Villeneuve",
+  "artist_ids": [
+   "9e6a55ae-be4d-4c23-a2a5-135737ffd879"
+  ],
+  "illustration_id": "e7f4e09f-8521-4b0e-853a-9c7773f0a813",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 4037,
+  "penny_rank": 2682
+ },
+ {
+  "object": "card",
+  "name": "Mu Yanling, Sky Dancer",
+  "lang": "en",
+  "released_at": "2024-11-15",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T02:12:46Z",
+  "mana_cost": "{1}{U}{U}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Yanling",
+  "oracle_text": "+2: Until your next turn, up to one target creature gets -2/-0 and loses flying.\n−3: Create a 4/4 blue Elemental Bird creature token with flying.\n−8: You get an emblem with \"Islands you control have '{T}: Draw a card.'\"",
+  "loyalty": "2",
+  "colors": [
+   "U"
+  ],
+  "color_identity": [
+   "U"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "483f5d0c-26d1-467c-b5d8-96e8aa259a7e",
+    "component": "combo_piece",
+    "name": "Mu Yanling, Sky Dancer",
+    "type_line": "Legendary Planeswalker — Yanling",
+    "uri": "https://api.scryfall.com/cards/483f5d0c-26d1-467c-b5d8-96e8aa259a7e"
+   },
+   {
+    "object": "related_card",
+    "id": "a5582cd9-97e7-426f-a084-c05e2113ad13",
+    "component": "token",
+    "name": "Elemental Bird",
+    "type_line": "Token Creature — Elemental Bird",
+    "uri": "https://api.scryfall.com/cards/a5582cd9-97e7-426f-a084-c05e2113ad13"
+   },
+   {
+    "object": "related_card",
+    "id": "cdc0849c-3a2b-4666-8fa9-755f3ea27706",
+    "component": "combo_piece",
+    "name": "Mu Yanling, Sky Dancer Emblem",
+    "type_line": "Emblem",
+    "uri": "https://api.scryfall.com/cards/cdc0849c-3a2b-4666-8fa9-755f3ea27706"
+   }
+  ],
+  "games": [
+   "paper",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "j25",
+  "set_name": "Foundations Jumpstart",
+  "set_type": "draft_innovation",
+  "set_uri": "https://api.scryfall.com/sets/9201567c-bab5-4720-aac9-260e6741f115",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aj25&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/j25?utm_source=api",
+  "collector_number": "329",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "G-host Lee",
+  "artist_ids": [
+   "009fe350-a82b-430f-92bc-04fe08d78f50"
+  ],
+  "illustration_id": "5d075a1e-f54f-424f-a6bb-a3413536d729",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 13410,
+  "penny_rank": 1557
+ },
+ {
+  "object": "card",
+  "name": "Teferi, Time Raveler",
+  "lang": "en",
+  "released_at": "2024-01-12",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T03:27:51Z",
+  "mana_cost": "{1}{W}{U}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Teferi",
+  "oracle_text": "Each opponent can cast spells only any time they could cast a sorcery.\n+1: Until your next turn, you may cast sorcery spells as though they had flash.\n−3: Return up to one target artifact, creature, or enchantment to its owner's hand. Draw a card.",
+  "loyalty": "4",
+  "colors": [
+   "U",
+   "W"
+  ],
+  "color_identity": [
+   "U",
+   "W"
+  ],
+  "keywords": [],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "rvr",
+  "set_name": "Ravnica Remastered",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/fed2c8cd-ab92-44f6-808a-41e7809bcfe2",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Arvr&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/rvr?utm_source=api",
+  "collector_number": "232",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Chris Rallis",
+  "artist_ids": [
+   "a8e7b854-b15a-421a-b66d-6e68187ae285"
+  ],
+  "illustration_id": "c7084f18-aa61-4027-bcab-04ba6bcecd9c",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 1130
+ },
+ {
+  "object": "card",
+  "name": "Ugin, the Spirit Dragon",
+  "lang": "en",
+  "released_at": "2020-07-03",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:19:08Z",
+  "mana_cost": "{8}",
+  "cmc": 8,
+  "type_line": "Legendary Planeswalker — Ugin",
+  "oracle_text": "+2: Ugin deals 3 damage to any target.\n−X: Exile each permanent with mana value X or less that's one or more colors.\n−10: You gain 7 life, draw seven cards, then put up to seven permanent cards from your hand onto the battlefield.",
+  "loyalty": "7",
+  "colors": [],
+  "color_identity": [],
+  "keywords": [],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "m21",
+  "set_name": "Core Set 2021",
+  "set_type": "core",
+  "set_uri": "https://api.scryfall.com/sets/bc94aba1-7376-4e02-a12d-3a2efb66ab0f",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am21&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/m21?utm_source=api",
+  "collector_number": "1",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Raymond Swanland",
+  "artist_ids": [
+   "e956bacc-077d-4c12-b6bc-ba798b718af9"
+  ],
+  "illustration_id": "47715ae0-7456-449e-ad32-0a7bc47a4e7a",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 1573,
+  "penny_rank": 318,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://www.twitch.tv/videos/641938177",
+   "previewed_at": "2020-06-05"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Ashiok, Dream Render",
+  "lang": "en",
+  "released_at": "2019-05-03",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T09:03:01Z",
+  "mana_cost": "{1}{U/B}{U/B}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Ashiok",
+  "oracle_text": "Spells and abilities your opponents control can't cause their controller to search their library.\n−1: Target player mills four cards. Then exile each opponent's graveyard.",
+  "loyalty": "5",
+  "colors": [
+   "B",
+   "U"
+  ],
+  "color_identity": [
+   "B",
+   "U"
+  ],
+  "keywords": [
+   "Mill"
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "war",
+  "set_name": "War of the Spark",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/ee044f0b-e101-4ead-8d0e-aa510aad4277",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Awar&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/war?utm_source=api",
+  "collector_number": "228",
+  "digital": false,
+  "rarity": "uncommon",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Cynthia Sheppard",
+  "artist_ids": [
+   "9dfbdd58-65e6-40cf-951a-80e141061939"
+  ],
+  "illustration_id": "9bb9b02e-569e-474d-abec-3c36d6102e13",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 2681,
+  "preview": {
+   "source": "Nizzahon Magic",
+   "source_uri": "https://youtu.be/Fz406jUHtZg",
+   "previewed_at": "2019-04-15"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Dovin, Grand Arbiter",
+  "lang": "en",
+  "released_at": "2021-11-19",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T06:42:24Z",
+  "mana_cost": "{1}{W}{U}",
+  "cmc": 3,
+  "type_line": "Legendary Planeswalker — Dovin",
+  "oracle_text": "+1: Until end of turn, whenever a creature you control deals combat damage to a player, put a loyalty counter on Dovin.\n−1: Create a 1/1 colorless Thopter artifact creature token with flying. You gain 1 life.\n−7: Look at the top ten cards of your library. Put three of them into your hand and the rest on the bottom of your library in a random order.",
+  "loyalty": "3",
+  "colors": [
+   "U",
+   "W"
+  ],
+  "color_identity": [
+   "U",
+   "W"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "677c7b08-e80c-49ac-acfd-8feb9cde3c5d",
+    "component": "combo_piece",
+    "name": "Dovin, Grand Arbiter",
+    "type_line": "Legendary Planeswalker — Dovin",
+    "uri": "https://api.scryfall.com/cards/677c7b08-e80c-49ac-acfd-8feb9cde3c5d"
+   },
+   {
+    "object": "related_card",
+    "id": "ca51da85-15ed-4f65-8ffa-8868ef779cd2",
+    "component": "token",
+    "name": "Thopter",
+    "type_line": "Token Artifact Creature — Thopter",
+    "uri": "https://api.scryfall.com/cards/ca51da85-15ed-4f65-8ffa-8868ef779cd2"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "voc",
+  "set_name": "Crimson Vow Commander",
+  "set_type": "commander",
+  "set_uri": "https://api.scryfall.com/sets/b2e444f7-41e6-4172-ba01-47d91d5e7bbc",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Avoc&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/voc?utm_source=api",
+  "collector_number": "153",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Kieran Yanner",
+  "artist_ids": [
+   "aa7e89ed-d294-4633-9057-ce04dacfcfa4"
+  ],
+  "illustration_id": "c7507e3c-1d89-439b-b121-bd95437c8dfc",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 15338,
+  "penny_rank": 8535
+ },
+ {
+  "object": "card",
+  "name": "Invasion of Ikoria // Zilortha, Apex of Ikoria",
+  "lang": "en",
+  "released_at": "2023-04-21",
+  "layout": "transform",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:29:34Z",
+  "cmc": 2,
+  "type_line": "Battle — Siege // Legendary Creature — Dinosaur",
+  "color_identity": [
+   "G"
+  ],
+  "keywords": [
+   "Reach",
+   "Transform"
+  ],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Invasion of Ikoria",
+    "mana_cost": "{X}{G}{G}",
+    "type_line": "Battle — Siege",
+    "oracle_text": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, search your library and/or graveyard for a non-Human creature card with mana value X or less and put it onto the battlefield. If you search your library this way, shuffle.",
+    "colors": [
+     "G"
+    ],
+    "defense": "6",
+    "artist": "Antonio José Manzanedo",
+    "artist_id": "74986d28-0001-4a78-827c-e490b325d0e3",
+    "illustration_id": "4e5a5dbe-5ae7-47c3-83fe-1e2ef7c255e5",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "normal": "https://cards.scryfall.io/normal/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "large": "https://cards.scryfall.io/large/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "png": "https://cards.scryfall.io/png/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.png?1783916974",
+     "art_crop": "https://cards.scryfall.io/art_crop/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "border_crop": "https://cards.scryfall.io/border_crop/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "thumb": "https://cards.scryfall.io/thumb/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "grid": "https://cards.scryfall.io/grid/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "display": "https://cards.scryfall.io/display/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "art": "https://cards.scryfall.io/art/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "crop": "https://cards.scryfall.io/crop/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "jpeg": "https://cards.scryfall.io/normal/front/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974"
+    }
+   },
+   {
+    "object": "card_face",
+    "name": "Zilortha, Apex of Ikoria",
+    "mana_cost": "",
+    "type_line": "Legendary Creature — Dinosaur",
+    "oracle_text": "Reach\nFor each non-Human creature you control, you may have that creature assign its combat damage as though it weren't blocked.",
+    "colors": [
+     "G"
+    ],
+    "color_indicator": [
+     "G"
+    ],
+    "power": "8",
+    "toughness": "8",
+    "flavor_text": "Phyrexia's largest goliaths stormed Ikoria, ready to challenge the world's great monsters. Zilortha was unimpressed.",
+    "artist": "Antonio José Manzanedo",
+    "artist_id": "74986d28-0001-4a78-827c-e490b325d0e3",
+    "illustration_id": "c5e54496-d13e-47be-a71c-68b6ea3f107a",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "normal": "https://cards.scryfall.io/normal/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "large": "https://cards.scryfall.io/large/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "png": "https://cards.scryfall.io/png/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.png?1783916974",
+     "art_crop": "https://cards.scryfall.io/art_crop/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "border_crop": "https://cards.scryfall.io/border_crop/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974",
+     "thumb": "https://cards.scryfall.io/thumb/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "grid": "https://cards.scryfall.io/grid/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "display": "https://cards.scryfall.io/display/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "art": "https://cards.scryfall.io/art/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "crop": "https://cards.scryfall.io/crop/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.webp?1783916974",
+     "jpeg": "https://cards.scryfall.io/normal/back/5/d/5d59c8f2-f6af-40a6-8dfe-8cc45bf231ce.jpg?1783916974"
+    }
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "mom",
+  "set_name": "March of the Machine",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/392f7315-dc53-40a3-a2cc-5482dbd498b3",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amom&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/mom?utm_source=api",
+  "collector_number": "190",
+  "digital": false,
+  "rarity": "rare",
+  "artist": "Antonio José Manzanedo",
+  "artist_ids": [
+   "74986d28-0001-4a78-827c-e490b325d0e3"
+  ],
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 1444,
+  "penny_rank": 598
+ },
+ {
+  "object": "card",
+  "name": "Invasion of Fiora // Marchesa, Resolute Monarch",
+  "lang": "en",
+  "released_at": "2023-04-21",
+  "layout": "transform",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:30:11Z",
+  "cmc": 6,
+  "type_line": "Battle — Siege // Legendary Creature — Human Noble",
+  "color_identity": [
+   "B"
+  ],
+  "keywords": [
+   "Transform",
+   "Menace",
+   "Deathtouch"
+  ],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Invasion of Fiora",
+    "mana_cost": "{4}{B}{B}",
+    "type_line": "Battle — Siege",
+    "oracle_text": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, choose one or both —\n• Destroy all legendary creatures.\n• Destroy all nonlegendary creatures.",
+    "colors": [
+     "B"
+    ],
+    "defense": "4",
+    "artist": "Joshua Raphael",
+    "artist_id": "553b2a73-780f-414b-b2d7-3b7888821082",
+    "illustration_id": "316ec541-afee-435b-a518-fdc0d0d27d7b",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "normal": "https://cards.scryfall.io/normal/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "large": "https://cards.scryfall.io/large/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "png": "https://cards.scryfall.io/png/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.png?1783917011",
+     "art_crop": "https://cards.scryfall.io/art_crop/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "border_crop": "https://cards.scryfall.io/border_crop/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "thumb": "https://cards.scryfall.io/thumb/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "grid": "https://cards.scryfall.io/grid/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "display": "https://cards.scryfall.io/display/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "art": "https://cards.scryfall.io/art/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "crop": "https://cards.scryfall.io/crop/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "jpeg": "https://cards.scryfall.io/normal/front/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011"
+    }
+   },
+   {
+    "object": "card_face",
+    "name": "Marchesa, Resolute Monarch",
+    "mana_cost": "",
+    "type_line": "Legendary Creature — Human Noble",
+    "oracle_text": "Menace, deathtouch\nWhenever Marchesa attacks, remove all counters from up to one target permanent.\nAt the beginning of your upkeep, if you haven't been dealt combat damage since your last turn, you draw a card and you lose 1 life.",
+    "colors": [
+     "B"
+    ],
+    "color_indicator": [
+     "B"
+    ],
+    "power": "3",
+    "toughness": "6",
+    "artist": "Joshua Raphael",
+    "artist_id": "553b2a73-780f-414b-b2d7-3b7888821082",
+    "illustration_id": "715dc353-e96b-4f2a-8f17-712188f2b51e",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "normal": "https://cards.scryfall.io/normal/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "large": "https://cards.scryfall.io/large/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "png": "https://cards.scryfall.io/png/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.png?1783917011",
+     "art_crop": "https://cards.scryfall.io/art_crop/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "border_crop": "https://cards.scryfall.io/border_crop/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011",
+     "thumb": "https://cards.scryfall.io/thumb/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "grid": "https://cards.scryfall.io/grid/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "display": "https://cards.scryfall.io/display/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "art": "https://cards.scryfall.io/art/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "crop": "https://cards.scryfall.io/crop/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.webp?1783917011",
+     "jpeg": "https://cards.scryfall.io/normal/back/b/3/b3af679b-6ee6-4a1d-8ec3-b659bdd90b4a.jpg?1783917011"
+    }
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "mom",
+  "set_name": "March of the Machine",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/392f7315-dc53-40a3-a2cc-5482dbd498b3",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amom&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/mom?utm_source=api",
+  "collector_number": "114",
+  "digital": false,
+  "rarity": "rare",
+  "artist": "Joshua Raphael",
+  "artist_ids": [
+   "553b2a73-780f-414b-b2d7-3b7888821082"
+  ],
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 6864,
+  "penny_rank": 9231
+ },
+ {
+  "object": "card",
+  "name": "Invasion of Gobakhan // Lightshield Array",
+  "lang": "en",
+  "released_at": "2023-04-21",
+  "layout": "transform",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:31:04Z",
+  "cmc": 2,
+  "type_line": "Battle — Siege // Enchantment",
+  "color_identity": [
+   "W"
+  ],
+  "keywords": [
+   "Transform"
+  ],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Invasion of Gobakhan",
+    "mana_cost": "{1}{W}",
+    "type_line": "Battle — Siege",
+    "oracle_text": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast.",
+    "colors": [
+     "W"
+    ],
+    "defense": "3",
+    "artist": "Andreas Zafiratos",
+    "artist_id": "e2f13a9a-57c5-40de-81d4-3b0723899cdf",
+    "illustration_id": "1d5c6402-68d3-4a15-86df-6b8584248af1",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "normal": "https://cards.scryfall.io/normal/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "large": "https://cards.scryfall.io/large/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "png": "https://cards.scryfall.io/png/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.png?1783917064",
+     "art_crop": "https://cards.scryfall.io/art_crop/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "border_crop": "https://cards.scryfall.io/border_crop/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "thumb": "https://cards.scryfall.io/thumb/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "grid": "https://cards.scryfall.io/grid/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "display": "https://cards.scryfall.io/display/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "art": "https://cards.scryfall.io/art/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "crop": "https://cards.scryfall.io/crop/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "jpeg": "https://cards.scryfall.io/normal/front/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064"
+    }
+   },
+   {
+    "object": "card_face",
+    "name": "Lightshield Array",
+    "mana_cost": "",
+    "type_line": "Enchantment",
+    "oracle_text": "At the beginning of your end step, put a +1/+1 counter on each creature that attacked this turn.\nSacrifice this enchantment: Creatures you control gain hexproof and indestructible until end of turn.",
+    "colors": [
+     "W"
+    ],
+    "color_indicator": [
+     "W"
+    ],
+    "flavor_text": "The weight of Phyrexia crashed down upon Gobakhan, but the will of its people endured.",
+    "artist": "Andreas Zafiratos",
+    "artist_id": "e2f13a9a-57c5-40de-81d4-3b0723899cdf",
+    "illustration_id": "668d1db1-9f73-43aa-91ae-76a5a774507f",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "normal": "https://cards.scryfall.io/normal/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "large": "https://cards.scryfall.io/large/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "png": "https://cards.scryfall.io/png/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.png?1783917064",
+     "art_crop": "https://cards.scryfall.io/art_crop/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "border_crop": "https://cards.scryfall.io/border_crop/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064",
+     "thumb": "https://cards.scryfall.io/thumb/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "grid": "https://cards.scryfall.io/grid/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "display": "https://cards.scryfall.io/display/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "art": "https://cards.scryfall.io/art/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "crop": "https://cards.scryfall.io/crop/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.webp?1783917064",
+     "jpeg": "https://cards.scryfall.io/normal/back/1/1/11798730-6788-4e0b-a828-b46cab1a4fa7.jpg?1783917064"
+    }
+   }
+  ],
+  "games": [
+   "paper",
+   "arena",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "mom",
+  "set_name": "March of the Machine",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/392f7315-dc53-40a3-a2cc-5482dbd498b3",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amom&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/mom?utm_source=api",
+  "collector_number": "22",
+  "digital": false,
+  "rarity": "rare",
+  "artist": "Andreas Zafiratos",
+  "artist_ids": [
+   "e2f13a9a-57c5-40de-81d4-3b0723899cdf"
+  ],
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 8823,
+  "penny_rank": 218,
+  "preview": {
+   "source": "Hipsters of the Coast",
+   "source_uri": "",
+   "previewed_at": "2023-04-03"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Battle of Frost and Fire",
+  "lang": "en",
+  "released_at": "2021-02-05",
+  "layout": "saga",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T07:36:41Z",
+  "mana_cost": "{3}{U}{R}",
+  "cmc": 5,
+  "type_line": "Enchantment — Saga",
+  "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — This Saga deals 4 damage to each non-Giant creature and each planeswalker.\nII — Scry 3.\nIII — Whenever you cast a spell with mana value 5 or greater this turn, draw two cards, then discard a card.",
+  "colors": [
+   "R",
+   "U"
+  ],
+  "color_identity": [
+   "R",
+   "U"
+  ],
+  "keywords": [
+   "Scry"
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "khm",
+  "set_name": "Kaldheim",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/43057fad-b1c1-437f-bc48-0045bce6d8c9",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Akhm&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/khm?utm_source=api",
+  "collector_number": "204",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Daniel Ljunggren",
+  "artist_ids": [
+   "0fbd4798-76eb-46d5-a5d4-1e3a25870e34"
+  ],
+  "illustration_id": "149e1813-4810-48b8-af19-6fcc630a83d9",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 16861,
+  "penny_rank": 8367,
+  "preview": {
+   "source": "Commander Cookout",
+   "source_uri": "https://www.youtube.com/watch?v=zxgxEWiKyuA",
+   "previewed_at": "2021-01-13"
+  }
+ },
+ {
+  "object": "card",
+  "name": "The Mirari Conjecture",
+  "lang": "en",
+  "released_at": "2018-04-27",
+  "layout": "saga",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T09:30:24Z",
+  "mana_cost": "{4}{U}",
+  "cmc": 5,
+  "type_line": "Enchantment — Saga",
+  "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Return target instant card from your graveyard to your hand.\nII — Return target sorcery card from your graveyard to your hand.\nIII — Until end of turn, whenever you cast an instant or sorcery spell, copy it. You may choose new targets for the copy.",
+  "colors": [
+   "U"
+  ],
+  "color_identity": [
+   "U"
+  ],
+  "keywords": [],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "dom",
+  "set_name": "Dominaria",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/be1daba3-51c9-4e7e-9212-36e68addc26c",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Adom&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/dom?utm_source=api",
+  "collector_number": "57",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "James Arnold",
+  "artist_ids": [
+   "5326dc6a-f210-496d-9293-836185819805"
+  ],
+  "illustration_id": "be099eea-cb0f-4223-89be-f10f683adaf9",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 13179,
+  "penny_rank": 4899
+ },
+ {
+  "object": "card",
+  "name": "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki",
+  "lang": "en",
+  "released_at": "2022-02-18",
+  "layout": "transform",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T06:24:35Z",
+  "cmc": 3,
+  "type_line": "Enchantment — Saga // Enchantment Creature — Goblin Shaman",
+  "color_identity": [
+   "R"
+  ],
+  "keywords": [
+   "Transform",
+   "Treasure"
+  ],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Fable of the Mirror-Breaker",
+    "mana_cost": "{2}{R}",
+    "type_line": "Enchantment — Saga",
+    "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Create a 2/2 red Goblin Shaman creature token with \"Whenever this token attacks, create a Treasure token.\"\nII — You may discard up to two cards. If you do, draw that many cards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "colors": [
+     "R"
+    ],
+    "artist": "Joseph Meehan",
+    "artist_id": "6befd6d5-7f8d-4b7c-87e3-5511391a3359",
+    "illustration_id": "85479010-4db6-4128-b357-e39064d50b84",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "normal": "https://cards.scryfall.io/normal/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "large": "https://cards.scryfall.io/large/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "png": "https://cards.scryfall.io/png/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.png?1783923875",
+     "art_crop": "https://cards.scryfall.io/art_crop/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "border_crop": "https://cards.scryfall.io/border_crop/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "thumb": "https://cards.scryfall.io/thumb/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "grid": "https://cards.scryfall.io/grid/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "display": "https://cards.scryfall.io/display/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "art": "https://cards.scryfall.io/art/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "crop": "https://cards.scryfall.io/crop/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "jpeg": "https://cards.scryfall.io/normal/front/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875"
+    }
+   },
+   {
+    "object": "card_face",
+    "name": "Reflection of Kiki-Jiki",
+    "mana_cost": "",
+    "type_line": "Enchantment Creature — Goblin Shaman",
+    "oracle_text": "{1}, {T}: Create a token that's a copy of another target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step.",
+    "colors": [
+     "R"
+    ],
+    "color_indicator": [
+     "R"
+    ],
+    "power": "2",
+    "toughness": "2",
+    "flavor_text": "Blessed by Keiga, the Tide Star, Kiki-Jiki would one day master the art of duplication.",
+    "artist": "Joseph Meehan",
+    "artist_id": "6befd6d5-7f8d-4b7c-87e3-5511391a3359",
+    "illustration_id": "15488154-8383-41af-9d38-1f3b8087b5b9",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "normal": "https://cards.scryfall.io/normal/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "large": "https://cards.scryfall.io/large/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "png": "https://cards.scryfall.io/png/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.png?1783923875",
+     "art_crop": "https://cards.scryfall.io/art_crop/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "border_crop": "https://cards.scryfall.io/border_crop/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875",
+     "thumb": "https://cards.scryfall.io/thumb/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "grid": "https://cards.scryfall.io/grid/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "display": "https://cards.scryfall.io/display/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "art": "https://cards.scryfall.io/art/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "crop": "https://cards.scryfall.io/crop/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.webp?1783923875",
+     "jpeg": "https://cards.scryfall.io/normal/back/2/4/24c0d87b-0049-4beb-b9cb-6f813b7aa7dc.jpg?1783923875"
+    }
+   }
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "6911181d-573b-41eb-96a4-799c96e008fc",
+    "component": "token",
+    "name": "Treasure",
+    "type_line": "Token Artifact — Treasure",
+    "uri": "https://api.scryfall.com/cards/6911181d-573b-41eb-96a4-799c96e008fc"
+   },
+   {
+    "object": "related_card",
+    "id": "0d9461c3-f545-4efb-926e-759961db0495",
+    "component": "token",
+    "name": "Goblin Shaman",
+    "type_line": "Token Creature — Goblin Shaman",
+    "uri": "https://api.scryfall.com/cards/0d9461c3-f545-4efb-926e-759961db0495"
+   },
+   {
+    "object": "related_card",
+    "id": "2115c141-f2fb-4bfd-a8b5-2943bad9f418",
+    "component": "token",
+    "name": "Copy",
+    "type_line": "Token",
+    "uri": "https://api.scryfall.com/cards/2115c141-f2fb-4bfd-a8b5-2943bad9f418"
+   },
+   {
+    "object": "related_card",
+    "id": "6dee0388-a78d-4b3c-a0c5-25655e14115e",
+    "component": "combo_piece",
+    "name": "Fable of the Mirror-Breaker // Reflection of Kiki-Jiki",
+    "type_line": "Enchantment — Saga // Enchantment Creature — Goblin Shaman",
+    "uri": "https://api.scryfall.com/cards/6dee0388-a78d-4b3c-a0c5-25655e14115e"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "neo",
+  "set_name": "Kamigawa: Neon Dynasty",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/59a2059f-5482-433f-8761-eb2e17859b71",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aneo&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/neo?utm_source=api",
+  "collector_number": "141",
+  "digital": false,
+  "rarity": "rare",
+  "artist": "Joseph Meehan",
+  "artist_ids": [
+   "6befd6d5-7f8d-4b7c-87e3-5511391a3359"
+  ],
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "fandfc",
+   "enchantment"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 1756,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://magic.wizards.com/en/articles/archive/making-magic/making-dynasty-part-2-2022-01-31",
+   "previewed_at": "2022-01-31"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Elspeth Conquers Death",
+  "lang": "en",
+  "released_at": "2020-01-24",
+  "layout": "saga",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:33:18Z",
+  "mana_cost": "{3}{W}{W}",
+  "cmc": 5,
+  "type_line": "Enchantment — Saga",
+  "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Exile target permanent an opponent controls with mana value 3 or greater.\nII — Noncreature spells your opponents cast cost {2} more to cast until your next turn.\nIII — Return target creature or planeswalker card from your graveyard to the battlefield. Put a +1/+1 counter or a loyalty counter on it.",
+  "colors": [
+   "W"
+  ],
+  "color_identity": [
+   "W"
+  ],
+  "keywords": [],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "thb",
+  "set_name": "Theros Beyond Death",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/5f23a78d-cda1-462a-8be3-a62b40c34913",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Athb&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/thb?utm_source=api",
+  "collector_number": "13",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Ryan Yee",
+  "artist_ids": [
+   "8955dca7-3e37-42b4-83a9-167c78a2178f"
+  ],
+  "illustration_id": "25037ca3-c6c7-460a-8b42-788e13557ffb",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 3159,
+  "penny_rank": 3320,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "",
+   "previewed_at": "2020-01-09"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Urza Assembles the Titans",
+  "lang": "en",
+  "released_at": "2022-09-09",
+  "layout": "saga",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T05:42:36Z",
+  "mana_cost": "{3}{W}{W}",
+  "cmc": 5,
+  "type_line": "Enchantment — Saga",
+  "oracle_text": "Read ahead (Choose a chapter and start with that many lore counters. Add one after your draw step. Skipped chapters don't trigger. Sacrifice after III.)\nI — Scry 4, then you may reveal the top card of your library. If a planeswalker card is revealed this way, put it into your hand.\nII — You may put a planeswalker card with mana value 6 or less from your hand onto the battlefield.\nIII — You may activate the loyalty abilities of planeswalkers you control twice this turn rather than only once.",
+  "colors": [
+   "W"
+  ],
+  "color_identity": [
+   "W"
+  ],
+  "keywords": [
+   "Read Ahead",
+   "Scry"
+  ],
+  "games": [
+   "paper",
+   "arena",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "dmu",
+  "set_name": "Dominaria United",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/4e47a6cd-cdeb-4b0f-8f24-cfe1a0127cb3",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admu&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/dmu?utm_source=api",
+  "collector_number": "37",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Josu Hernaiz",
+  "artist_ids": [
+   "74246024-92b4-43d0-a5af-a3f9f2a35d5f"
+  ],
+  "illustration_id": "62978a84-e68d-40a2-8e00-c9054c537cde",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 12149,
+  "penny_rank": 4706
+ },
+ {
+  "object": "card",
+  "name": "Kiora Bests the Sea God",
+  "lang": "en",
+  "released_at": "2020-01-24",
+  "layout": "saga",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:33:03Z",
+  "mana_cost": "{5}{U}{U}",
+  "cmc": 7,
+  "type_line": "Enchantment — Saga",
+  "oracle_text": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Create an 8/8 blue Kraken creature token with hexproof.\nII — Tap all nonland permanents target opponent controls. They don't untap during their controller's next untap step.\nIII — Gain control of target permanent an opponent controls. Untap it.",
+  "colors": [
+   "U"
+  ],
+  "color_identity": [
+   "U"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "2b604451-4f6c-4cfa-8d3a-01f18d01d88f",
+    "component": "combo_piece",
+    "name": "Kiora Bests the Sea God",
+    "type_line": "Enchantment — Saga",
+    "uri": "https://api.scryfall.com/cards/2b604451-4f6c-4cfa-8d3a-01f18d01d88f"
+   },
+   {
+    "object": "related_card",
+    "id": "c3365aea-823d-44a9-94d3-ed2a31d85f34",
+    "component": "token",
+    "name": "Kraken",
+    "type_line": "Token Creature — Kraken",
+    "uri": "https://api.scryfall.com/cards/c3365aea-823d-44a9-94d3-ed2a31d85f34"
+   }
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "thb",
+  "set_name": "Theros Beyond Death",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/5f23a78d-cda1-462a-8be3-a62b40c34913",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Athb&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/thb?utm_source=api",
+  "collector_number": "52",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Victor Adame Minguez",
+  "artist_ids": [
+   "bd8f7368-5b10-4554-b6b8-d052c6aca89f"
+  ],
+  "illustration_id": "ac00ae3a-8603-4ba6-af37-3b2cf1c6d607",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 4718,
+  "penny_rank": 4559,
+  "preview": {
+   "source": "Tolarian Community College",
+   "source_uri": "https://www.youtube.com/watch?v=zD8dS55veKg&feature=youtu.be",
+   "previewed_at": "2020-01-06"
+  }
+ },
+ {
+  "object": "card",
+  "resource_id": "D2A95F59A71237AAC200B5F0CAAE4672B1C1715BBB9E478A4B714D32F5A1B742",
+  "name": "Eager Trufflesnout",
+  "lang": "en",
+  "released_at": "2024-11-15",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T02:18:18Z",
+  "mana_cost": "{2}{G}",
+  "cmc": 3,
+  "type_line": "Creature — Boar",
+  "oracle_text": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nWhenever this creature deals combat damage to a player, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+  "power": "4",
+  "toughness": "2",
+  "colors": [
+   "G"
+  ],
+  "color_identity": [
+   "G"
+  ],
+  "keywords": [
+   "Food",
+   "Trample"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "a6e8433d-eb2a-43d1-b59b-7d70ff97c8e7",
+    "component": "combo_piece",
+    "name": "Eager Trufflesnout",
+    "type_line": "Creature — Boar",
+    "uri": "https://api.scryfall.com/cards/a6e8433d-eb2a-43d1-b59b-7d70ff97c8e7"
+   },
+   {
+    "object": "related_card",
+    "id": "6f1077f8-9e2a-4155-a7f0-4604bc0f94e8",
+    "component": "token",
+    "name": "Food",
+    "type_line": "Token Artifact — Food",
+    "uri": "https://api.scryfall.com/cards/6f1077f8-9e2a-4155-a7f0-4604bc0f94e8"
+   }
+  ],
+  "games": [
+   "paper",
+   "arena",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "fdn",
+  "set_name": "Foundations",
+  "set_type": "core",
+  "set_uri": "https://api.scryfall.com/sets/a7ecb771-d1b6-4dec-8cf5-8d45179f21e0",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afdn&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/fdn?utm_source=api",
+  "collector_number": "102",
+  "digital": false,
+  "rarity": "uncommon",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Filipe Pagliuso",
+  "artist_ids": [
+   "64c537b4-a864-4051-9a24-fbdd22cb40b4"
+  ],
+  "illustration_id": "e94d3efd-af75-405e-85d5-dff9ccfef7aa",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 13987
+ },
+ {
+  "object": "card",
+  "name": "Questing Beast",
+  "lang": "en",
+  "released_at": "2019-10-04",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:50:04Z",
+  "mana_cost": "{2}{G}{G}",
+  "cmc": 4,
+  "type_line": "Legendary Creature — Beast",
+  "oracle_text": "Vigilance, deathtouch, haste\nQuesting Beast can't be blocked by creatures with power 2 or less.\nCombat damage that would be dealt by creatures you control can't be prevented.\nWhenever Questing Beast deals combat damage to an opponent, it deals that much damage to target planeswalker that player controls.",
+  "power": "4",
+  "toughness": "4",
+  "colors": [
+   "G"
+  ],
+  "color_identity": [
+   "G"
+  ],
+  "keywords": [
+   "Vigilance",
+   "Haste",
+   "Deathtouch"
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "eld",
+  "set_name": "Throne of Eldraine",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/a90a7b2f-9dd8-4fc7-9f7d-8ea2797ec782",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aeld&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/eld?utm_source=api",
+  "collector_number": "171",
+  "digital": false,
+  "rarity": "mythic",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Igor Kieryluk",
+  "artist_ids": [
+   "9c3e9d17-509f-485c-9360-46d897ce716b"
+  ],
+  "illustration_id": "c2a364d0-6c5b-4be6-8231-0c5f501fb917",
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 2685,
+  "preview": {
+   "source": "Sean Plott (Day9TV)",
+   "source_uri": "https://twitter.com/day9tv/status/1171090892201086976?s=21",
+   "previewed_at": "2019-09-09"
+  }
+ },
+ {
+  "object": "card",
+  "resource_id": "E8DB2D5D298BD12B87D61F45DE76F2F2FA083FE02FE5F74D772D7AE3DABC983C",
+  "name": "Ulamog, the Ceaseless Hunger",
+  "lang": "en",
+  "released_at": "2023-08-04",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:08:50Z",
+  "mana_cost": "{10}",
+  "cmc": 10,
+  "type_line": "Legendary Creature — Eldrazi",
+  "oracle_text": "When you cast this spell, exile two target permanents.\nIndestructible\nWhenever Ulamog attacks, defending player exiles the top twenty cards of their library.",
+  "power": "10",
+  "toughness": "10",
+  "colors": [],
+  "color_identity": [],
+  "keywords": [
+   "Indestructible"
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "cmm",
+  "set_name": "Commander Masters",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/cd05036f-2698-43e6-a48e-5c8d82f0a551",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Acmm&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/cmm?utm_source=api",
+  "collector_number": "5",
+  "digital": false,
+  "rarity": "mythic",
+  "flavor_text": "A force as voracious as time itself.",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Michael Komarck",
+  "artist_ids": [
+   "96a53b95-fe5f-4fbb-9411-ccf4ee150aca"
+  ],
+  "illustration_id": "74414961-40e4-4df4-8098-ea145af93d91",
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 1336
+ },
+ {
+  "object": "card",
+  "name": "Luminous Broodmoth",
+  "lang": "en",
+  "released_at": "2020-04-24",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T08:24:47Z",
+  "mana_cost": "{2}{W}{W}",
+  "cmc": 4,
+  "type_line": "Creature — Insect",
+  "oracle_text": "Flying\nWhenever a creature you control without flying dies, return it to the battlefield under its owner's control with a flying counter on it.",
+  "power": "3",
+  "toughness": "4",
+  "colors": [
+   "W"
+  ],
+  "color_identity": [
+   "W"
+  ],
+  "keywords": [
+   "Flying"
+  ],
+  "games": [
+   "arena",
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "iko",
+  "set_name": "Ikoria: Lair of Behemoths",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/19feda43-15ab-427e-a0e4-148a4bf2b03a",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aiko&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/iko?utm_source=api",
+  "collector_number": "21",
+  "digital": false,
+  "rarity": "mythic",
+  "flavor_text": "It soars through currents of moonbeams to give hope to the forsaken.",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Lie Setiawan",
+  "artist_ids": [
+   "6f771d3f-310e-4aa4-841f-5ba4ba9f025a"
+  ],
+  "illustration_id": "ef96f478-5c90-466d-82a4-1179d361e008",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 1154,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://magic.wizards.com/en/articles/archive/card-image-gallery/ikoria-lair-behemoths",
+   "previewed_at": "2020-04-03"
+  }
+ },
+ {
+  "object": "card",
+  "mtgo_foil_id": 55443,
+  "name": "Warden of the First Tree",
+  "lang": "en",
+  "released_at": "2015-01-23",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T10:31:16Z",
+  "mana_cost": "{G}",
+  "cmc": 1,
+  "type_line": "Creature — Human",
+  "oracle_text": "{1}{W/B}: This creature becomes a Human Warrior with base power and toughness 3/3.\n{2}{W/B}{W/B}: If this creature is a Warrior, it becomes a Human Spirit Warrior with trample and lifelink.\n{3}{W/B}{W/B}{W/B}: If this creature is a Spirit, put five +1/+1 counters on it.",
+  "power": "1",
+  "toughness": "1",
+  "colors": [
+   "G"
+  ],
+  "color_identity": [
+   "B",
+   "G",
+   "W"
+  ],
+  "keywords": [],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "frf",
+  "set_name": "Fate Reforged",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/7bb5cb2b-081a-4c8c-b7e1-494046e6baa1",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afrf&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/frf?utm_source=api",
+  "collector_number": "143",
+  "digital": false,
+  "rarity": "mythic",
+  "watermark": "abzan",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Ryan Alexander Lee",
+  "artist_ids": [
+   "f4d194b4-958a-4830-8d87-1a84e0b9ffbc"
+  ],
+  "illustration_id": "3ec264ae-f41a-430c-baec-506299f284e6",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 26344,
+  "penny_rank": 4837
+ },
+ {
+  "object": "card",
+  "name": "Delver of Secrets // Insectile Aberration",
+  "lang": "en",
+  "released_at": "2025-01-24",
+  "layout": "transform",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T02:02:53Z",
+  "cmc": 1,
+  "type_line": "Creature — Human Wizard // Creature — Human Insect",
+  "color_identity": [
+   "U"
+  ],
+  "keywords": [
+   "Flying",
+   "Transform"
+  ],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Delver of Secrets",
+    "mana_cost": "{U}",
+    "type_line": "Creature — Human Wizard",
+    "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature.",
+    "colors": [
+     "U"
+    ],
+    "power": "1",
+    "toughness": "1",
+    "artist": "Nils Hamm",
+    "artist_id": "c540d1fc-1500-457f-93cf-d6069ee66546",
+    "illustration_id": "1c2fee9b-89ea-4ab1-a751-451c3cd65a88",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "normal": "https://cards.scryfall.io/normal/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "large": "https://cards.scryfall.io/large/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "png": "https://cards.scryfall.io/png/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.png?1783908173",
+     "art_crop": "https://cards.scryfall.io/art_crop/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "border_crop": "https://cards.scryfall.io/border_crop/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "thumb": "https://cards.scryfall.io/thumb/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "grid": "https://cards.scryfall.io/grid/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "display": "https://cards.scryfall.io/display/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "art": "https://cards.scryfall.io/art/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "crop": "https://cards.scryfall.io/crop/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "jpeg": "https://cards.scryfall.io/normal/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173"
+    }
+   },
+   {
+    "object": "card_face",
+    "name": "Insectile Aberration",
+    "mana_cost": "",
+    "type_line": "Creature — Human Insect",
+    "oracle_text": "Flying",
+    "colors": [
+     "U"
+    ],
+    "color_indicator": [
+     "U"
+    ],
+    "power": "3",
+    "toughness": "2",
+    "flavor_text": "\"Unfortunately, all my test animals have died or escaped, so I shall be the final subject. I feel no fear. This is a momentous night.\"\n—Laboratory notes, final entry",
+    "artist": "Nils Hamm",
+    "artist_id": "c540d1fc-1500-457f-93cf-d6069ee66546",
+    "illustration_id": "c2b5f731-771b-4949-90f3-0ad40d676100",
+    "image_uris": {
+     "small": "https://cards.scryfall.io/small/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "normal": "https://cards.scryfall.io/normal/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "large": "https://cards.scryfall.io/large/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "png": "https://cards.scryfall.io/png/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.png?1783908173",
+     "art_crop": "https://cards.scryfall.io/art_crop/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "border_crop": "https://cards.scryfall.io/border_crop/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173",
+     "thumb": "https://cards.scryfall.io/thumb/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "grid": "https://cards.scryfall.io/grid/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "display": "https://cards.scryfall.io/display/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "art": "https://cards.scryfall.io/art/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "crop": "https://cards.scryfall.io/crop/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.webp?1783908173",
+     "jpeg": "https://cards.scryfall.io/normal/back/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg?1783908173"
+    }
+   }
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "99ce1bee-8f95-4284-8e06-9de9bfcb53b5",
+    "component": "combo_piece",
+    "name": "Innistrad Checklist",
+    "type_line": "Card",
+    "uri": "https://api.scryfall.com/cards/99ce1bee-8f95-4284-8e06-9de9bfcb53b5"
+   },
+   {
+    "object": "related_card",
+    "id": "871c4ccc-5a14-4583-b4c7-6f2d2aeb8253",
+    "component": "combo_piece",
+    "name": "Delver of Secrets // Insectile Aberration",
+    "type_line": "Creature — Human Wizard // Creature — Human Insect",
+    "uri": "https://api.scryfall.com/cards/871c4ccc-5a14-4583-b4c7-6f2d2aeb8253"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "inr",
+  "set_name": "Innistrad Remastered",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/b9618c8c-9f31-4b42-9798-2991893c27bf",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Ainr&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/inr?utm_source=api",
+  "collector_number": "60",
+  "digital": false,
+  "rarity": "common",
+  "artist": "Nils Hamm",
+  "artist_ids": [
+   "c540d1fc-1500-457f-93cf-d6069ee66546"
+  ],
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 16327,
+  "penny_rank": 179,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "",
+   "previewed_at": "2025-01-07"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Brisela, Voice of Nightmares",
+  "lang": "en",
+  "released_at": "2025-01-24",
+  "layout": "meld",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T02:03:09Z",
+  "mana_cost": "",
+  "cmc": 11,
+  "type_line": "Legendary Creature — Eldrazi Angel",
+  "oracle_text": "Flying, first strike, vigilance, lifelink\nYour opponents can't cast spells with mana value 3 or less.",
+  "power": "9",
+  "toughness": "10",
+  "colors": [],
+  "color_identity": [
+   "W"
+  ],
+  "keywords": [
+   "Flying",
+   "Lifelink",
+   "Vigilance",
+   "First strike"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "7e926e19-553c-470a-afde-358541af5caa",
+    "component": "meld_result",
+    "name": "Brisela, Voice of Nightmares",
+    "type_line": "Legendary Creature — Eldrazi Angel",
+    "uri": "https://api.scryfall.com/cards/7e926e19-553c-470a-afde-358541af5caa"
+   },
+   {
+    "object": "related_card",
+    "id": "6fccdb60-5fce-4a6e-a709-b986f9a4b653",
+    "component": "meld_part",
+    "name": "Bruna, the Fading Light",
+    "type_line": "Legendary Creature — Angel Horror",
+    "uri": "https://api.scryfall.com/cards/6fccdb60-5fce-4a6e-a709-b986f9a4b653"
+   },
+   {
+    "object": "related_card",
+    "id": "04506bad-3856-4184-8dda-941ded60f41a",
+    "component": "meld_part",
+    "name": "Gisela, the Broken Blade",
+    "type_line": "Legendary Creature — Angel Horror",
+    "uri": "https://api.scryfall.com/cards/04506bad-3856-4184-8dda-941ded60f41a"
+   }
+  ],
+  "games": [
+   "paper"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "inr",
+  "set_name": "Innistrad Remastered",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/b9618c8c-9f31-4b42-9798-2991893c27bf",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Ainr&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/inr?utm_source=api",
+  "collector_number": "14b",
+  "digital": false,
+  "rarity": "mythic",
+  "flavor_text": "Upon discovering what had become of her sisters, Sigarda could only weep.",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Clint Cearley",
+  "artist_ids": [
+   "03b75350-d5a0-4e3a-b3b4-8d4a5554385b"
+  ],
+  "illustration_id": "9528e065-5297-4d91-bf75-3c175b54f0d4",
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://magic.wizards.com/en/news/making-magic/the-ins-and-outs-of-innistrad-remastered",
+   "previewed_at": "2025-01-06"
+  }
+ },
+ {
+  "object": "card",
+  "resource_id": "A59396A4D646C69A1DD41F9906BE9A9CDECE83F18DC5C53501DD7BAE50511DBB",
+  "name": "Lightning Bolt",
+  "lang": "en",
+  "released_at": "2026-06-26",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T00:36:48Z",
+  "mana_cost": "{R}",
+  "cmc": 1,
+  "type_line": "Instant",
+  "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+  "colors": [
+   "R"
+  ],
+  "color_identity": [
+   "R"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "component": "combo_piece",
+    "name": "Lightning Bolt",
+    "type_line": "Instant",
+    "uri": "https://api.scryfall.com/cards/7673784e-db4b-43a1-8d55-1bb9fc1e284f"
+   },
+   {
+    "object": "related_card",
+    "id": "4f095067-cf24-4061-8626-dc68a66a0b36",
+    "component": "combo_piece",
+    "name": "Toralf's Disciple",
+    "type_line": "Creature — Human Warrior",
+    "uri": "https://api.scryfall.com/cards/4f095067-cf24-4061-8626-dc68a66a0b36"
+   },
+   {
+    "object": "related_card",
+    "id": "69b51576-532b-450e-a8bf-0482cac04618",
+    "component": "combo_piece",
+    "name": "Thayan Evokers",
+    "type_line": "Creature — Human Wizard",
+    "uri": "https://api.scryfall.com/cards/69b51576-532b-450e-a8bf-0482cac04618"
+   },
+   {
+    "object": "related_card",
+    "id": "618806ea-7ea8-4cfb-a8c1-c3defa34e7dd",
+    "component": "combo_piece",
+    "name": "Indris, the Hydrostatic Surge",
+    "type_line": "Legendary Creature — Otter Incarnation",
+    "uri": "https://api.scryfall.com/cards/618806ea-7ea8-4cfb-a8c1-c3defa34e7dd"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "msc",
+  "set_name": "Marvel Super Heroes Commander",
+  "set_type": "commander",
+  "set_uri": "https://api.scryfall.com/sets/9d739461-c5ac-43a1-af41-3d5a585b5c8d",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amsc&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/msc?utm_source=api",
+  "collector_number": "806",
+  "digital": false,
+  "rarity": "uncommon",
+  "flavor_text": "\"I am the god of thunder, the lord of the savage lightning, and the very skies must tremble when speaks The Mighty Thor!\"",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Milivoj Ćeran",
+  "artist_ids": [
+   "1eced451-4da5-42bc-b49d-70c41246581f"
+  ],
+  "illustration_id": "58884d99-ed2d-4efd-b192-b1eb6f87c39f",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "promo_types": [
+   "universesbeyond"
+  ],
+  "edhrec_rank": 159
+ },
+ {
+  "object": "card",
+  "name": "Boseiju, Who Endures",
+  "lang": "en",
+  "released_at": "2022-02-18",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T06:23:38Z",
+  "mana_cost": "",
+  "cmc": 0,
+  "type_line": "Legendary Land",
+  "oracle_text": "{T}: Add {G}.\nChannel — {1}{G}, Discard this card: Destroy target artifact, enchantment, or nonbasic land an opponent controls. That player may search their library for a land card with a basic land type, put it onto the battlefield, then shuffle. This ability costs {1} less to activate for each legendary creature you control.",
+  "colors": [],
+  "color_identity": [
+   "G"
+  ],
+  "keywords": [
+   "Channel"
+  ],
+  "produced_mana": [
+   "G"
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "neo",
+  "set_name": "Kamigawa: Neon Dynasty",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/59a2059f-5482-433f-8761-eb2e17859b71",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aneo&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/neo?utm_source=api",
+  "collector_number": "266",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Chris Ostrowski",
+  "artist_ids": [
+   "b5f1bd34-abee-40c9-99f7-a6ee089fb30b"
+  ],
+  "illustration_id": "fecffc00-411c-4e85-b595-2ca0e4cb672b",
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 78,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://www.twitch.tv/videos/1277767538",
+   "previewed_at": "2022-01-27"
+  }
+ },
+ {
+  "object": "card",
+  "name": "B.F.M. (Big Furry Monster)",
+  "lang": "en",
+  "released_at": "1998-08-11",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T12:40:32Z",
+  "mana_cost": "",
+  "cmc": 15,
+  "type_line": "Creature — The Biggest, Baddest, Nastiest,",
+  "oracle_text": "You must cast both B.F.M. cards to put\nleaves the battlefield, sacrifice the other.\nB.F.M. can't be blocked except by three or",
+  "colors": [
+   "B"
+  ],
+  "color_identity": [
+   "B"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "a9f9c279-e382-4feb-9575-196e7cf5d7dc",
+    "component": "combo_piece",
+    "name": "B.F.M. (Big Furry Monster)",
+    "type_line": "Creature — The Biggest, Baddest, Nastiest,",
+    "uri": "https://api.scryfall.com/cards/a9f9c279-e382-4feb-9575-196e7cf5d7dc"
+   },
+   {
+    "object": "related_card",
+    "id": "d15c6375-2e4e-47f7-88e1-d90794e7f724",
+    "component": "combo_piece",
+    "name": "B.F.M. (Big Furry Monster)",
+    "type_line": "Scariest Creature You'll Ever See",
+    "uri": "https://api.scryfall.com/cards/d15c6375-2e4e-47f7-88e1-d90794e7f724"
+   }
+  ],
+  "games": [
+   "paper"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "ugl",
+  "set_name": "Unglued",
+  "set_type": "funny",
+  "set_uri": "https://api.scryfall.com/sets/3404fc78-6678-4cf4-bd39-4c0be3bb7baf",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Augl&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/ugl?utm_source=api",
+  "collector_number": "28",
+  "digital": false,
+  "rarity": "rare",
+  "flavor_text": "\"It was big. Really, really big. No, bigger\nNo, more. Look, we're talking krakens and",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Douglas Shuler",
+  "artist_ids": [
+   "a9ddb513-51c7-455c-ab8f-5b90aae9f75b"
+  ],
+  "illustration_id": "604f7df7-c364-444a-9224-b7a952aa8512",
+  "border_color": "silver",
+  "frame": "1997",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false
+ },
+ {
+  "object": "card",
+  "name": "Our Market Research Shows That Players Like Really Long Card Names So We Made this Card to Have the Absolute Longest Card Name Ever Elemental",
+  "lang": "en",
+  "released_at": "2004-11-19",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T12:03:58Z",
+  "mana_cost": "{1}{G}{G}",
+  "cmc": 3,
+  "type_line": "Creature — Elemental",
+  "oracle_text": "Art rampage 2 (Whenever this creature becomes blocked by a creature, it gets +2/+2 for each creature in the blocker's art beyond the first.)",
+  "power": "2",
+  "toughness": "2",
+  "colors": [
+   "G"
+  ],
+  "color_identity": [
+   "G"
+  ],
+  "keywords": [],
+  "games": [
+   "paper"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "unh",
+  "set_name": "Unhinged",
+  "set_type": "funny",
+  "set_uri": "https://api.scryfall.com/sets/4c8bc76a-05a5-43db-aaf0-34deb347b871",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aunh&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/unh?utm_source=api",
+  "collector_number": "107",
+  "digital": false,
+  "rarity": "common",
+  "flavor_text": "Just call it OMRSTPLRLCNSWMTCTHTALCNEE for short.",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Greg Hildebrandt",
+  "artist_ids": [
+   "020f967b-0d2f-4166-aabe-901dba8bc7ec"
+  ],
+  "illustration_id": "dd2a48ad-3c45-47e4-88f3-ab90b37c1e0e",
+  "border_color": "silver",
+  "frame": "2003",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false
+ },
+ {
+  "object": "card",
+  "name": "Asmoranomardicadaistinaculdacar",
+  "lang": "en",
+  "released_at": "2021-06-18",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T07:13:41Z",
+  "mana_cost": "",
+  "cmc": 0,
+  "type_line": "Legendary Creature — Human Wizard",
+  "oracle_text": "As long as you've discarded a card this turn, you may pay {B/R} to cast this spell.\nWhen Asmoranomardicadaistinaculdacar enters, you may search your library for a card named The Underworld Cookbook, reveal it, put it into your hand, then shuffle.\nSacrifice two Foods: Target creature deals 6 damage to itself.",
+  "power": "3",
+  "toughness": "3",
+  "colors": [
+   "B",
+   "R"
+  ],
+  "color_indicator": [
+   "B",
+   "R"
+  ],
+  "color_identity": [
+   "B",
+   "R"
+  ],
+  "keywords": [],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "2879f780-e17f-4e68-931e-6e45f9df28e1",
+    "component": "combo_piece",
+    "name": "Asmoranomardicadaistinaculdacar",
+    "type_line": "Legendary Creature — Human Wizard",
+    "uri": "https://api.scryfall.com/cards/2879f780-e17f-4e68-931e-6e45f9df28e1"
+   },
+   {
+    "object": "related_card",
+    "id": "4f24504e-b397-4b98-b8e8-8166457f7a2e",
+    "component": "combo_piece",
+    "name": "The Underworld Cookbook",
+    "type_line": "Artifact — Book",
+    "uri": "https://api.scryfall.com/cards/4f24504e-b397-4b98-b8e8-8166457f7a2e"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": false,
+  "variation": false,
+  "set": "mh2",
+  "set_name": "Modern Horizons 2",
+  "set_type": "draft_innovation",
+  "set_uri": "https://api.scryfall.com/sets/c1c7eb8c-f205-40ab-a609-767cb296544e",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amh2&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/mh2?utm_source=api",
+  "collector_number": "186",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Ryan Pancoast",
+  "artist_ids": [
+   "89cc9475-dda2-4d13-bf88-54b92867a25c"
+  ],
+  "illustration_id": "109aa8fc-4587-4092-9a51-da3a81099ae5",
+  "border_color": "black",
+  "frame": "2015",
+  "frame_effects": [
+   "legendary"
+  ],
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 12685,
+  "penny_rank": 2113,
+  "preview": {
+   "source": "Wizards of the Coast",
+   "source_uri": "https://magic.wizards.com/en/articles/archive/card-preview/challenge-accepted-2021-05-26",
+   "previewed_at": "2021-05-26"
+  }
+ },
+ {
+  "object": "card",
+  "name": "Fire // Ice",
+  "lang": "en",
+  "released_at": "2023-01-13",
+  "layout": "split",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:53:40Z",
+  "mana_cost": "{1}{R} // {1}{U}",
+  "cmc": 4,
+  "type_line": "Instant // Instant",
+  "colors": [
+   "R",
+   "U"
+  ],
+  "color_identity": [
+   "R",
+   "U"
+  ],
+  "keywords": [],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Fire",
+    "mana_cost": "{1}{R}",
+    "type_line": "Instant",
+    "oracle_text": "Fire deals 2 damage divided as you choose among one or two targets.",
+    "artist": "David Martin",
+    "artist_id": "996ad764-4ae0-4952-8bb5-5a75c9d68275",
+    "illustration_id": "c890cb20-7e04-4ad0-96a6-8854cd409c14"
+   },
+   {
+    "object": "card_face",
+    "name": "Ice",
+    "mana_cost": "{1}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Tap target permanent.\nDraw a card.",
+    "artist": "Franz Vohwinkel",
+    "artist_id": "3a243c17-3baa-4b53-9599-645311cd7d3d"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "dmr",
+  "set_name": "Dominaria Remastered",
+  "set_type": "masters",
+  "set_uri": "https://api.scryfall.com/sets/ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admr&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/dmr?utm_source=api",
+  "collector_number": "215",
+  "digital": false,
+  "rarity": "uncommon",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "David Martin & Franz Vohwinkel",
+  "artist_ids": [
+   "996ad764-4ae0-4952-8bb5-5a75c9d68275",
+   "3a243c17-3baa-4b53-9599-645311cd7d3d"
+  ],
+  "illustration_id": "c890cb20-7e04-4ad0-96a6-8854cd409c14",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": true,
+  "story_spotlight": false,
+  "edhrec_rank": 13297,
+  "penny_rank": 398
+ },
+ {
+  "object": "card",
+  "name": "Wear // Tear",
+  "lang": "en",
+  "released_at": "2023-04-21",
+  "layout": "split",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T04:32:03Z",
+  "mana_cost": "{1}{R} // {W}",
+  "cmc": 3,
+  "type_line": "Instant // Instant",
+  "colors": [
+   "R",
+   "W"
+  ],
+  "color_identity": [
+   "R",
+   "W"
+  ],
+  "keywords": [
+   "Fuse"
+  ],
+  "card_faces": [
+   {
+    "object": "card_face",
+    "name": "Wear",
+    "mana_cost": "{1}{R}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target artifact.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "artist": "Ryan Pancoast",
+    "artist_id": "89cc9475-dda2-4d13-bf88-54b92867a25c",
+    "illustration_id": "35dc8f1e-5c26-4f3f-98eb-62123968a04f"
+   },
+   {
+    "object": "card_face",
+    "name": "Tear",
+    "mana_cost": "{W}",
+    "type_line": "Instant",
+    "oracle_text": "Destroy target enchantment.\nFuse (You may cast one or both halves of this card from your hand.)",
+    "artist": "Ryan Pancoast",
+    "artist_id": "89cc9475-dda2-4d13-bf88-54b92867a25c"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "moc",
+  "set_name": "March of the Machine Commander",
+  "set_type": "commander",
+  "set_uri": "https://api.scryfall.com/sets/6bba5de9-5afb-42af-a7eb-24ac854bf671",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amoc&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/moc?utm_source=api",
+  "collector_number": "343",
+  "digital": false,
+  "rarity": "uncommon",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Ryan Pancoast",
+  "artist_ids": [
+   "89cc9475-dda2-4d13-bf88-54b92867a25c"
+  ],
+  "illustration_id": "35dc8f1e-5c26-4f3f-98eb-62123968a04f",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 1056
+ },
+ {
+  "object": "card",
+  "name": "Mountain",
+  "lang": "en",
+  "released_at": "2027-04-09",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-10-09T20:40:39Z",
+  "mana_cost": "",
+  "cmc": 0,
+  "type_line": "Basic Land — Mountain",
+  "oracle_text": "({T}: Add {R}.)",
+  "colors": [],
+  "color_identity": [
+   "R"
+  ],
+  "keywords": [],
+  "produced_mana": [
+   "R"
+  ],
+  "games": [
+   "paper",
+   "mtgo",
+   "arena"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": true,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil",
+   "foil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "mdd",
+  "set_name": "Marvel: Darkhold Destiny",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/1c75c20b-221e-47c5-83be-f3be4c15087d",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amdd&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/mdd?utm_source=api",
+  "collector_number": "298",
+  "digital": false,
+  "rarity": "common",
+  "flavor_text": "\"No matter how hard I try, I always seem to return to this wicked world of Limbo. But this time will be different. This time, Belasco's soul will be mine to sunder. Come, my friends, for we have a battle to win.\"\n—Magik, Illyana Rasputin",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "VEN",
+  "artist_ids": [
+   "87ee4a37-16cf-4022-a8b1-1396183f1877"
+  ],
+  "illustration_id": "a3bc65d4-3879-407f-ad25-fdc15c1a4e3c",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "promo_types": [
+   "universesbeyond"
+  ],
+  "preview": {
+   "source": "TheGamer",
+   "source_uri": "https://www.thegamer.com/mtg-marvel-darkhold-destiny-universes-beyond-reveal/",
+   "previewed_at": "2026-10-09"
+  }
+ },
+ {
+  "object": "card",
+  "resource_id": "1D7C3D86E8964A33B9AAAA3B2C8B12DCD05F6E96788636372ED69FBF5BC8CAFA",
+  "name": "Wastes",
+  "lang": "en",
+  "released_at": "2025-08-01",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T01:26:41Z",
+  "mana_cost": "",
+  "cmc": 0,
+  "type_line": "Basic Land",
+  "oracle_text": "{T}: Add {C}.",
+  "colors": [],
+  "color_identity": [],
+  "keywords": [],
+  "produced_mana": [
+   "C"
+  ],
+  "all_parts": [
+   {
+    "object": "related_card",
+    "id": "baf8f4f2-9f25-4cd2-8d78-1041e134aeac",
+    "component": "combo_piece",
+    "name": "Wastes",
+    "type_line": "Basic Land",
+    "uri": "https://api.scryfall.com/cards/baf8f4f2-9f25-4cd2-8d78-1041e134aeac"
+   },
+   {
+    "object": "related_card",
+    "id": "a0764566-617b-45cb-8aad-5a9f606348ae",
+    "component": "combo_piece",
+    "name": "Thendar, the Overminer",
+    "type_line": "Legendary Creature — Kavu Pirate",
+    "uri": "https://api.scryfall.com/cards/a0764566-617b-45cb-8aad-5a9f606348ae"
+   }
+  ],
+  "games": [
+   "paper",
+   "mtgo"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+   "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set": "eoc",
+  "set_name": "Edge of Eternities Commander",
+  "set_type": "commander",
+  "set_uri": "https://api.scryfall.com/sets/b6ec8c6b-b4e6-4cb4-84d6-06234ace3b44",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aeoc&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/eoc?utm_source=api",
+  "collector_number": "191",
+  "digital": false,
+  "rarity": "common",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Raymond Swanland",
+  "artist_ids": [
+   "e956bacc-077d-4c12-b6bc-ba798b718af9"
+  ],
+  "illustration_id": "8b1f166f-fbc9-42da-8dcd-5a5ea38652c3",
+  "border_color": "black",
+  "frame": "2015",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "preview": {
+   "source": "The Command Zone",
+   "source_uri": "https://www.youtube.com/watch?v=HxXLWC_JRdM",
+   "previewed_at": "2025-07-09"
+  }
+ }
+]

@@ -100,11 +100,11 @@ npm test          # or: npm run test:headed, to watch it
 npm run verify    # staleness check, then the tests
 ```
 
-Other tools: `node tools/shot.mjs` writes screenshots of the page, `node tools/shot-layouts.mjs` renders one card per layout with the margin guide on, and `node tools/check-safe-area.mjs` reports how close each piece of text gets to the cut (it exits non-zero if anything that matters falls outside the safety margin, so it can be used as a gate).
+Other tools: `node tools/shot.mjs` writes screenshots of the page, `node tools/shot-layouts.mjs` renders one card per layout with the margin guide on, and `node tools/check-safe-area.mjs` reports how close each piece of text gets to the cut (it exits non-zero if anything that matters falls outside the safety margin, so it can be used as a gate). `npm run real-cards` does the same measurement over 48 **real** Scryfall cards kept in `tests/fixtures/cards.json` — planeswalkers, battles, sagas, split and transforming cards, the longest card name in print — and also reports what the tool still gets wrong about them; `npm run fixtures` refreshes that list from Scryfall (the only step that needs the network).
 
-A GitHub Actions workflow (`.github/workflows/verify.yml`) runs `npm run verify` on every push and pull
-request, so a stale build or a layout that pushes text past the margin is caught before it reaches the
-published page.
+A GitHub Actions workflow (`.github/workflows/verify.yml`) runs `npm run verify` and `npm run real-cards`
+on every push and pull request, so a stale build, or a layout that pushes real card text past the margin,
+is caught before it reaches the published page.
 
 ## Fine print
 
