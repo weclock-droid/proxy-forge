@@ -522,18 +522,21 @@ describe('playtest footer note', () => {
       p.fillText = function (text, x, y, ...rest) {
         if (this.canvas.width === 750 && this.canvas.height === 1050) {
           const s = String(text), box = bounds(this, s, x, y);
+          // every other piece of text counts, not just the credit: a style's own captions, a credit that wraps
+          // onto a second line, the P/T and the rules all have to stay clear of the note
           if (noteTexts.includes(s)) measurements.push({ kind: 'note', box });
-          if (/Painter|Illustrated by|001|PRX|EN/.test(s)) measurements.push({ kind: 'credit', box, text: s });
-          if (s === '4/4') measurements.push({ kind: 'pt', box });
+          else if (s.trim()) measurements.push({ kind: 'text', box, text: s });
         }
         return fillText.call(this, text, x, y, ...rest);
       };
       try {
+        // a short credit, and one long enough to wrap onto a second line in most styles
+        for (const artist of ['A. Painter', 'Johannes Vermeer van Delft and Workshop Assistants'])
         for (const sty of __pf.styles()) {
           measurements.length = 0;
           const form = {
             name: 'Test Golem', cost: '{3}{G}', type: 'Artifact Creature — Golem', rules: 'Trample',
-            flavor: '', pt: '4/4', artist: 'A. Painter', info: '001 · PRX · EN',
+            flavor: '', pt: '4/4', artist, info: '001 · PRX · EN',
             note: 'Playtest card — not for sale', border: '#0b0b0c', color: 'G', titleFont: 'Spectral',
             shade: '0.78', size: '31', bleed: false, round: true, pipStyle: 'classic', pipColor: '#ffffff',
             rarity: 'rare', setTint: true, artFx: 'none', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.5',
@@ -542,15 +545,15 @@ describe('playtest footer note', () => {
           };
           __pf.cardCanvas({ kind: 'made', form, img, zoom: 1, ox: 0, oy: 0 }, 1);
           const drawn = [...measurements], notes = drawn.filter(m => m.kind === 'note');
-          if (notes.length !== 1) empty.push({ id: sty.id, count: notes.length, why: 'nonempty' });
+          if (notes.length !== 1) empty.push({ id: sty.id, artist, count: notes.length, why: 'nonempty' });
           for (const { box } of notes) {
             const note = { left: box.left - 10, right: box.right + 10, top: box.top - 4, bottom: box.bottom + 4 };
             if (note.left < 0 || note.top < 0 || note.right > 750 || note.bottom > 1050)
               empty.push({ id: sty.id, why: 'note outside card', box: note });
-            for (const other of drawn.filter(m => m.kind === 'credit' || m.kind === 'pt')) {
+            for (const other of drawn.filter(m => m.kind === 'text')) {
               if (note.left < other.box.right && note.right > other.box.left &&
                   note.top < other.box.bottom && note.bottom > other.box.top)
-                empty.push({ id: sty.id, why: `note overlaps ${other.kind}`, text: other.text, note, other: other.box });
+                empty.push({ id: sty.id, artist, why: 'note overlaps text', text: other.text, note, other: other.box });
             }
           }
 
