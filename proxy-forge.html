@@ -379,7 +379,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           <div class="fxpal" id="fxPal" role="group" aria-label="Color pairs"></div>
         </div>
         <label class="inline"><input type="checkbox" id="guides" checked> Show art-area guide on the preview (never printed)</label>
-        <label class="inline"><input type="checkbox" id="safeGuides"> Show the safety margin (¼″ in from the cut, twice the bleed)</label>
+        <label class="inline"><input type="checkbox" id="safeGuides"> Show the safety margin (⅛″ inside the cut, ¼″ in from the bleed edge)</label>
         <span class="hint" style="margin-top:-6px">Print shops cut slightly off-centre, so keep anything that matters — the name, mana cost, type line, rules and power/toughness — inside the green line. Art and plain background may cross it; the collector line may fall outside it. The ready-made layouts already do this; in the custom layout, you place the text, so check it yourself.</span>
         <div class="quality" id="quality" aria-live="polite"></div>
         <p class="credit" id="artCredit" hidden></p>
@@ -848,10 +848,11 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
 <script>
 (() => {
 const W = 750, H = 1050, BLEED = 37.5, RES = 2;
-// The safety margin print shops ask for: ¼" in from the cut, which is twice the ⅛" bleed. One unit is
-// 1/300", so ¼" is 75 units. Keep the name, cost, type line, rules and P/T inside this; the collector
-// line is allowed to fall outside it, and art may cross it.
-const SAFE = BLEED * 2;
+// The safety margin print shops ask for: a line ¼" in from the edge of the bleed file, which is twice the
+// bleed, so it sits ⅛" (37.5 units) inside the cut. Keep the name, cost, type line, rules and P/T inside
+// it; the collector line may fall outside it, and art may cross it. (Checked against the community's own
+// overlay of a 2200 x 3000 print file: the green line is ~0.24" in from the file edge.)
+const SAFE = BLEED;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
 const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label','aiArt','aiModel','setCode'];
@@ -948,9 +949,11 @@ function glyph(g, c) { // draws glyph c in a 100x100 box, fill already set
     case 'U':
       g.moveTo(50, 10); g.bezierCurveTo(56, 30, 78, 46, 78, 64); g.arc(50, 64, 28, 0, Math.PI); g.bezierCurveTo(22, 46, 44, 30, 50, 10); g.fill(); return;
     case 'B': { // skull; eyes, nose and teeth are cut out so any background shows through
-      g.ellipse(50, 42, 29, 27, 0, 0, 7); g.fill();
+      // drawn a quarter larger than its outline so it fills the pip like the other colours' glyphs
+      g.save(); g.translate(50, 48); g.scale(1.27, 1.27); g.translate(-50, -48);
+      g.beginPath(); g.ellipse(50, 42, 29, 27, 0, 0, 7); g.fill();
       g.beginPath(); g.roundRect(35, 56, 30, 24, 5); g.fill();
-      g.save(); g.globalCompositeOperation = 'destination-out';
+      g.globalCompositeOperation = 'destination-out';
       g.beginPath(); g.arc(39, 45, 8, 0, 7); g.arc(61, 45, 8, 0, 7); g.fill();
       g.beginPath(); g.moveTo(50, 54); g.lineTo(45, 63); g.lineTo(55, 63); g.fill();
       g.fillRect(43, 70, 3, 10); g.fillRect(54, 70, 3, 10);
@@ -1657,12 +1660,9 @@ function halftone(g, img, w, h, amt, color, ink, paper) {
 function artRect(o) {
   const aw = o.layout === 'custom' && (o.layers || []).find(l => l.src === 'art');
   if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true, arch: aw.bg === 'arch', crt: aw.bg === 'crt', rad: +aw.rad || 0, clean: aw.bg === 'arch' || aw.bg === 'crt' || +aw.rad > 0 || aw.bg === 'box' };
-  if (o.layout === 'framed') return { x: 58, y: 133, w: 634, h: 457 }; // starts below the title bar; bottom stays at 590
-  // Starts below the shifted title bar; the bottom edge (540) is unmoved, so nothing below it moves.
-  if (o.layout === 'wrist') return { x: 108, y: 140 + (SAFE - 38), w: 534, h: 400 - (SAFE - 38) };
-  // The header band is taller than it was so the name and cost clear the ¼″ line, so the art window
-  // starts lower and is shorter by the same amount — its bottom edge, and everything below, is unmoved.
-  if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 165, w: 690, h: o.rules ? 583 : 685 } : { x: 30, y: 165, w: 690, h: 377 };
+  if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
+  if (o.layout === 'wrist') return { x: 108, y: 140, w: 534, h: 400 };
+  if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 132, w: 690, h: o.rules ? 616 : 718 } : { x: 30, y: 132, w: 690, h: 410 };
   if (o.border === 'none') return { x: 0, y: 0, w: W, h: H };
   return { x: 30, y: 30, w: W - 60, h: H - 60 };
 }
@@ -1703,9 +1703,7 @@ function renderWrist(g, o) {
     if (line) { path(); g.lineWidth = line; g.strokeStyle = INK; g.lineJoin = 'round'; g.stroke(); }
   };
   const box = (x, y, w, h, r) => () => rr(x, y, w, h, r);
-  // The top of the device is pushed down by this much so the name and mana cost clear the ¼″ line.
-  // Everything below the title bar keeps its original position, so only the hat moves.
-  const hdr = SAFE - 38;
+  const hdr = 0; // the original header already clears the ⅛″ safety line
   // side rails: stacked colored segments, like the grips of a handheld device
   for (const [x, c] of [[18, accL], [W - 48, accR]]) {
     piece(box(x, 64 + hdr, 30, 890 - hdr, 8), mixHex(c, '#000000', .45), { shadow: 4, hi: .15 });
@@ -1727,14 +1725,13 @@ function renderWrist(g, o) {
   for (let k = 0; k < 6; k++) piece(box(70 + k * 16, 940, 8, 24, 4), '#24251a', { shadow: 0, hi: 0, lo: 0, line: 2 });
 
   // title bar. The WRIST-COMP tag rides along with the header; the name and cost get their own band
-  // below the ¼″ line, so the tag is allowed to sit outside the margin with the rest of the chrome.
+  // below the safety line, so the tag is allowed to sit outside the margin with the rest of the chrome.
   piece(box(48, 12 + hdr, 124, 26, 5), '#4b4a31', { shadow: 3, hi: .3, lo: .3, line: 2.5 });
   g.font = `400 20px ${HUD.f}`; g.fillStyle = '#d8d5ae'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('WRIST-COMP', 110, 26 + hdr);
   piece(box(40, 38 + hdr, W - 80, 78, 14), dark, { hi: .16, lo: .5 });
-  const costLeft = syms.length ? drawCostRight(g, syms, W - SAFE, 77 + hdr, 42) : W - SAFE;
+  const costLeft = syms.length ? drawCostRight(g, syms, W - 56, 77, 42) : W - 56;
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  const nameDrawn = fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, 18, costLeft - (SAFE + 10) - 18);
-  g.fillText(nameDrawn, SAFE + 10, safeTitleBase(g, nameDrawn, 92 + hdr, artRect(o).y - 22));
+  g.fillText(fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, 18, costLeft - 64 - 18), 64, 92);
 
   // the screen
   piece(box(88, 124 + hdr, W - 176, 432 - hdr, 38), '#1a1b15', { hi: .2, lo: .5 });
@@ -1801,9 +1798,9 @@ function renderWrist(g, o) {
 
   // type bar
   piece(box(42, 566, W - 84, 62, 10), dark, { hi: .16, lo: .5 });
-  const rw = drawRarity(g, o, W - SAFE, 597, 32);
+  const rw = drawRarity(g, o, W - 60, 597, 32);
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left';
-  g.fillText(fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, (W - SAFE) - (SAFE + 10) - (rw ? rw + 14 : 0)), SAFE + 10, 609);
+  g.fillText(fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, W - 84 - 40 - (rw ? rw + 14 : 0)), 62, 609);
 
   // rules panel: two worn inset plates with the text over them
   for (const [x, w] of [[70, 298], [382, 298]]) { // recessed plates: shadow inside along the top
@@ -1829,14 +1826,12 @@ function renderWrist(g, o) {
   // bottom notch with a brass arrow
   piece(() => { g.beginPath(); g.moveTo(W / 2 - 50, 940); g.lineTo(W / 2 + 50, 940); g.lineTo(W / 2 + 38, 974); g.lineTo(W / 2 - 38, 974); g.closePath(); }, dark, { shadow: 4, hi: .15, lo: .5, line: 3 });
   piece(() => { g.beginPath(); g.moveTo(W / 2 - 18, 950); g.lineTo(W / 2 + 18, 950); g.lineTo(W / 2, 966); g.closePath(); }, '#c9b27a', { shadow: 0, hi: .5, lo: .3, line: 2 });
-  // Power / toughness. Kept inside the ¼" safety margin: the plate's right edge sits on the line and
-  // its bottom ends 75 units up from the cut, clear of the notch rather than level with it.
+  // power / toughness
   if (o.pt) {
-    const ph = 58, pw = 128, py = H - SAFE - ph - 8, pxl = W - SAFE - pw;
-    piece(box(pxl, py, pw, ph, 8), '#e9e6d6', { shadow: 5, hi: .5, lo: .3, line: 3.5 });
-    piece(box(pxl + 7, py + 7, pw - 14, ph - 14, 5), dark, { shadow: 0, hi: .15, lo: .4, line: 2 });
+    piece(box(W - 172, 922, 128, 68, 8), '#e9e6d6', { shadow: 5, hi: .5, lo: .3, line: 3.5 });
+    piece(box(W - 165, 929, 114, 54, 5), dark, { shadow: 0, hi: .15, lo: .4, line: 2 });
     g.fillStyle = '#f2f2ea'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.fillText(fitText(g, o.pt, px => `400 ${px}px ${HUD.f}`, 56, 20, pw - 20), pxl + pw / 2, py + ph / 2);
+    g.fillText(fitText(g, o.pt, px => `400 ${px}px ${HUD.f}`, 56, 20, 108), W - 108, 958);
     g.textBaseline = 'alphabetic';
   }
   const info = [o.info, o.artist ? '✎ ' + o.artist : ''].filter(Boolean).join('   ');
@@ -2283,15 +2278,10 @@ function renderFullArt(g, o, shade, size, bleed) {
     drawArt(g, ar, st.img);
   }
 
-  // The text column keeps clear of the ¼" safety margin, so a slightly off-centre cut never clips
-  // the name, cost, type line or rules.
-  const L = SAFE + 8, R = W - SAFE - 8, innerW = R - L;
+  const L = 48, R = W - 48, innerW = R - L;
   // ---- title ----
-  // The name and the mana cost are the two things that most have to survive an off-centre cut, so both
-  // sit below the ¼" line. A 40px title is about 30 units tall, so a baseline at SAFE + 33 puts its top
-  // just inside; the pips are 38 units tall and take their centre from SAFE + 20.
   const cost = parseCost(o.cost), costD = 38;
-  const titleTop = SAFE - 13, titleBase = SAFE + 33, costMid = SAFE + 20;
+  const titleTop = 46, titleBase = 92, costMid = 79;
   if (o.layout === 'panel') {
     g.fillStyle = `rgba(10,9,11,${shade})`; g.beginPath(); g.roundRect(L - 6, titleTop, innerW + 12, 66, 12); g.fill();
     g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 2; g.stroke();
@@ -2397,10 +2387,7 @@ function renderConsole(g, o, size) {
     }
     g.closePath(); g.fillStyle = col; g.fill();
   };
-  // Everything in the header — the elbow, the corner bar, the panel numbers, the name and the cost —
-  // is pushed down so it clears the ¼" line. The name and cost are the priority; the panel numbers go
-  // below it too rather than sitting in the strip that gets cut.
-  const hdr = SAFE - 42;
+  const hdr = 0; // the original header already clears the ⅛″ safety line
   elbow(18, 18 + hdr, 74, 96, 12, W - 36, 36, c1);
   g.fillStyle = c2; g.fillRect(18, 74 + hdr, 74, 4); // a dividing notch in the elbow
   g.fillStyle = '#000'; g.fillRect(18, 74 + hdr, 74, 3);
@@ -2409,10 +2396,10 @@ function renderConsole(g, o, size) {
   segLine(92, 104 + hdr, W - 140, 6, [c2, c3, c1, c2]);
   // cost on the right, name filling the rest
   const syms = parseCost(o.cost), d = 40;
-  const nameBase = SAFE + 42;
-  const costLeft = syms.length ? drawCostRight(g, syms, W - SAFE, nameBase - 20, d) : W - SAFE;
+  const nameBase = 84;
+  const costLeft = syms.length ? drawCostRight(g, syms, W - 42, 64, d) : W - 42;
   g.fillStyle = CON_TEXT; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
-  const nameDrawn = fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, 20, costLeft - (SAFE + 26) - 14);
+  const nameDrawn = fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, 20, costLeft - 110 - 14);
   g.fillText(nameDrawn, 108, safeTitleBase(g, nameDrawn, nameBase, ar.y - 22));
 
   const bottomLine = () => {
@@ -2457,8 +2444,8 @@ function renderConsole(g, o, size) {
   // bottom bar
   g.fillStyle = c3; g.fillRect(92, bottom - 12, W - 110 - (o.pt ? 140 : 0), 12);
   g.fillStyle = c1; g.fillRect(W - 30, ty, 12, bottom - ty - (o.pt ? 70 : 0));
-  // type tab: the tab and the type text both end on the ¼" line, not 42 units from the cut.
-  const tabY = ty + 24, tabH = 46, tabR = W - SAFE;
+  // type tab
+  const tabY = ty + 24, tabH = 46, tabR = W - 42;
   g.beginPath(); g.roundRect(108, tabY, tabR - 108, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
   g.textBaseline = 'middle';
   const rw = drawRarity(g, o, tabR - 14, tabY + tabH / 2, 28);
@@ -2469,15 +2456,13 @@ function renderConsole(g, o, size) {
   // The power/toughness tab's geometry is settled first, because the rules have to stop above it: taking
   // the reserve from the tab's real top rather than a guessed constant is what keeps the last line's
   // descenders out of the tab when the text is long.
-  const pw = 128, ph = 50, py = H - SAFE - ph, pxl = W - SAFE - pw; // inside the ¼″ margin, right edge on the line
+  const pw = 128, ph = 50, py = bottom - 34, pxl = W - 42 - pw;
   curFam = FONTS.antonio; curLH = 1.12;
-  const tx = 116, tw = W - SAFE - tx, top = tabY + tabH + 18;
+  const tx = 116, tw = W - tx - 54, top = tabY + tabH + 18;
   const avail = bottom - 22 - top - (o.pt ? (bottom - 22 - py) + 14 : 0);
   const rules = parseRich(upper(o.rules || ''), false), flav = parseRich(upper(o.flavor || ''), true);
   let fs = Math.round(size * 1.05), lr, lf, hh;
-  // Floors at 11, not 13: past that the paragraph is taller than the band whatever it does, so stopping
-  // earlier only meant spilling into the tab while pretending to have fitted.
-  for (; fs >= 11; fs--) {
+  for (; fs >= 13; fs--) {
     lr = layoutRich(g, rules, fs, tw); lf = layoutRich(g, flav, fs, tw);
     hh = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? fs * .7 : 0) + lf.h : 0);
     if (hh <= avail) break;
@@ -2510,15 +2495,15 @@ function renderFramed(g, o, size, borderCol) {
     g.fillStyle = box; g.beginPath(); g.roundRect(x, y, w, h, 10); g.fill();
     g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 2.5; g.stroke();
   };
-  // title: bar and text both clear the ¼" line, so the name and cost survive an off-centre cut
-  const tbTop = SAFE - 14;
+  // title
+  const tbTop = 46;
   bar(46, tbTop, 658, 62);
   const cost = parseCost(o.cost);
-  const costLeft = cost.length ? drawCostRight(g, cost, W - SAFE, tbTop + 33, 36) : W - SAFE;
+  const costLeft = cost.length ? drawCostRight(g, cost, 694, 77, 36) : 694;
   if (o.name) {
     g.fillStyle = dark;
-    const drawn = fitText(g, o.name, s => titleFont(o, s), 38, 18, costLeft - (SAFE + 10) - 14);
-    g.fillText(drawn, SAFE + 10, safeTitleBase(g, drawn, tbTop + 45, tbTop + 56));
+    const drawn = fitText(g, o.name, s => titleFont(o, s), 38, 18, costLeft - 66 - 14);
+    g.fillText(drawn, 64, safeTitleBase(g, drawn, 90, tbTop + 56));
   }
   // art
   const ar = artRect(o);
@@ -2527,9 +2512,9 @@ function renderFramed(g, o, size, borderCol) {
   // type
   bar(46, 598, 658, 56);
   if (o.type) {
-    const rw = drawRarity(g, o, W - SAFE, 626, 34);
+    const rw = drawRarity(g, o, 694, 626, 34);
     g.fillStyle = dark;
-    g.fillText(fitText(g, o.type, s => titleFont(o, s), 30, 16, (W - SAFE) - (SAFE + 10) - (rw ? rw + 12 : 0)), SAFE + 10, 637);
+    g.fillText(fitText(g, o.type, s => titleFont(o, s), 30, 16, 620 - (rw ? rw + 12 : 0)), 64, 637);
   }
   // text box
   const tb = { x: 58, y: 662, w: 634, h: 300 };
@@ -2551,15 +2536,11 @@ function renderFramed(g, o, size, borderCol) {
     drawRich(g, lf, fs, tb.x + padX, y, dark);
   }
   if (o.pt) {
-    // Inside the ¼" safety margin, and matching the other layouts. The bar is a real card's P/T box,
-    // so it gets the safety clearance the printed original has.
-    const ph = 58, py = H - SAFE - ph, pw = 132;
-    bar(W - SAFE - pw, py, pw, ph);
+    bar(566, 940, 132, 58);
     g.fillStyle = dark; g.font = titleFont(o, 38); g.textAlign = 'center';
-    g.fillText(fitText(g, o.pt, s => titleFont(o, s), 38, 18, pw - 16), W - SAFE - pw / 2, py + ph / 2 + 13); g.textAlign = 'left';
+    g.fillText(fitText(g, o.pt, s => titleFont(o, s), 38, 18, 116), 632, 982); g.textAlign = 'left';
   }
-  // The credit line sits at 1018, lower than ¼" up from the cut (75 units, i.e. y 975). That is fine:
-  // only the collector line is allowed to fall outside the safety margin, never the other text.
+  // The credit line at 1018 sits outside the ⅛″ safety line; the collector line is allowed to.
   drawFooter(g, o, lum(frame) > .55 ? '#1a1816' : '#f0ece6', 1018, null); // below the P/T box, so the note can sit at the right edge
 }
 
@@ -3240,7 +3221,7 @@ const fontTried = new Set();
 function fontSpec(fam) { return `${fam.wt} 40px ${fam.f}`; }
 // Title font for the fade, panel and classic layouts. The setting stores the family name.
 const famEntry = name => Object.values(FONTS).find(f => f.f.startsWith('"' + name + '"'));
-// Where a title baseline has to go for the *top* of the glyphs to sit on or below the ¼″ safety line.
+// Where a title baseline has to go for the *top* of the glyphs to sit on or below the safety line.
 // A fixed offset from the line assumes a nominal cap height, which is true of the default serif but not
 // of tall display faces or accented capitals (È, Ñ, Å) — those rise higher and would poke past the
 // margin the title band exists to respect. So the real ascent of the string actually drawn is measured.
@@ -3436,6 +3417,12 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     };
     let m = measure(size);
     if (+L.h > 0) while (m.ln + 2 * pad > +L.h && size > minSize) { size = Math.max(minSize, size - Math.max(1, size * .04)); m = measure(size); }
+    // still taller than its box (or than the card, inside the safety line): end it with an ellipsis
+    const room = (+L.h > 0 ? Math.min(+L.h, H - SAFE - 2 - +L.y) : H - SAFE - 2 - +L.y) - 2 * pad;
+    if (m.ln > room && toks.length > 2) {
+      while (toks.length > 1 && m.ln > room) { toks.splice(-1, 1); while (toks.length && /^\s$/.test(toks[toks.length - 1])) toks.pop(); toks.push('…'); m = measure(size); toks.pop(); }
+      toks.push('…'); m = measure(size);
+    }
     const fx = makePaint(g, L, size), step = size * curLH, colW = m.cw;
     bw = colW + 2 * pad; bh = (+L.h > 0 ? +L.h - 2 * pad : m.ln) + 2 * pad;
     paintAll = (bx, by) => {
@@ -3471,7 +3458,16 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     // a one-line layer (fit) that still wraps at the smallest size: keep it on one line and narrow the letters
     if (L.fit && lay.paras.some(p => p.length > 1)) lay = layoutRich(g, paras, size, 1e6);
     // still too wide (a single line that can't wrap): narrow the letters a little instead of shrinking them
-    const widest = Math.max(0, ...lay.paras.flatMap(p => p.map(line => lineW(line, lay))));
+    let widest = Math.max(0, ...lay.paras.flatMap(p => p.map(line => lineW(line, lay))));
+    // a one-line layer too long even at 60% width: shorten it with an ellipsis rather than run off the card
+    if (L.fit && L.src !== 'rulesflavor' && widest * .6 > avail + .5 && text.length > 1) {
+      let cut = String(text);
+      while (cut.length > 1 && widest * .6 > avail + .5) {
+        cut = cut.slice(0, -1).trimEnd();
+        lay = layoutRich(g, parseRich(up(cut + '…'), L.src === 'flavor' || !!L.italic), size, 1e6);
+        widest = Math.max(0, ...lay.paras.flatMap(p => p.map(line => lineW(line, lay))));
+      }
+    }
     if (widest > avail + .5) squeeze = Math.max(.6, avail / widest);
     if (measure) { g.restore(); curFam = prev.fam; curLH = prev.lh; curPip = prev.pip; curKw = null; return grow; }
     bw = +L.w; bh = fixedH ? +L.h + grow : lay.h + 2 * pad;
@@ -3494,9 +3490,11 @@ function drawLayer(g, L, o, measure) { // measure: only report how much taller a
     const vOff = L.vmid && fixedH ? Math.max(0, (fixedH - lay.h) / 2) : 0;
     paintAll = (bx, by) => {
       if (squeeze === 1) return drawRich(g, lay, size, bx + pad, by + pad + vOff, L.color, { align: L.align, w: avail, paint: fx });
-      const ax = bx + pad + (L.align === 'center' ? avail / 2 : L.align === 'right' ? avail : 0);
+      // Narrow the letters about the line's anchor (its left edge, centre or right edge), and lay the line
+      // out in a box that, once narrowed, lands exactly on the layer's own box.
+      const k = L.align === 'center' ? .5 : L.align === 'right' ? 1 : 0, ax = bx + pad + avail * k, wide = avail / squeeze;
       g.save(); g.translate(ax, 0); g.scale(squeeze, 1); g.translate(-ax, 0);
-      drawRich(g, lay, size, bx + pad, by + pad + vOff, L.color, { align: L.align, w: avail / squeeze, paint: fx });
+      drawRich(g, lay, size, ax - wide * k, by + pad + vOff, L.color, { align: L.align, w: wide, paint: fx });
       g.restore();
     };
   }
@@ -3911,6 +3909,20 @@ function reflowLayers(g, o) {
   const layers = (o.layers || []).map(L => ({ ...LDEF, ...L }));
   // The artist / collector line sits in a strip along the bottom, ~0.08" from the edge like printed cards.
   // Text, P/T badges and stickers that reach into that strip where the credit is get moved up or shortened.
+  // Text that matters (name, cost, type, rules, P/T) stays inside the safety line, ⅛" inside the cut. It is
+  // the words, not their panel, that must clear it, so a box only moves in or narrows as far as its words
+  // (inside its padding) would otherwise cross the line.
+  const sm = SAFE + 2;
+  for (const A of layers) {
+    if (['art', 'custom', 'rarity', ...FOOT_SRC].includes(A.src) || +A.rot) continue;
+    const pad = +A.pad || 0;
+    if (+A.x + pad < sm) { const d = sm - (+A.x + pad); A.x = +A.x + d; A.w = +A.w - d; }
+    if (+A.x + +A.w - pad > W - sm) A.w = W - sm + pad - +A.x;
+    // (tight line spacing lets tall capitals and accents rise above the box, so those get a little more room)
+    const topLine = sm + 4 + Math.max(0, 1.15 - (+A.lh || 1.15)) * (+A.size || 30);
+    if (+A.y + pad < topLine) { const d = topLine - (+A.y + pad); A.y = +A.y + d; if (+A.h > 0) A.h = Math.max(20, +A.h - d); }
+    if (+A.h > 0 && +A.y + +A.h - pad > H - sm) A.h = Math.max(20, H - sm + pad - +A.y);
+  }
   const footSz = A => Math.max(+A.size || 20, TEXT_FLOOR[A.src] || 16), backs = [];
   for (const C of layers) {
     if (!FOOT_SRC.includes(C.src) || +C.rot) continue;
@@ -4118,9 +4130,9 @@ function drawGuides(g, o) {
   g.fillStyle = '#33e0ff'; g.fillText(label, lx + 7, ly + 16);
   g.restore();
 }
-// The safety margin: a line ¼" in from the cut on every side, which is twice the ⅛" bleed. Print shops
-// cut a little off-centre, so anything that has to survive the guillotine belongs inside this line.
-// The card is 2.5 x 3.5 in and the sheet is in 300-unit inches, so the inset is 75 units.
+// The safety margin: a line ⅛" inside the cut on every side, which is ¼" in from the edge of the bleed
+// file (twice the bleed). Print shops cut a little off-centre, so anything that has to survive the
+// guillotine belongs inside this line. At 300 units to the inch the inset is 37.5 units.
 function drawSafeGuides(g, o) {
   if (!$('safeGuides').checked) return;
   const m = SAFE;
@@ -4133,23 +4145,20 @@ function drawSafeGuides(g, o) {
   g.setLineDash([10, 7]); g.lineWidth = 4; g.strokeStyle = 'rgba(0,0,0,.7)'; g.strokeRect(m, m, W - 2 * m, H - 2 * m);
   g.lineWidth = 2; g.strokeStyle = '#2fd07f'; g.strokeRect(m, m, W - 2 * m, H - 2 * m);
   g.setLineDash([]);
-  // The labels sit in the shaded strip outside the line, which no card text may occupy, so they can never
-  // cover a name or a cost. Both go on one line in the top strip: the bottom strip is where the collector
-  // and artist block lives, and a second label there overlapped it in every layout. The row is kept clear
-  // of the very edge, and of the y=15 row the guide test samples.
-  const label = 'Safety margin · ¼″';
+  // The label sits in the strip above the top line, which no card text may occupy, so it never covers a name.
+  const label = 'Safety margin · ⅛″ inside the cut';
   g.font = '600 15px "IBM Plex Sans", system-ui, sans-serif';
   const lw = g.measureText(label).width;
   // When both guides are on the two lines can sit close together, so say which is which on the same row.
   const note = $('guides').checked ? '· dashed cyan = art area' : '';
   g.font = '600 13px "IBM Plex Sans", system-ui, sans-serif';
   const nw = g.measureText(note).width;
-  g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(m + 8, m - 49, lw + nw + 20, 22);
+  g.fillStyle = 'rgba(0,0,0,.7)'; g.fillRect(m + 8, 13, lw + nw + 20, 22);
   g.font = '600 15px "IBM Plex Sans", system-ui, sans-serif';
-  g.fillStyle = '#2fd07f'; g.fillText(label, m + 15, m - 33);
+  g.fillStyle = '#2fd07f'; g.fillText(label, m + 15, 29);
   if (note) {
     g.font = '600 13px "IBM Plex Sans", system-ui, sans-serif';
-    g.fillStyle = '#33e0ff'; g.fillText(note, m + 15 + lw + 4, m - 33);
+    g.fillStyle = '#33e0ff'; g.fillText(note, m + 15 + lw + 4, 29);
   }
   g.restore();
 }

@@ -261,11 +261,11 @@ describe('Scryfall response cache', () => {
 });
 
 describe('safety margin guide', () => {
-  test('draws a line a quarter inch in, twice the bleed, and only when asked', async () => {
+  test('draws a line an eighth of an inch inside the cut, and only when asked', async () => {
     const { page, context } = await newPage();
     const sample = () => page.evaluate(() => {
       const g = document.getElementById('card').getContext('2d');
-      // The preview draws at 2x card units, so the ¼″ margin (75 units) lands at y = 150px.
+      // The preview draws at 2x card units, so the safety line (37.5 units) lands at y = 75px.
       const at = (x, y) => [...g.getImageData(x, y, 1, 1).data].slice(0, 3);
       // "Green" has to be judged against a level, not a bare hue. The guide's line is a solid #2fd07f, so
       // it measures a green excess (g - max(r, b)) of 81. The strip outside it is only a 16%-opacity wash
@@ -276,8 +276,8 @@ describe('safety margin guide', () => {
       let onLine = 0, outside = 0;
       for (let i = 0; i < 40; i++) {
         const x = 300 + i * 20;
-        if (ex(at(x, 150)) > GEX) onLine++;
-        if (ex(at(x, 30)) > GEX) outside++;
+        if (ex(at(x, 75)) > GEX) onLine++;
+        if (ex(at(x, 20)) > GEX) outside++;
       }
       return { onLine, outside };
     });
@@ -288,7 +288,7 @@ describe('safety margin guide', () => {
     assert.ok(await until(async () => (await sample()).onLine > 16), 'the safety line should appear when switched on');
     const on = await sample();
     // The line is dashed (10 on, 7 off), so about 60% of samples along it should land on a dash.
-    assert.ok(on.onLine > 16, `a line should run along the ¼″ margin, got ${on.onLine}/40 samples`);
+    assert.ok(on.onLine > 16, `a line should run along the safety margin, got ${on.onLine}/40 samples`);
     // Outside the margin there is a wash, never a line, so nothing there should reach the line's level.
     assert.equal(on.outside, 0,
       `the area outside the margin should be washed, not lined, but ${on.outside}/40 samples there are as green as the line`);
@@ -300,12 +300,12 @@ describe('safety margin guide', () => {
     await context.close();
   });
 
-  test('the margin is a quarter inch, which is twice the bleed', async () => {
+  test('the margin is an eighth of an inch inside the cut, a quarter inch from the bleed edge', async () => {
     const { page, context } = await newPage();
     const s = await page.evaluate(() => ({ bleed: __pf.BLEED, safe: __pf.SAFE, w: __pf.W, h: __pf.H }));
     assert.equal(s.bleed, 37.5, '⅛″ at 300 units to the inch');
-    assert.equal(s.safe, 75, '¼″ at 300 units to the inch, twice the bleed');
-    assert.equal(s.safe, s.bleed * 2, 'the guide inset is defined as twice the bleed');
+    assert.equal(s.safe, 37.5, '⅛″ inside the cut at 300 units to the inch');
+    assert.equal(s.safe + s.bleed, 75, '¼″ in from the edge of the bleed file, twice the bleed');
     assert.ok(s.safe < s.w / 4 && s.safe < s.h / 4, 'the margin must be smaller than the card');
     await context.close();
   });
@@ -393,7 +393,7 @@ describe('safety margin guide', () => {
       assert.ok(m.found >= 6, `${layout}: expected the name, cost, type, rules and P/T, found ${m.found} of ${m.total} strings`);
       assert.ok(Number.isFinite(m.worst), `${layout}: nothing was measured`);
       assert.ok(m.worst >= measured.safe,
-        `${layout}: text that matters comes within ${m.worst.toFixed(1)} units of the cut, but the ¼″ margin is ${measured.safe}`);
+        `${layout}: text that matters comes within ${m.worst.toFixed(1)} units of the cut, but the safety margin is ${measured.safe}`);
     }
     await context.close();
   });
@@ -489,7 +489,7 @@ describe('safety margin guide', () => {
       assert.ok(m.found >= 5, `${m.layout} / ${m.why}: expected the name, cost, type, rules and P/T, found ${m.found} of ${m.total}`);
       assert.ok(Number.isFinite(m.worst), `${m.layout} / ${m.why}: nothing was measured`);
       assert.ok(m.worst >= measured.safe,
-        `${m.layout} / ${m.why}: text that matters comes within ${m.worst.toFixed(1)} units of the cut, but the ¼″ margin is ${measured.safe}`);
+        `${m.layout} / ${m.why}: text that matters comes within ${m.worst.toFixed(1)} units of the cut, but the safety margin is ${measured.safe}`);
     }
     await context.close();
   });

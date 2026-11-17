@@ -24,7 +24,7 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Playtest cards:** a plain cream card with black serif text, the mana cost written as letters (`2W`, `TAP`), and photocopied art in a pasted-in window, like a homemade playtest card.
 - **Print errors:** toner specks like a photocopy, a color misprint (some text and art printed in magenta or cyan, a yellow ghost of the card, color-bar stripes) or a bad print run with a miscut. Works with any style.
 - **Art window:** in the custom layout, an art window layer puts the picture in a box you can move and resize. Drag inside it to move the picture, or drag its edge to move the window.
-- **Safety margin:** a guide line ¼″ in from the cut, twice the bleed, with the strip outside it shaded. Print shops cut a little off-centre, so the name, mana cost, type line, rules and power/toughness are all placed inside this line by every ready-made layout, and a test enforces it. Art and plain background may cross it. The collector and artist line is deliberately allowed closer to the edge, since only the collector block is safe to lose, and the styles' own decoration (the `WRIST-COMP` tag, a panel's `PNL 12345`) sits out there too. The custom layout is the exception: you place the text there, so it is up to you to keep it inside the line.
+- **Safety margin:** a guide line ⅛″ inside the cut (¼″ in from the edge of the bleed), with the strip outside it shaded. Print shops cut a little off-centre, so the name, mana cost, type line, rules and power/toughness are all placed inside this line by every ready-made layout, and a test enforces it. Art and plain background may cross it. The collector and artist line is deliberately allowed closer to the edge, since only the collector block is safe to lose, and the styles' own decoration (the `WRIST-COMP` tag, a panel's `PNL 12345`) sits out there too. The custom layout is the exception: you place the text there, so it is up to you to keep it inside the line.
 - **Neon street:** full-bleed art under a thin glowing frame with cut corners in the card's color, a cut-corner cost badge, a big condensed name low on the card, the artist credit running up the right edge and a dark fade behind the rules.
 - **Fan-favorite homemade looks:**
   - **Desktop dialog:** a 90s computer window. Basic lands ask "Tap for 1 mana?" with OK and Cancel buttons.
@@ -74,7 +74,7 @@ Make your own Magic: The Gathering proxy cards in the browser. Pick any image, t
 - **Artist credit:** you're reminded before saving a card with no artist credit, and an **AI-generated** tick box adds the model name to the credit.
 - **Sharpness meter** also shows the art sizes print-shop guides recommend (1200 × 900 for framed art, 1500 × 2000 for full-card art) and suggests upscaling smaller pictures.
 
-- **Safety margin guide:** tick it and a green line is drawn ¼″ in from the cut on every side — twice the bleed, which is what print shops ask for. Anything that matters (name, mana cost, type line, rules, power/toughness) is laid out inside it, so a slightly off-centre cut can't clip it.
+- **Safety margin guide:** tick it and a green line is drawn ⅛″ inside the cut on every side — ¼″ in from the edge of the bleed file, which is what print shops ask for. Anything that matters (name, mana cost, type line, rules, power/toughness) is laid out inside it, so a slightly off-centre cut can't clip it.
 
 Everything runs in your browser. Nothing is uploaded anywhere, and your print sheet is saved in your own browser. Card lookups and deck lists send only the card names to Scryfall, Remix asks Scryfall for a random card and Wikimedia Commons for art, and art search sends only the words you type to the source you picked. Scryfall's answers for named cards, searches and set info are kept on your device for 30 days, so looking the same card up again works offline; random cards are never stored.
 
@@ -100,7 +100,7 @@ npm test          # or: npm run test:headed, to watch it
 npm run verify    # staleness check, then the tests
 ```
 
-Other tools: `node tools/shot.mjs` writes screenshots of the page, `node tools/shot-layouts.mjs` renders one card per layout with the margin guide on, and `node tools/check-safe-area.mjs` reports how close each piece of text gets to the cut (it exits non-zero if anything that matters falls outside the ¼″ margin, so it can be used as a gate).
+Other tools: `node tools/shot.mjs` writes screenshots of the page, `node tools/shot-layouts.mjs` renders one card per layout with the margin guide on, and `node tools/check-safe-area.mjs` reports how close each piece of text gets to the cut (it exits non-zero if anything that matters falls outside the safety margin, so it can be used as a gate).
 
 A GitHub Actions workflow (`.github/workflows/verify.yml`) runs `npm run verify` on every push and pull
 request, so a stale build or a layout that pushes text past the margin is caught before it reaches the

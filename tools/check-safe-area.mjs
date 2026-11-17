@@ -1,5 +1,5 @@
 // Reports how close the text that matters gets to the cut, per layout, in card units.
-// The card is 300 units to the inch, so the ¼" safety margin is 75 units and the ⅛" bleed is 37.5.
+// The card is 300 units to the inch, so the safety margin (⅛" inside the cut) and the ⅛" bleed are both 37.5 units.
 //
 // It measures the real drawing calls rather than diffing rendered pixels: every fillText and every
 // square drawImage (a mana symbol is an image, not text) is recorded with the transform in force, so
@@ -94,7 +94,7 @@ const report = await page.evaluate(async () => {
   return { out, safe: __pf.SAFE, bleed: __pf.BLEED };
 });
 
-console.log(`safety margin ${report.safe} units (¼"), bleed ${report.bleed} units (⅛")\n`);
+console.log(`safety margin ${report.safe} units (⅛" inside the cut), bleed ${report.bleed} units (⅛")\n`);
 console.log('   inset  layout   field                       verdict');
 for (const r of report.out.sort((a, b) => a.worst - b.worst)) {
   const verdict = r.must
@@ -104,7 +104,7 @@ for (const r of report.out.sort((a, b) => a.worst - b.worst)) {
 }
 const must = report.out.filter(r => r.must);
 const bad = must.filter(r => r.worst < report.safe);
-console.log(`\n${must.length} pieces of text that matter; ${bad.length} fall outside the ¼" margin.`);
+console.log(`\n${must.length} pieces of text that matter; ${bad.length} fall outside the safety margin.`);
 if (bad.length) process.exitCode = 1;
 
 await browser.close();
