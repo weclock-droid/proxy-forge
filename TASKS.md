@@ -8,6 +8,24 @@ the bleed is 37.5 units, and the safety line (`SAFE`) is ⅛″ (37.5 units) ins
 
 ---
 
+## Where each agent works
+
+Each agent has its own folder (a git worktree) on this machine, so one agent switching branches never
+changes another's files. **Work only in your own folder**, and never run `git switch` / `git checkout` to
+another agent's branch.
+
+| Agent | Folder | Branch |
+|---|---|---|
+| Maintainer | `C:\Users\iansc\proxyforge` | `main` |
+| Copilot | `C:\Users\iansc\proxyforge-copilot` | `ci/pages-after-verify` |
+| Gemini | `C:\Users\iansc\proxyforge-gemini` | `shield-for-loyalty-defense-pt` |
+| Nemo | `C:\Users\iansc\proxyforge-nemo` | `nemo/flaky-tests` |
+
+For a new task, start a new branch from the latest `main` in your own folder:
+`git fetch && git switch -c <agent>/<task> origin/main`. Run `npm ci` once in a new folder.
+
+---
+
 ## Rules for every agent
 
 1. **Work on a branch and open a pull request.** Never push to `main`, never merge your own PR, never
