@@ -220,6 +220,21 @@ describe('Scryfall response cache', () => {
     const { page, context, scryfallHits } = await newPage();
     const count = () => scryfallHits.filter(u => u.includes('/cards/named')).length;
 
+    // Clear the example card's fields so the lookup's effect is isolated (the page boots with an
+    // example card that has "Sample art" in the artist field, which the lookup deliberately
+    // does not overwrite).
+    await page.evaluate(() => {
+      document.getElementById('name').value = '';
+      document.getElementById('cost').value = '';
+      document.getElementById('type').value = '';
+      document.getElementById('rules').value = '';
+      document.getElementById('flavor').value = '';
+      document.getElementById('pt').value = '';
+      document.getElementById('artist').value = '';
+      document.getElementById('info').value = '';
+      document.getElementById('note').value = '';
+    });
+
     await page.fill('#lookupName', 'Test Golem');
     await page.click('#lookupGo');
     await page.waitForFunction(() => document.getElementById('name').value === 'Test Golem');
@@ -237,7 +252,8 @@ describe('Scryfall response cache', () => {
     await page.fill('#lookupName', 'Test Golem');
     await page.click('#lookupGo');
     await page.waitForFunction(() => document.getElementById('name').value === 'Test Golem');
-    await page.waitForTimeout(400); // give a stray request time to reach Node before asserting it didn't happen
+    // Wait for the cached reply to be applied (the form fields update) rather than a fixed timeout.
+    await page.waitForFunction(() => document.getElementById('type').value === 'Artifact Creature — Golem');
     assert.equal(count(), 1, 'the cached reply should be reused after a reload');
 
     const stored = await page.evaluate(async () => (await __pf.idb.apiAll()).map(r => r.k));
@@ -281,11 +297,21 @@ describe('safety margin guide', () => {
       }
       return { onLine, outside };
     });
+
+    // Wait for the initial card render to complete (art loads async and triggers a redraw).
+    await page.waitForFunction(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
     assert.deepEqual(await sample(), { onLine: 0, outside: 0 }, 'no safety line until it is switched on');
 
     // The preview redraws on the next animation frame, so wait for the line rather than guessing.
     await page.check('#safeGuides');
-    assert.ok(await until(async () => (await sample()).onLine > 16), 'the safety line should appear when switched on');
+    await page.waitForFunction(() => document.getElementById('safeGuides').checked);
+    // Wait a few frames for the layout pass to run; the first draw after checkbox toggles
+    // involves a full layout pass and can take a moment on slow CI.
+    await page.waitForFunction(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r)))));
+    // Give the render more time since CI can be slow.
+    assert.ok(await until(async () => (await sample()).onLine > 16, 30000), 'the safety line should appear when switched on');
+    // Wait for the render to stabilize (two consistent frames) so the wash is fully drawn.
+    await page.waitForFunction(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
     const on = await sample();
     // The line is dashed (10 on, 7 off), so about 60% of samples along it should land on a dash.
     assert.ok(on.onLine > 16, `a line should run along the safety margin, got ${on.onLine}/40 samples`);
@@ -295,7 +321,10 @@ describe('safety margin guide', () => {
 
     await page.uncheck('#safeGuides');
     await page.waitForFunction(() => !document.getElementById('safeGuides').checked);
-    await page.waitForTimeout(250);
+    // Wait a few frames for the layout pass to run after unchecking.
+    await page.waitForFunction(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(r)))));
+    // Wait for the preview to redraw without the guide line.
+    assert.ok(await until(async () => (await sample()).onLine === 0), 'the safety line should disappear when switched off');
     assert.deepEqual(await sample(), { onLine: 0, outside: 0 }, 'switching it off clears it again');
     await context.close();
   });
