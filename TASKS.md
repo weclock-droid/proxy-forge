@@ -67,12 +67,13 @@ custom-layout drawing code in `proxy-forge.html`, so they go to the same agent, 
 |---|---|---|---|---|---|
 | 1 | Only publish the site when the checks pass | Copilot | — | S | Done (PR #1) |
 | 2 | Agent instructions file | Copilot | — | S | Done (PR #1) |
-| 3 | Loyalty and defense shields in custom styles | Gemini | — | M | Open |
+| 3 | Loyalty and defense shields in custom styles | Gemini | — | M | In review |
 | 4 | Flaky IndexedDB cache test | Nemo | — | S | Open |
 | 5 | Flaky safety-guide test | Nemo | — | S | Open |
 | 6 | GitHub Actions on Node 24 | Copilot | 1 | XS | Done (PR #1) |
 | 7 | Battles printed sideways | Gemini | 3, 8 | L | Later |
 | 8 | "Playtest card — not for sale" on every style | Gemini | 3 | M | Open |
+| 9 | Fantasy album shows no P/T, loyalty or defense | Gemini | 3 | XS | Open |
 | H1 | Purge the old leaked commit from GitHub | Maintainer | — | — | Open |
 | H2 | Protect the `main` branch | Maintainer | 1 | — | Open |
 
@@ -129,7 +130,7 @@ Creatures must render exactly as they do now.
 - `npm run verify`, `npm run real-cards` and `npm run safe-area` pass.
 - The shield stays inside the safety line on every style.
 
-**Status:** Open
+**Status:** In review. Fantasy album has no P/T layer at all, so it shows no number for any card (see task 9).
 
 ---
 
@@ -221,6 +222,20 @@ The note's text can be changed by the **Label** setting (`swapLabel`); keep that
 - Screenshots of the bottom of every style show the note readable and clear of the credit and P/T.
 - `npm run verify`, `npm run real-cards` and `npm run safe-area` pass. Consider adding a test for the
   first two points.
+
+**Status:** Open
+
+---
+
+## 9. Fantasy album shows no P/T, loyalty or defense — Gemini
+
+**Problem.** The `album` preset has no `pt` layer, so a creature's power/toughness, a planeswalker's
+loyalty and a battle's defense are never printed on that style.
+
+**Do.** Add one `pt` layer to the `album` preset where it fits the design (clear of the rules box, the
+name band and the credit, inside the safety line). Task 3's shield then applies to it automatically.
+
+**Done when.** Album prints a creature's P/T and Jace's loyalty shield, and the three checks pass.
 
 **Status:** Open
 

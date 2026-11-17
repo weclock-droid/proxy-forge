@@ -3680,6 +3680,41 @@ function tintOf(o, kind) {
 }
 function drawLayer(g, L, o, measure) { // measure: only report how much taller a text box must get
   if (L.tintBg || L.tintInk || L.tintBd || L.tintKw || L.tintPip) { L = { ...L }; if (L.tintPip) { L.pipColor = tintOf(o, L.tintPip); if (L.pip === 'inherit') L.pip = 'glyph'; } if (L.tintBg) L.bgColor = tintOf(o, L.tintBg); if (L.tintInk) L.color = tintOf(o, L.tintInk); if (L.tintBd) L.bdColor = tintOf(o, L.tintBd); if (L.tintKw) L.kwColor = tintOf(o, L.tintKw); }
+  // A planeswalker's loyalty and a battle's defense are printed in a shield, never as a bare number. The
+  // layer keeps its place, size, colours, shadow and rotation; only the shape changes, so every style that
+  // has a P/T layer (pt, ptline or loyalty) gets it without editing its preset. Creatures never reach this block.
+  if ((L.src === 'pt' || L.src === 'ptline' || L.src === 'loyalty') && !L.vert && (numberKind(o) === 'loyalty' || numberKind(o) === 'defense')) {
+    const text = String(o.pt || '').trim();
+    if (!text) return null;
+    if (measure) return 0;
+    const fam = FONTS[L.font] || FONTS.spectral;
+    ensureFont(fam, text);
+    const rot = +L.rot || 0, pad = +L.pad || 0;
+    // A layer with a set height (a slot in a status bar, say) keeps the shield inside that slot.
+    const slot = +L.h > 0 ? Math.max(30, +L.h) : 0;
+    const h = slot ? Math.min(slot, Math.max(48, (+L.size || 30) * 1.3)) : Math.max(48, (+L.size || 30) * 1.3 + Math.min(pad, 12));
+    const bw = shieldW(h);
+    const ink = /^#[0-9a-f]{6}$/i.test(L.color) ? L.color : '#111111';
+    // Every layer carries a bgColor (black by default), so it only counts when the layer draws a background;
+    // otherwise the shield's face is chosen to contrast with the ink.
+    const hasBg = L.bg && L.bg !== 'none' && +L.bgOp > 0;
+    const face = hasBg ? hexA(L.bgColor, Math.max(.85, +L.bgOp)) : (lum(ink) < .5 ? '#f3efe4' : '#141414');
+    // Where the layer's box and alignment put it, kept inside the safety line.
+    let right = L.align === 'right' ? +L.x + +L.w : L.align === 'center' ? +L.x + (+L.w + bw) / 2 : +L.x + bw;
+    right = Math.min(Math.max(right, SAFE + 2 + bw), W - SAFE - 2);
+    const top = Math.min(Math.max(+L.y + (slot ? (slot - h) / 2 : 0), SAFE + 2), H - SAFE - 2 - h);
+    const bx = right - bw, by = top, cx = bx + bw / 2, cy = by + h / 2;
+    g.save();
+    if (rot) { g.translate(cx, cy); g.rotate(rot * Math.PI / 180); g.translate(-cx, -cy); }
+    if (L.effect === 'shadow') {
+      const k = +L.effSize || 1;
+      g.shadowColor = hexA(L.effColor || '#000000', .85); g.shadowBlur = h * .14 * k; g.shadowOffsetY = h * .04 * k;
+    }
+    const font = px => `${L.italic ? 'italic ' : ''}700 ${px}px ${fam.f}`;
+    drawShield(g, text, right, top, h, face, ink, font);
+    g.restore();
+    return { id: L.id, x: bx, y: by, w: bw, h, cx, cy, rot, resizeW: false, resizeH: false };
+  }
   if (L.src === 'art') { // the art is drawn under every layer by renderCustom; this only adds an optional frame
     const bx = +L.x, by = +L.y, bw = +L.w, bh = +L.h || 400;
     if (+L.bdW > 0) {
