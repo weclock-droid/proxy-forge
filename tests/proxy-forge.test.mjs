@@ -495,6 +495,87 @@ describe('safety margin guide', () => {
   });
 });
 
+describe('playtest footer note', () => {
+  test('prints one note per style, clear of footer text, P/T and card edges', async () => {
+    const { page, context } = await newPage();
+    const result = await page.evaluate(async () => {
+      const art = document.createElement('canvas'); art.width = 750; art.height = 1050;
+      const ag = art.getContext('2d'); ag.fillStyle = '#777777'; ag.fillRect(0, 0, 750, 1050);
+      const img = new Image(); img.src = art.toDataURL(); await img.decode();
+      const p = CanvasRenderingContext2D.prototype;
+      const fillText = p.fillText;
+      const measurements = [], empty = [];
+      const noteTexts = ['Playtest card — not for sale', 'Proxy — not for sale'];
+      const bounds = (g, text, x, y) => {
+        const m = g.measureText(text), a = g.getTransform();
+        const left = x - (g.textAlign === 'center' ? m.width / 2 : g.textAlign === 'right' || g.textAlign === 'end' ? m.width : 0);
+        const top = y - (m.actualBoundingBoxAscent || parseFloat(g.font) || 18);
+        const right = left + m.width, bottom = y + (m.actualBoundingBoxDescent || 0);
+        const points = [[left, top], [right, top], [right, bottom], [left, bottom]].map(([px, py]) => [
+          a.a * px + a.c * py + a.e, a.b * px + a.d * py + a.f,
+        ]);
+        return {
+          left: Math.min(...points.map(q => q[0])), right: Math.max(...points.map(q => q[0])),
+          top: Math.min(...points.map(q => q[1])), bottom: Math.max(...points.map(q => q[1])),
+        };
+      };
+      p.fillText = function (text, x, y, ...rest) {
+        if (this.canvas.width === 750 && this.canvas.height === 1050) {
+          const s = String(text), box = bounds(this, s, x, y);
+          // every other piece of text counts, not just the credit: a style's own captions, a credit that wraps
+          // onto a second line, the P/T and the rules all have to stay clear of the note
+          if (noteTexts.includes(s)) measurements.push({ kind: 'note', box });
+          else if (s.trim()) measurements.push({ kind: 'text', box, text: s });
+        }
+        return fillText.call(this, text, x, y, ...rest);
+      };
+      try {
+        // a short credit, and one long enough to wrap onto a second line in most styles
+        for (const artist of ['A. Painter', 'Johannes Vermeer van Delft and Workshop Assistants'])
+        for (const sty of __pf.styles()) {
+          measurements.length = 0;
+          const form = {
+            name: 'Test Golem', cost: '{3}{G}', type: 'Artifact Creature — Golem', rules: 'Trample',
+            flavor: '', pt: '4/4', artist, info: '001 · PRX · EN',
+            note: 'Playtest card — not for sale', border: '#0b0b0c', color: 'G', titleFont: 'Spectral',
+            shade: '0.78', size: '31', bleed: false, round: true, pipStyle: 'classic', pipColor: '#ffffff',
+            rarity: 'rare', setTint: true, artFx: 'none', fxDark: '#0b2545', fxLight: '#ff8fd8', fxAmt: '0.5',
+            wear: 'none', misprint: 'none', gloss: false, aiArt: false, aiModel: '', setCode: '',
+            label: 'design', layout: sty.f.layout, layers: sty.layers, ...sty.f,
+          };
+          __pf.cardCanvas({ kind: 'made', form, img, zoom: 1, ox: 0, oy: 0 }, 1);
+          const drawn = [...measurements], notes = drawn.filter(m => m.kind === 'note');
+          if (notes.length !== 1) empty.push({ id: sty.id, artist, count: notes.length, why: 'nonempty' });
+          for (const { box } of notes) {
+            const note = { left: box.left - 10, right: box.right + 10, top: box.top - 4, bottom: box.bottom + 4 };
+            if (note.left < 0 || note.top < 0 || note.right > 750 || note.bottom > 1050)
+              empty.push({ id: sty.id, why: 'note outside card', box: note });
+            for (const other of drawn.filter(m => m.kind === 'text')) {
+              if (note.left < other.box.right && note.right > other.box.left &&
+                  note.top < other.box.bottom && note.bottom > other.box.top)
+                empty.push({ id: sty.id, artist, why: 'note overlaps text', text: other.text, note, other: other.box });
+            }
+          }
+
+          measurements.length = 0;
+          __pf.cardCanvas({ kind: 'made', form: { ...form, note: '', label: 'design' }, img, zoom: 1, ox: 0, oy: 0 }, 1);
+          if (measurements.some(m => m.kind === 'note')) empty.push({ id: sty.id, why: 'empty', count: measurements.filter(m => m.kind === 'note').length });
+
+          measurements.length = 0;
+          __pf.cardCanvas({ kind: 'made', form: { ...form, label: 'proxy' }, img, zoom: 1, ox: 0, oy: 0 }, 1);
+          if (measurements.filter(m => m.kind === 'note').length !== 1) empty.push({ id: sty.id, why: 'proxy-label', count: measurements.filter(m => m.kind === 'note').length });
+        }
+      } finally {
+        p.fillText = fillText;
+      }
+      return { styleCount: __pf.styles().length, failures: empty };
+    });
+    assert.equal(result.styleCount, 62);
+    assert.deepEqual(result.failures, []);
+    await context.close();
+  });
+});
+
 describe('reference panel', () => {
   test('is hidden on the published page, which has no reference data', async () => {
     const { page, context } = await newPage();

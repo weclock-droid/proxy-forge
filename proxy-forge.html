@@ -1492,6 +1492,23 @@ function drawCostBadge(g, cost, x, y, size, color) {
 
 const lineW = (line, lay) => line.reduce((s, it, i) => s + it.w + (i ? lay.space : 0), 0);
 // opt: align/w (align lines inside width w), paint(text,x,y) for effects, boxes (collects line rects), dry (measure only)
+// While a custom layout is drawn, every line of text (and every badge, pip row or shield) records where it
+// landed, in card units, so the automatic playtest note can be placed clear of all of it, wrapped credit
+// lines and a style's own captions included.
+let inkLog = null;
+function logInkRect(g, x, y, w, h) {
+  if (!inkLog || inkLog.skip || !(w > 1) || !(h > 1)) return;
+  const m = inkLog.inv.multiply(g.getTransform());
+  const pts = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(([px, py]) => m.transformPoint(new DOMPoint(px, py)));
+  inkLog.boxes.push({ left: Math.min(...pts.map(q => q.x)), right: Math.max(...pts.map(q => q.x)), top: Math.min(...pts.map(q => q.y)), bottom: Math.max(...pts.map(q => q.y)) });
+}
+function logInkBounds(b) { // a drawLayer result in card units, possibly rotated about its centre
+  if (!inkLog || !b || b.art) return;
+  const r = (+b.rot || 0) * Math.PI / 180, cx = b.cx ?? b.x + b.w / 2, cy = b.cy ?? b.y + b.h / 2;
+  const pts = [[b.x, b.y], [b.x + b.w, b.y], [b.x, b.y + b.h], [b.x + b.w, b.y + b.h]].map(([x, y]) => [
+    cx + (x - cx) * Math.cos(r) - (y - cy) * Math.sin(r), cy + (x - cx) * Math.sin(r) + (y - cy) * Math.cos(r)]);
+  inkLog.boxes.push({ left: Math.min(...pts.map(q => q[0])), right: Math.max(...pts.map(q => q[0])), top: Math.min(...pts.map(q => q[1])), bottom: Math.max(...pts.map(q => q[1])) });
+}
 function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
   const { align = 'left', w = 0, paint = null, boxes = null, dry = false } = opt;
   let cy = y;
@@ -1516,6 +1533,7 @@ function drawRich(g, lay, size, x, y, color, opt = {}) { // y = top
       const off = ind + (align === 'center' ? (room - lw) / 2 : align === 'right' ? room - lw : 0);
       if (boxes) boxes.push({ x: x + off, y: cy, w: lw, h: lay.lh });
       if (dry) { cy += lay.lh; continue; }
+      logInkRect(g, x + off, cy, lw, lay.lh);
       let cx = x + off;
       line.forEach((item, idx) => {
         if (idx && curKw && curKw.mode === 'chip' && item.ch[0]?.kw && line[idx - 1].ch[line[idx - 1].ch.length - 1]?.kw && item.ch[0].pair) {
@@ -2848,6 +2866,63 @@ function footNote(g, text, x, y, leftEnd, font, size) {
   g.fillText(text, x, x - g.measureText(text).width < leftEnd + 18 ? y - size * 1.25 : y);
   g.restore();
 }
+// Where the automatic note goes: the lowest clear spot in the footer, trying the side opposite the credit
+// first, then the other anchors, at 18 units and then 15, never higher than just above the credit. "Clear"
+// means its box (with its backing pill) touches no text, badge or shield actually drawn on this card.
+function placeAutoNote(g, o, L, boxes, footTop = H - 60) {
+  const text = o.note || '';
+  const pref = L.align === 'center' ? ['center', 'right', 'left'] : L.align === 'left' ? ['left', 'right', 'center'] : ['right', 'left', 'center'];
+  const gap = 4;
+  for (const sz of [18, 16, 15]) {
+    g.save(); g.font = `600 ${sz}px "IBM Plex Sans", system-ui, sans-serif`; const tw = g.measureText(text).width; g.restore();
+    const h = sz + 8; // the pill: 4 above the cap height, 4 below the baseline
+    // Only the footer band: beside, below or just above the credit. Higher up it would sit among the rules.
+    for (let top = H - 14 - h; top >= Math.max(H * .75, footTop - h - 12); top -= 2) {
+      for (const align of pref) {
+        const anchor = align === 'left' ? 34 : align === 'center' ? W / 2 : W - 34;
+        const l = (align === 'left' ? anchor : align === 'center' ? anchor - tw / 2 : anchor - tw) - 10, r = l + tw + 20;
+        if (l < 8 || r > W - 8) continue;
+        if (boxes.some(B => l < B.right + gap && r > B.left - gap && top < B.bottom + gap && top + h > B.top - gap)) continue;
+        return { ...L, x: 34, w: W - 68, align, size: sz, y: top + 4 };
+      }
+    }
+  }
+  return L; // nowhere clear: keep the default spot rather than drop the note
+}
+function drawAutoNote(g, o, L) {
+  const text = o.note || '';
+  if (!text) return;
+  g.save();
+  let s = Math.max(15, +L.size || 18);
+  g.font = `600 ${s}px "IBM Plex Sans", system-ui, sans-serif`; // y is the pill's top + 4; the baseline is y + s
+  const avail = Math.max(30, +L.w);
+  while (s > 15 && g.measureText(text).width > avail) {
+    s--;
+    g.font = `600 ${s}px "IBM Plex Sans", system-ui, sans-serif`;
+  }
+  const align = L.align === 'left' ? 'left' : L.align === 'center' ? 'center' : 'right';
+  const x = align === 'left' ? +L.x : align === 'center' ? +L.x + +L.w / 2 : +L.x + +L.w;
+  const y = +L.y + s;
+  const tw = g.measureText(text).width;
+  const x0 = align === 'left' ? x : align === 'center' ? x - tw / 2 : x - tw;
+  const behind = statsBehind(g, x0 - 6, y - s - 3, tw + 12, s + 6);
+  if (behind && behind.dev > 18) {
+    g.save();
+    g.fillStyle = behind.mean > 140 ? 'rgba(255,255,255,.82)' : 'rgba(0,0,0,.64)';
+    g.beginPath(); g.roundRect(x0 - 10, y - s - 4, tw + 20, s + 8, (s + 8) / 2); g.fill();
+    g.restore();
+    g.fillStyle = behind.mean > 140 ? '#1c1a18' : '#f4f1ea';
+  } else {
+    const ink = /^#[0-9a-f]{6}$/i.test(L.color) ? L.color : '#f4f1ea';
+    g.fillStyle = behind && Math.abs(lum(ink) * 255 - behind.mean) < 95
+      ? behind.mean > 140 ? '#1c1a18' : '#f4f1ea'
+      : ink;
+  }
+  g.textAlign = align; g.textBaseline = 'alphabetic';
+  g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3;
+  g.fillText(text, x, y);
+  g.restore();
+}
 function drawFooter(g, o, color, y, rightLimit) {
   footerPass = () => drawFooterNow(g, o, color, y, rightLimit);
 }
@@ -2860,9 +2935,16 @@ function drawFooterNow(g, o, color, y, rightLimit) {
   let left = o.info || '';
   if (o.artist) left += (left ? '   ' : '') + '✎ ' + o.artist;
   if (left) g.fillText(left, 52, y);
+  const creditEnd = 52 + (left ? g.measureText(left).width : 0);
   if (o.note) {
-    g.font = `400 18px "IBM Plex Sans", system-ui, sans-serif`; g.textAlign = 'right';
-    g.fillText(o.note, rightLimit ? rightLimit - 12 : W - 52, y); g.textAlign = 'left'; // clear of the P/T box
+    // Beside the credit when there is room (a little smaller if needed), otherwise on its own line just
+    // above the credit at the left, where the text box has already ended and the P/T box isn't.
+    const nf = px => `400 ${px}px "IBM Plex Sans", system-ui, sans-serif`, right = rightLimit ? rightLimit - 12 : W - 52;
+    let px = 18; g.font = nf(px);
+    while (px > 15 && right - g.measureText(o.note).width < creditEnd + 18) g.font = nf(--px);
+    if (right - g.measureText(o.note).width >= creditEnd + 18) { g.textAlign = 'right'; g.fillText(o.note, right, y); }
+    else { g.font = nf(16); g.textAlign = 'left'; g.fillText(o.note, 52, y - 28); }
+    g.textAlign = 'left';
   }
   g.restore();
 }
@@ -4316,6 +4398,23 @@ function drawSticker(g, L, bx, by, bw, bh, size) {
 // column (type line, title bars) moves up with it, while the art window gets shorter.
 function reflowLayers(g, o) {
   const layers = (o.layers || []).map(L => ({ ...LDEF, ...L }));
+  // Styles with no explicit note layer get one in the footer strip. Build it here, not in each preset:
+  // it then receives the same last-pass drawing, contrast backing and collision reflow as authored notes.
+  if (o.note && !layers.some(L => L.src === 'note')) {
+    const credit = layers.find(L => FOOT_SRC.includes(L.src) && L.src !== 'note' && +L.y >= H * .7) ||
+      layers.find(L => L.src === 'credit' || L.src === 'illus');
+    let note = { src: 'note', x: 34, y: H - 52, w: W - 68, size: 18, font: 'plex',
+      color: '#f4f1ea', align: 'right', effect: 'shadow', effColor: '#000000', effSize: 1 };
+    if (credit && credit.align === 'center') {
+      note = { ...note, y: Math.min(+credit.y + 28, H - 52), align: 'center' };
+    } else if (credit && credit.align === 'right') {
+      note = { ...note, align: 'left' };
+    } else if (credit) {
+      const split = Math.max(34, Math.min(W - 34, +credit.x + +credit.w + 18));
+      note = { ...note, x: split, w: W - 34 - split };
+    }
+    layers.push({ ...LDEF, ...note, id: 'auto-note' });
+  }
   // The artist / collector line sits in a strip along the bottom, ~0.08" from the edge like printed cards.
   // Text, P/T badges and stickers that reach into that strip where the credit is get moved up or shortened.
   // Text that matters (name, cost, type, rules, P/T) stays inside the safety line, ⅛" inside the cut. It is
@@ -4332,23 +4431,26 @@ function reflowLayers(g, o) {
     if (+A.y + pad < topLine) { const d = topLine - (+A.y + pad); A.y = +A.y + d; if (+A.h > 0) A.h = Math.max(20, +A.h - d); }
     if (+A.h > 0 && +A.y + +A.h - pad > H - sm) A.h = Math.max(20, H - sm + pad - +A.y);
   }
-  const footSz = A => Math.max(+A.size || 20, TEXT_FLOOR[A.src] || 16), backs = [];
+  const footSz = A => Math.max(+A.size || 20, TEXT_FLOOR[A.src] || 16), backs = [], footerBoxes = [];
   for (const C of layers) {
     if (!FOOT_SRC.includes(C.src) || +C.rot) continue;
+    if (C.id === 'auto-note') continue;
     const sz = footSz(C), pad = +C.pad || 0;
-    C.y = Math.min(+C.y, H - 24 - sz * 1.2 - pad * 2);
     if (+C.x < 34) { C.w = +C.w - (34 - +C.x); C.x = 34; }
     if (+C.x + +C.w > W - 34) C.w = W - 34 - +C.x;
-    // where the credit's words actually are
+    // where the credit's words actually are, and how many lines a long artist name wraps onto
     g.font = `600 ${sz}px "IBM Plex Sans", system-ui, sans-serif`;
     const txt = C.src === 'note' ? (o.note || '') : C.src === 'illus' ? 'Illustrated by ' + (o.artist || '') : [o.info, o.artist && '✎ ' + o.artist].filter(Boolean).join('   ');
-    const tw = Math.min(+C.w, g.measureText(txt).width * (C.upper ? 1.12 : 1) + 8);
+    const full = g.measureText(txt).width * (C.upper ? 1.12 : 1) + (+C.ls || 0) * txt.length + 8;
+    const nLines = C.fit ? 1 : Math.min(3, Math.max(1, Math.ceil(full / Math.max(40, +C.w - 2 * pad))));
+    C.y = Math.min(+C.y, H - 24 - sz * 1.2 * nLines - pad * 2);
+    const tw = Math.min(+C.w, full);
     const x0 = +C.x + (C.align === 'center' ? (+C.w - tw) / 2 : C.align === 'right' ? +C.w - tw : 0), x1 = x0 + tw;
     if (+C.y < H * .7) continue; // a credit placed higher up (an "Illustrated by" line under the title) is left alone
     // Keep the line off frame and panel edges: when an edge runs through it, centre it in the margin below that
     // edge, or when that margin is too thin, set it just above the edge.
     // (an outer border close to the trim is a floor instead: the line stays inside it)
-    const th = sz * 1.15, lines = [];
+    const th = sz * 1.15 * nLines, lines = [];
     let floor = H - 22;
     for (const A of layers) {
       if (A === C || FOOT_SRC.includes(A.src) || +A.rot || !(+A.h > 0)) continue;
@@ -4381,6 +4483,7 @@ function reflowLayers(g, o) {
       }
     }
     C.y = t - pad;
+    if (C.src === 'credit' || C.src === 'illus') footerBoxes.push({ left: x0, right: x1, top: t, bottom: t + th });
     const top = +C.y - 6, bottom = +C.y + sz * 1.3 + pad * 2;
     for (const A of layers) {
       if (A === C || FOOT_SRC.includes(A.src) || A.src === 'art' || +A.rot || A.vert) continue;
@@ -4444,7 +4547,26 @@ function reflowLayers(g, o) {
 function renderCustom(g, o, bleed) {
   o = { ...o, layers: reflowLayers(g, o) };
   const feet = o.layers.filter(L => FOOT_SRC.includes(L.src));
-  if (feet.length) footerPass = () => { for (const L of feet) { const b = drawLayer(g, { ...LDEF, ...L }, o); if (b && g === ctx) st.layerBounds.push(b); } };
+  // Text boxes drawn on this card so far (card units); the footer adds its own, then the note avoids them all.
+  const ink = { inv: g.getTransform().inverse(), boxes: [], skip: false };
+  const isPanel = L => L.src === 'art' || (L.src === 'custom' && !String(L.text || '').replace(/\u00a0/g, '').trim());
+  if (feet.length) footerPass = () => {
+    inkLog = ink;
+    let auto = null;
+    const before = ink.boxes.length;
+    try {
+      for (const L of feet) {
+        if (L.id === 'auto-note') { auto = L; continue; }
+        const b = drawLayer(g, { ...LDEF, ...L }, o);
+        if (b && !b.resizeW) logInkBounds(b);
+        if (b && g === ctx) st.layerBounds.push(b);
+      }
+    } finally { inkLog = null; }
+    // the footer band: from one note-height above the highest footer line (the credit) down to the card's edge
+    const foot = ink.boxes.slice(before).filter(B => B.top > H * .7);
+    const footTop = foot.length ? Math.min(...foot.map(B => B.top)) : H - 60;
+    if (auto) drawAutoNote(g, o, placeAutoNote(g, o, auto, ink.boxes, footTop));
+  };
   const ar = artRect(o);
   g.save();
   if (ar.win) {
@@ -4476,7 +4598,10 @@ function renderCustom(g, o, bleed) {
       g.restore();
     }
     if (FOOT_SRC.includes(L.src)) continue; // drawn after the effects (see footerPass)
-    const b = drawLayer(g, { ...LDEF, ...L }, o);
+    inkLog = ink; ink.skip = isPanel(L);
+    let b;
+    try { b = drawLayer(g, { ...LDEF, ...L }, o); if (b && !b.resizeW && !ink.skip) logInkBounds(b); }
+    finally { inkLog = null; ink.skip = false; }
     if (b && rec) st.layerBounds.push(b);
   }
 }
@@ -6728,6 +6853,7 @@ if (refDocs.length) { $('ref').hidden = false; refRender(); } else $('refCount')
 window.__pf = {
   W, H, BLEED, SAFE,
   fileBase, sfCacheable, refRanges, idb, cardCanvas, bleedSeam,
+  styles: () => STYLES.map(sty => ({ id: sty.id, preset: sty.preset || null, f: sty.f || {}, layers: styleLayers(sty) })),
   refDocs: () => refDocs,
   parseDeck: (...a) => parseDeck(...a),
   refTerms: (...a) => refTerms(...a),
