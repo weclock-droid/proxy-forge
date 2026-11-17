@@ -1471,8 +1471,11 @@ function syncNumberField() {
 // a badge beside the ability the way a saga's chapter numeral is. Scryfall writes the minus as U+2212 rather
 // than a hyphen, so both are accepted wherever these costs are read.
 const LOYALTY_COST = /^\s*([+−-]?(?:\d+|X))\s*:\s*/i;
-const costBadgeH = size => size * 1.3;
-const costBadgeW = (cost, size) => Math.max(costBadgeH(size) * .84, size * (.34 + .5 * String(cost).length));
+// The badge's number is printed at least as large as the readable floor for rules text (TEXT_FLOOR.rules),
+// so a "−12" on a small rules box stays legible; the badge grows around it.
+const costBadgeFont = size => Math.max(size * .82, TEXT_FLOOR.rules * .82, 20);
+const costBadgeH = size => costBadgeFont(size) * 1.5;
+const costBadgeW = (cost, size) => Math.max(costBadgeH(size) * .84, costBadgeFont(size) * (.5 + .58 * String(cost).length));
 const costIndent = (cost, size) => costBadgeW(cost, size) + size * .34;
 function drawCostBadge(g, cost, x, y, size, color) {
   const h = costBadgeH(size), w = costBadgeW(cost, size);
@@ -1482,8 +1485,8 @@ function drawCostBadge(g, cost, x, y, size, color) {
   g.fillStyle = darkText ? '#2b2620' : '#ece5d4'; g.fill();
   g.lineWidth = Math.max(1, h * .07); g.strokeStyle = darkText ? '#8b7d64' : '#2b2620'; g.stroke();
   g.fillStyle = darkText ? '#f3ecdc' : '#1d1a15'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = `700 ${h * .5}px "Spectral", Georgia, serif`;
-  g.fillText(cost, x + w / 2, y + h * .47);
+  g.font = `700 ${costBadgeFont(size)}px "Spectral", Georgia, serif`;
+  g.fillText(cost, x + w / 2, y + h * .45);
   g.restore();
 }
 
@@ -1570,12 +1573,19 @@ function costRowW(n, d) { return n * d + Math.max(0, n - 1) * d * .1; }
 // The largest diameter, never above the authored one, whose row of `n` pips fits `room`. Half size is the
 // floor: below that a symbol stops being readable as a symbol, and an absurd cost is better slightly long
 // than unreadable. n pips and n-1 gaps of 10% need d * (n + (n-1) * .1).
+// Room for a cost row that shares a band with the name: the name gets the width it needs at its readable
+// floor first, and the cost row the rest: never less than a quarter of the band, and never so little that a pip
+// drops under 24 units across. Pips shrink before a name is cut short.
+function costRoomBeside(g, name, font, band, n) {
+  g.save(); g.font = font; const need = g.measureText(name || '').width + 8; g.restore();
+  return Math.max(band * .25, n * 24 * 1.1, band - need);
+}
 function fitCostD(n, d, room) {
   if (n < 2 || !(room > 0)) return d;
   return Math.max(d * .5, Math.min(d, room / (n + (n - 1) * .1)));
 }
 function drawCostRight(g, syms, right, cy, d) {
-  const gap = d * .1; let x = right - costRowW(syms.length, d) + gap;
+  const gap = d * .1; let x = right - costRowW(syms.length, d);
   const start = x;
   for (const s of syms) { drawSym(g, s, x, cy - d / 2, d, true); x += d + gap; }
   return start;
@@ -1857,7 +1867,7 @@ function artRect(o) {
   const aw = o.layout === 'custom' && (o.layers || []).find(l => l.src === 'art');
   if (aw) return { x: +aw.x, y: +aw.y, w: +aw.w, h: +aw.h || 400, win: true, arch: aw.bg === 'arch', crt: aw.bg === 'crt', rad: +aw.rad || 0, clean: aw.bg === 'arch' || aw.bg === 'crt' || +aw.rad > 0 || aw.bg === 'box' };
   if (o.layout === 'framed') return { x: 58, y: 118, w: 634, h: 472 };
-  if (o.layout === 'wrist') return { x: 108, y: 140, w: 534, h: 400 };
+  if (o.layout === 'wrist') return { x: 108, y: 140, w: 534, h: 400 - wristGrow(o) };
   if (o.layout === 'console') return consoleLand(o) ? { x: 30, y: 132, w: 690, h: o.rules ? 616 : 718 } : { x: 30, y: 132, w: 690, h: 410 };
   if (o.border === 'none') return { x: 0, y: 0, w: W, h: H };
   return { x: 30, y: 30, w: W - 60, h: H - 60 };
@@ -1867,6 +1877,26 @@ function artRect(o) {
 // A rugged wrist-worn computer: olive metal casing with colored side grips, a curved CRT screen with
 // scanlines and a green readout, a dark type bar and a riveted panel for the rules.
 const WRIST_ACC = { W: '#d6cca6', U: '#4a74b4', B: '#6b5293', R: '#b0473b', G: '#3e7d47', C: '#8b9097' };
+// How much taller the Wrist layout's rules panel has to be for its text to fit at the readable floor. The
+// screen above gives up that much height, and the type bar and lower casing move up with the panel, so the
+// type line is never covered. Capped so the screen keeps most of its art.
+const WRIST_GROW_MAX = 150;
+let wristMeasure = null;
+function wristLayout(g, o) {
+  const paras = [...(o.rules ? parseRules(o, o.rules, false) : []), ...(o.flavor ? parseRich(o.flavor, true) : [])];
+  if (!paras.length) return { paras, lay: null, fs: 32, grow: 0 };
+  const was = { fam: curFam, lh: curLH }; curFam = FONTS.plex; curLH = 1.14;
+  const room = 236 - (o.pt ? 10 : 0), wid = W - 2 * 84;
+  let fs = 32, lay;
+  for (; fs >= TEXT_FLOOR.rules; fs--) { lay = layoutRich(g, paras, fs, wid); if (lay.h <= room) break; }
+  if (fs < TEXT_FLOOR.rules) { fs = TEXT_FLOOR.rules; lay = layoutRich(g, paras, fs, wid); }
+  curFam = was.fam; curLH = was.lh;
+  return { paras, lay, fs, grow: Math.max(0, Math.min(Math.ceil(lay.h - room), WRIST_GROW_MAX)) };
+}
+function wristGrow(o) {
+  if (!wristMeasure) wristMeasure = document.createElement('canvas').getContext('2d');
+  return wristLayout(wristMeasure, o).grow;
+}
 function renderWrist(g, o) {
   const HUD = FONTS.terminal, SANS = FONTS.plex;
   ensureFont(HUD, 'STATUSDATAMAPITEMSRADIOLVLHPAPRAD0123456789/');
@@ -1907,16 +1937,17 @@ function renderWrist(g, o) {
   }
   // the casing: upper and lower halves
   const olive = '#5f5e3d';
-  piece(box(34, 96 + hdr, W - 68, 552 - hdr, 26), olive, { grain: 900, box: [34, 96 + hdr, W - 68, 552 - hdr] });
-  piece(box(40, 652, W - 80, 304, 20), olive, { grain: 600, box: [40, 652, W - 80, 304] });
+  const wl = wristLayout(g, o), G = wl.grow; // the rules' extra height, taken from the screen
+  piece(box(34, 96 + hdr, W - 68, 552 - hdr - G, 26), olive, { grain: 900, box: [34, 96 + hdr, W - 68, 552 - hdr - G] });
+  piece(box(40, 652 - G, W - 80, 304 + G, 20), olive, { grain: 600, box: [40, 652 - G, W - 80, 304 + G] });
   // a seam line across each half
-  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(50, 640); g.lineTo(W - 50, 640); g.stroke();
+  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 2; g.beginPath(); g.moveTo(50, 640 - G); g.lineTo(W - 50, 640 - G); g.stroke();
   const screw = (x, y, r0 = 6.5) => {
     piece(() => { g.beginPath(); g.arc(x, y, r0, 0, 7); }, '#a8a58a', { shadow: 2.5, hi: .5, lo: .4, line: 2 });
     const a2 = (x * 7 + y * 3) % 6 / 6 * Math.PI; g.strokeStyle = INK; g.lineWidth = 1.8;
     for (const b2 of [a2, a2 + Math.PI / 2]) { g.beginPath(); g.moveTo(x + Math.cos(b2) * r0 * .6, y + Math.sin(b2) * r0 * .6); g.lineTo(x - Math.cos(b2) * r0 * .6, y - Math.sin(b2) * r0 * .6); g.stroke(); }
   };
-  for (const [x, y] of [[56, 118 + hdr], [W - 56, 118 + hdr], [58, 676], [W - 58, 676], [58, 932], [W - 58, 932]]) screw(x, y);
+  for (const [x, y] of [[56, 118 + hdr], [W - 56, 118 + hdr], [58, 676 - G], [W - 58, 676 - G], [58, 932], [W - 58, 932]]) screw(x, y);
   // a vent grille on the lower casing
   for (let k = 0; k < 6; k++) piece(box(70 + k * 16, 940, 8, 24, 4), '#24251a', { shadow: 0, hi: 0, lo: 0, line: 2 });
 
@@ -1927,14 +1958,14 @@ function renderWrist(g, o) {
   piece(box(40, 38 + hdr, W - 80, 78, 14), dark, { hi: .16, lo: .5 });
   // The cost row is right-aligned at W-56 and the name starts at x64, so the two share the band between
   // them; the pips shrink rather than the name being pushed off the left of it.
-  const costPip = fitCostD(syms.length, 42, W - 120 - 96);
+  const costPip = fitCostD(syms.length, 42, costRoomBeside(g, o.name || '', `600 ${TEXT_FLOOR.name}px ${SANS.f}`, W - 56 - 64 - 18, syms.length));
   const costLeft = syms.length ? drawCostRight(g, syms, W - 56, 77, costPip) : W - 56;
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
   g.fillText(fitText(g, o.name || '', px => `600 ${px}px ${SANS.f}`, 44, TEXT_FLOOR.name, costLeft - 64 - 18), 64, 92);
 
   // the screen
-  piece(box(88, 124 + hdr, W - 176, 432 - hdr, 38), '#1a1b15', { hi: .2, lo: .5 });
-  rr(100, 134 + hdr, W - 200, 412 - hdr, 32); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
+  piece(box(88, 124 + hdr, W - 176, 432 - hdr - G, 38), '#1a1b15', { hi: .2, lo: .5 });
+  rr(100, 134 + hdr, W - 200, 412 - hdr - G, 32); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
   const ar = artRect(o);
   g.save(); rr(ar.x, ar.y, ar.w, ar.h, 28); g.clip();
   drawArt(g, ar, st.img);
@@ -1989,28 +2020,20 @@ function renderWrist(g, o) {
     g.beginPath(); g.arc(x, y, r0 * 1.3, 0, 7); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke();
     g.beginPath(); g.arc(x, y, r0, 0, 7); g.lineWidth = 1.5; g.stroke();
   };
-  bulb(64, 520, 13, '#ff9a2e');
-  g.font = `400 16px ${HUD.f}`; g.fillStyle = 'rgba(230,226,190,.75)'; g.textAlign = 'center'; g.fillText('PWR', 64, 549); g.textAlign = 'left';
+  bulb(64, 520 - G, 13, '#ff9a2e');
+  g.font = `400 16px ${HUD.f}`; g.fillStyle = 'rgba(230,226,190,.75)'; g.textAlign = 'center'; g.fillText('PWR', 64, 549 - G); g.textAlign = 'left';
   bulb(W - 63, 168, 10, '#3dff6e'); bulb(W - 63, 206, 10, '#ffc93d', n(17, 2) === 0); bulb(W - 63, 244, 10, '#ff3b2f', n(19, 3) === 0);
   piece(box(W - 50, 404, 28, 92, 7), '#3a3b2c', { shadow: 4, hi: .3, lo: .4, line: 3 });
   g.fillStyle = INK; for (let y = 414; y < 488; y += 9) g.fillRect(W - 46, y, 20, 2.5);
 
   // type bar
-  piece(box(42, 566, W - 84, 62, 10), dark, { hi: .16, lo: .5 });
-  const rw = drawRarity(g, o, W - 60, 597, 32);
+  piece(box(42, 566 - G, W - 84, 62, 10), dark, { hi: .16, lo: .5 });
+  const rw = drawRarity(g, o, W - 60, 597 - G, 32);
   g.fillStyle = '#f2f2ea'; g.textAlign = 'left';
-  g.fillText(fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, W - 84 - 40 - (rw ? rw + 14 : 0)), 62, 609);
+  g.fillText(fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, W - 84 - 40 - (rw ? rw + 14 : 0)), 62, 609 - G);
 
   // rules panel: two worn inset plates with the text over them
-  const paras = [...(o.rules ? parseRules(o, o.rules, false) : []), ...(o.flavor ? parseRich(o.flavor, true) : [])];
-  let fs = 32, lay, room = 236, wid = W - 2 * 84;
-  if (paras.length) {
-    curFam = SANS; curLH = 1.14;
-    for (; fs >= TEXT_FLOOR.rules; fs--) { lay = layoutRich(g, paras, fs, wid - (fs > 24 ? 0 : 0)); if (lay.h <= room - (o.pt ? 10 : 0)) break; }
-  }
-  // Still too tall at the readable floor: the box grows up rather than shrinking the text
-  // past the size the tool promises.
-  const growAmt = paras.length ? Math.max(0, Math.min(Math.ceil((lay?.h || 0) - (room - (o.pt ? 10 : 0))), RULES_GROW)) : 0;
+  const { paras, lay, fs } = wl, room = 236, growAmt = G;
   const panelY = 670 - growAmt, panelH = 262 + growAmt;
   for (const [x, w] of [[70, 298], [382, 298]]) { // recessed plates: shadow inside along the top
     rr(x, panelY, w, panelH, 8); g.fillStyle = '#56553a'; g.fill();
@@ -2024,7 +2047,7 @@ function renderWrist(g, o) {
   if (paras.length) {
     curFam = SANS; curLH = 1.14;
     g.save(); g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
-    drawRich(g, lay, fs, 84, panelY + 12 + Math.max(0, (room + growAmt - lay.h) / 2), '#f4f3ea');
+    drawRich(g, lay, fs, 84, panelY + 12 + Math.max(0, (room + growAmt - (o.pt ? 10 : 0) - lay.h) / 2), '#f4f3ea');
     g.restore();
     curFam = { f: BODY, wt: 400 }; curLH = 1.16;
   }
@@ -2627,7 +2650,7 @@ function renderConsole(g, o, size) {
   const nameBase = 84;
   // The console band runs from the name at x108 to the right edge, and the name needs 110 of that; the rest
   // is the cost row's room. A long cost shrinks here rather than pushing the name off the left of the band.
-  const costPip = fitCostD(syms.length, d, W - 42 - 124);
+  const costPip = fitCostD(syms.length, d, costRoomBeside(g, upper(o.name || ''), conFont(TEXT_FLOOR.name, 700), W - 42 - 124, syms.length));
   const costLeft = syms.length ? drawCostRight(g, syms, W - 42, 64, costPip) : W - 42;
   g.fillStyle = CON_TEXT; g.textAlign = 'left'; g.textBaseline = 'alphabetic';
   const nameDrawn = fitText(g, upper(o.name || ''), px => conFont(px, 700), 52, TEXT_FLOOR.name, costLeft - 110 - 14);
@@ -2648,7 +2671,7 @@ function renderConsole(g, o, size) {
     g.fillStyle = c3; g.fillRect(W - 30, y0, 12, h);
     if (o.rules) { // rules in the black band between the art and the bottom elbow
       curFam = FONTS.antonio; curLH = 1.08;
-      const top = ar.y + ar.h + 20, room = y0 - 12 - top, paras = parseRich(upper(o.rules), false);
+      const top = ar.y + ar.h + 20, room = y0 - 12 - top, paras = parseRules(o, upper(o.rules), false);
       let fs = 24, lay;
       for (; fs >= 11; fs--) { lay = layoutRich(g, paras, fs, W - 84); if (lay.h <= room) break; }
       drawRich(g, lay, fs, 42, top + Math.max(0, (room - lay.h) / 2), CON_TEXT);
@@ -2685,7 +2708,7 @@ function renderConsole(g, o, size) {
   curFam = FONTS.antonio; curLH = 1.12;
   const tx = 116, tw = W - tx - 54, top = tabY + tabH + 18;
   const avail = bottom - 22 - top - (o.pt ? (bottom - 22 - py) + 14 : 0);
-  const rules = parseRich(upper(o.rules || ''), false), flav = parseRich(upper(o.flavor || ''), true);
+  const rules = parseRules(o, upper(o.rules || ''), false), flav = parseRich(upper(o.flavor || ''), true);
   let fs = Math.round(size * 1.05), lr, lf, hh;
   for (; fs >= TEXT_FLOOR.rules; fs--) {
     lr = layoutRich(g, rules, fs, tw); lf = layoutRich(g, flav, fs, tw);
@@ -2889,7 +2912,7 @@ const FONTS = {
   shadows: { label: 'Shadows Into Light (pen)', f: '"Shadows Into Light", Georgia, serif', wt: 400, g: 'Handwritten' },
   antonio: { label: 'Antonio (console caps)', f: '"Antonio", "Arial Narrow", sans-serif', wt: 600, g: 'Sci-fi & retro' },
   notojp: { label: 'Noto Sans JP (Japanese)', f: '"Noto Sans JP", system-ui, sans-serif', wt: 700, g: 'Display' },
-  win95: { label: 'MS Sans Serif (Windows 95)', f: '"MS Sans Serif", Tahoma, Verdana, sans-serif', wt: 400, g: 'Sci-fi & retro' },
+  win95: { label: 'Tahoma (Windows 95 look; uses your system font)', f: 'Tahoma, Verdana, "DejaVu Sans", sans-serif', wt: 400, g: 'Sci-fi & retro' },
 };
 const FOOT_SRC = ['credit', 'illus', 'note'];
 // Average brightness (0-255) and how much it varies, for the pixels already drawn in a box (card units).
@@ -2908,7 +2931,7 @@ const TEXT_FLOOR = { rules: 24, rulesflavor: 24, rulesx: 24, dialog: 22, flavor:
 // `name` and `loyalty` are the two entries nothing reads. A title is placed by safeTitleBase and shrunk by
 // fitText against the band's own width, and the shield draws the number in its own geometry; neither path
 // consults this table, so the 26s were a promise the code did not make. Kept as the record of the intended
-// floor — see RECOMMENDATIONS.md, "TEXT_FLOOR is advisory".
+// floor.
 const SRC_LABEL = {
   name: 'Name', cost: 'Mana cost', type: 'Type line', rules: 'Rules text', flavor: 'Flavor text',
   rulesflavor: 'Rules + flavor', art: 'Art window', artist: 'Artist name', monogram: 'First letter of the name', kanji: 'Name in Japanese (basic lands)', stars: 'Level stars (mana value)', mv: 'Mana value (number)', subtype: 'Subtypes (after the dash)', typeleft: 'Card type (before the dash)', rulesx: 'Rules + flavor (blank for basics)', paymv: '“PAY” and the mana value', maintype: 'Main card type (BASIC LAND, CREATURE…)', illus: '“Illustrated by” the artist', dialog: 'Rules, or “Tap for 1 mana?” for basics', atkdef: 'Power / toughness as ATK / DEF', landmana: 'Card color as one mana symbol', pt: 'The number (power/toughness, loyalty or defense)', loyalty: 'Loyalty or defense, and nothing for a creature', ptline: 'The number, whichever it is', credit: 'Artist & collector line', note: 'Bottom-right note', rarity: 'Set symbol (rarity)', custom: 'Your own text'
