@@ -2002,23 +2002,29 @@ function renderWrist(g, o) {
   g.fillText(fitText(g, o.type || '', px => `500 ${px}px ${SANS.f}`, 32, 14, W - 84 - 40 - (rw ? rw + 14 : 0)), 62, 609);
 
   // rules panel: two worn inset plates with the text over them
-  for (const [x, w] of [[70, 298], [382, 298]]) { // recessed plates: shadow inside along the top
-    rr(x, 670, w, 262, 8); g.fillStyle = '#56553a'; g.fill();
-    g.save(); rr(x, 670, w, 262, 8); g.clip();
-    for (let i = 0; i < 500; i++) { g.fillStyle = R() < .5 ? 'rgba(255,255,230,.05)' : 'rgba(0,0,0,.08)'; g.fillRect(x + R() * w, 670 + R() * 262, 1.5, 1.5); }
-    g.lineWidth = 6; rr(x, 667, w, 262, 8); g.strokeStyle = 'rgba(0,0,0,.4)'; g.stroke();
-    rr(x, 673, w, 262, 8); g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
-    g.restore();
-    rr(x, 670, w, 262, 8); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke();
-  }
   const paras = [...(o.rules ? parseRules(o, o.rules, false) : []), ...(o.flavor ? parseRich(o.flavor, true) : [])];
+  let fs = 32, lay, room = 236, wid = W - 2 * 84;
   if (paras.length) {
     curFam = SANS; curLH = 1.14;
-    const ptW = o.pt ? 132 : 0, room = 236, wid = W - 2 * 84;
-    let fs = 32, lay;
     for (; fs >= TEXT_FLOOR.rules; fs--) { lay = layoutRich(g, paras, fs, wid - (fs > 24 ? 0 : 0)); if (lay.h <= room - (o.pt ? 10 : 0)) break; }
+  }
+  // Still too tall at the readable floor: the box grows up rather than shrinking the text
+  // past the size the tool promises.
+  const growAmt = paras.length ? Math.max(0, Math.min(Math.ceil((lay?.h || 0) - (room - (o.pt ? 10 : 0))), RULES_GROW)) : 0;
+  const panelY = 670 - growAmt, panelH = 262 + growAmt;
+  for (const [x, w] of [[70, 298], [382, 298]]) { // recessed plates: shadow inside along the top
+    rr(x, panelY, w, panelH, 8); g.fillStyle = '#56553a'; g.fill();
+    g.save(); rr(x, panelY, w, panelH, 8); g.clip();
+    for (let i = 0; i < 500; i++) { g.fillStyle = R() < .5 ? 'rgba(255,255,230,.05)' : 'rgba(0,0,0,.08)'; g.fillRect(x + R() * w, panelY + R() * panelH, 1.5, 1.5); }
+    g.lineWidth = 6; rr(x, panelY - 3, w, panelH, 8); g.strokeStyle = 'rgba(0,0,0,.4)'; g.stroke();
+    rr(x, panelY + 3, w, panelH, 8); g.strokeStyle = 'rgba(255,255,230,.12)'; g.stroke();
+    g.restore();
+    rr(x, panelY, w, panelH, 8); g.lineWidth = 2.5; g.strokeStyle = INK; g.stroke();
+  }
+  if (paras.length) {
+    curFam = SANS; curLH = 1.14;
     g.save(); g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
-    drawRich(g, lay, fs, 84, 682 + Math.max(0, (room - lay.h) / 2), '#f4f3ea');
+    drawRich(g, lay, fs, 84, panelY + 12 + Math.max(0, (room + growAmt - lay.h) / 2), '#f4f3ea');
     g.restore();
     curFam = { f: BODY, wt: 400 }; curLH = 1.16;
   }
@@ -2669,18 +2675,8 @@ function renderConsole(g, o, size) {
   // bottom bar
   g.fillStyle = c3; g.fillRect(92, bottom - 12, W - 110 - (o.pt ? 140 : 0), 12);
   g.fillStyle = c1; g.fillRect(W - 30, ty, 12, bottom - ty - (o.pt ? 70 : 0));
-  // type tab
+  // type tab - position depends on rules measurement, so measure first
   const tabY = ty + 24, tabH = 46, tabR = W - 42;
-  // Still too tall at the readable floor: the box grows up into the type tab rather than shrinking the text
-  // past the size the tool promises. The type tab moves up with the box.
-  const grow = Math.max(0, Math.min(Math.ceil(hh - avail), RULES_GROW));
-  const tabYAdj = tabY - grow;
-  g.beginPath(); g.roundRect(108, tabYAdj, tabR - 108, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
-  g.textBaseline = 'middle';
-  const rw = drawRarity(g, o, tabR - 14, tabYAdj + tabH / 2, 28);
-  g.fillStyle = '#1a1a1a'; g.textAlign = 'left';
-  g.fillText(fitText(g, upper(o.type || ''), px => conFont(px, 600), 30, 14, tabR - 130 - (rw ? rw + 12 : 0)), 130, tabYAdj + tabH / 2 + 2);
-  g.textBaseline = 'alphabetic';
   // rules and flavor
   // The power/toughness tab's geometry is settled first, because the rules have to stop above it: taking
   // the reserve from the tab's real top rather than a guessed constant is what keeps the last line's
@@ -2700,7 +2696,15 @@ function renderConsole(g, o, size) {
   // past the size the tool promises. The type tab moves up with the box.
   const grow = Math.max(0, Math.min(Math.ceil(hh - avail), RULES_GROW));
   const tabYAdj = tabY - grow;
-  let y = top + Math.max(0, (avail - hh) / 2) + grow;
+  // draw type tab at adjusted position
+  g.beginPath(); g.roundRect(108, tabYAdj, tabR - 108, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
+  g.textBaseline = 'middle';
+  const rw = drawRarity(g, o, tabR - 14, tabYAdj + tabH / 2, 28);
+  g.fillStyle = '#1a1a1a'; g.textAlign = 'left';
+  g.fillText(fitText(g, upper(o.type || ''), px => conFont(px, 600), 30, 14, tabR - 130 - (rw ? rw + 12 : 0)), 130, tabYAdj + tabH / 2 + 2);
+  g.textBaseline = 'alphabetic';
+  // The grown text box runs from (top - grow) down to the P/T area; center the text in that grown height.
+  let y = top - grow + Math.max(0, (avail + grow - hh) / 2);
   if (o.rules) y = drawRich(g, lr, fs, tx, y, CON_TEXT);
   if (o.flavor) { if (o.rules) y += fs * .7; drawRich(g, lf, fs, tx, y, '#ffc58a'); }
   curFam = { f: BODY, wt: 400 }; curLH = 1.16;
