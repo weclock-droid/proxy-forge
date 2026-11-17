@@ -3333,11 +3333,14 @@ const PRESETS = {
     { src: 'custom', text: '\u00a0', x: 0, y: 0, w: 750, h: 1050, bg: 'box', bgColor: '#efe4c6', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
     { src: 'art', x: 40, y: 40, w: 670, h: 740, rad: 34, bdW: 4, bdColor: '#141414', effect: 'none' },
     { src: 'custom', text: '\u00a0', x: 40, y: 750, w: 670, h: 252, bg: 'box', bgColor: '#f5d33a', bgOp: 1, pad: 0, rad: 30, bdW: 4, bdColor: '#141414', effect: 'none' },
-    { src: 'name', x: 60, y: 770, w: 230, h: 212, size: 64, font: 'anton', upper: true, color: '#141414', lh: .95, vmid: true, effect: 'none' },
+    { src: 'name', x: 60, y: 770, w: 230, h: 150, size: 64, font: 'anton', upper: true, color: '#141414', lh: .95, vmid: true, effect: 'none' },
     { src: 'custom', text: '/', x: 280, y: 790, w: 60, size: 150, font: 'antonio', color: '#141414', align: 'center', effect: 'none' },
     { src: 'type', x: 340, y: 768, w: 352, size: 30, font: 'oswald', upper: true, color: '#141414', fit: true, effect: 'none' },
     { src: 'rulesflavor', x: 340, y: 810, w: 356, h: 182, size: 24, font: 'oswald', upper: true, color: '#141414', lh: 1.05, pip: 'classic', effect: 'none' },
-    { src: 'pt', x: 64, y: 672, w: 160, size: 62, font: 'plex', color: '#141414', effect: 'none' },
+    // The stat line sits in the yellow panel under the name, like the stats on a printed sports card, not on
+    // the photo: dark type over the art was unreadable and looked like part of the picture.
+    { src: 'custom', text: ' ', x: 60, y: 928, w: 214, h: 3, bg: 'box', bgColor: '#141414', bgOp: 1, pad: 0, rad: 0, effect: 'none' },
+    { src: 'pt', x: 60, y: 934, w: 214, size: 46, font: 'anton', color: '#141414', align: 'left', effect: 'none' },
     { src: 'cost', x: 540, y: 64, w: 150, size: 80, align: 'right', pip: 'classic', effect: 'none' },
     { src: 'credit', x: 40, y: 1012, w: 670, size: 20, font: 'plex', color: '#5a4a2a', align: 'center', effect: 'none' },
   ],
