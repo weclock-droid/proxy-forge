@@ -2016,7 +2016,7 @@ function renderWrist(g, o) {
     curFam = SANS; curLH = 1.14;
     const ptW = o.pt ? 132 : 0, room = 236, wid = W - 2 * 84;
     let fs = 32, lay;
-    for (; fs >= 12; fs--) { lay = layoutRich(g, paras, fs, wid - (fs > 24 ? 0 : 0)); if (lay.h <= room - (o.pt ? 10 : 0)) break; }
+    for (; fs >= TEXT_FLOOR.rules; fs--) { lay = layoutRich(g, paras, fs, wid - (fs > 24 ? 0 : 0)); if (lay.h <= room - (o.pt ? 10 : 0)) break; }
     g.save(); g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3; g.shadowOffsetY = 1;
     drawRich(g, lay, fs, 84, 682 + Math.max(0, (room - lay.h) / 2), '#f4f3ea');
     g.restore();
@@ -2518,9 +2518,8 @@ function renderFullArt(g, o, shade, size, bleed) {
   const rules = parseRules(o, o.rules, false), flav = parseRich(o.flavor, true);
   const typeH = o.type ? 50 : 0;
   let fs = size, lr, lf, contentH;
-  // The loop stops *at* the floor: `fs >= TEXT_FLOOR.rules` with a decrement after means the last pass can
-  // leave fs at 23 against a promised 24, and the text is then drawn at the size the loop rejected.
-  for (fs = Math.max(size, TEXT_FLOOR.rules); fs > TEXT_FLOOR.rules; fs -= 1) {
+  // The loop stops *at* the floor: `fs >= TEXT_FLOOR.rules` so fs never goes below 24.
+  for (fs = Math.max(size, TEXT_FLOOR.rules); fs >= TEXT_FLOOR.rules; fs -= 1) {
     lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
     contentH = 22 + typeH + (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 26 : 0) + lf.h : 0) + (o.pt ? 52 : 18);
     if (contentH <= maxH) break;
@@ -2672,11 +2671,15 @@ function renderConsole(g, o, size) {
   g.fillStyle = c1; g.fillRect(W - 30, ty, 12, bottom - ty - (o.pt ? 70 : 0));
   // type tab
   const tabY = ty + 24, tabH = 46, tabR = W - 42;
-  g.beginPath(); g.roundRect(108, tabY, tabR - 108, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
+  // Still too tall at the readable floor: the box grows up into the type tab rather than shrinking the text
+  // past the size the tool promises. The type tab moves up with the box.
+  const grow = Math.max(0, Math.min(Math.ceil(hh - avail), RULES_GROW));
+  const tabYAdj = tabY - grow;
+  g.beginPath(); g.roundRect(108, tabYAdj, tabR - 108, tabH, [tabH / 2, 6, 6, tabH / 2]); g.fillStyle = mixHex(c1, '#ffffff', .35); g.fill();
   g.textBaseline = 'middle';
-  const rw = drawRarity(g, o, tabR - 14, tabY + tabH / 2, 28);
+  const rw = drawRarity(g, o, tabR - 14, tabYAdj + tabH / 2, 28);
   g.fillStyle = '#1a1a1a'; g.textAlign = 'left';
-  g.fillText(fitText(g, upper(o.type || ''), px => conFont(px, 600), 30, 14, tabR - 130 - (rw ? rw + 12 : 0)), 130, tabY + tabH / 2 + 2);
+  g.fillText(fitText(g, upper(o.type || ''), px => conFont(px, 600), 30, 14, tabR - 130 - (rw ? rw + 12 : 0)), 130, tabYAdj + tabH / 2 + 2);
   g.textBaseline = 'alphabetic';
   // rules and flavor
   // The power/toughness tab's geometry is settled first, because the rules have to stop above it: taking
@@ -2688,12 +2691,16 @@ function renderConsole(g, o, size) {
   const avail = bottom - 22 - top - (o.pt ? (bottom - 22 - py) + 14 : 0);
   const rules = parseRich(upper(o.rules || ''), false), flav = parseRich(upper(o.flavor || ''), true);
   let fs = Math.round(size * 1.05), lr, lf, hh;
-  for (; fs >= 13; fs--) {
+  for (; fs >= TEXT_FLOOR.rules; fs--) {
     lr = layoutRich(g, rules, fs, tw); lf = layoutRich(g, flav, fs, tw);
     hh = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? fs * .7 : 0) + lf.h : 0);
     if (hh <= avail) break;
   }
-  let y = top + Math.max(0, (avail - hh) / 2);
+  // Still too tall at the readable floor: the box grows up into the type tab rather than shrinking the text
+  // past the size the tool promises. The type tab moves up with the box.
+  const grow = Math.max(0, Math.min(Math.ceil(hh - avail), RULES_GROW));
+  const tabYAdj = tabY - grow;
+  let y = top + Math.max(0, (avail - hh) / 2) + grow;
   if (o.rules) y = drawRich(g, lr, fs, tx, y, CON_TEXT);
   if (o.flavor) { if (o.rules) y += fs * .7; drawRich(g, lf, fs, tx, y, '#ffc58a'); }
   curFam = { f: BODY, wt: 400 }; curLH = 1.16;
@@ -2751,8 +2758,8 @@ function renderFramed(g, o, size, borderCol) {
   const padX = 20, textW = tb.w - padX * 2, avail = tb.h - 28 - (o.pt ? 22 : 0);
   const rules = parseRules(o, o.rules, false), flav = parseRich(o.flavor, true);
   let fs = size, lr, lf, h;
-  // Stops *at* the floor, like the full-art loop: `fs >= floor` with a decrement after leaves 23 behind.
-  for (fs = Math.max(size, TEXT_FLOOR.rules); fs > TEXT_FLOOR.rules; fs -= 1) {
+  // Stops *at* the floor: `fs >= TEXT_FLOOR.rules` so fs never goes below 24.
+  for (fs = Math.max(size, TEXT_FLOOR.rules); fs >= TEXT_FLOOR.rules; fs -= 1) {
     lr = layoutRich(g, rules, fs, textW); lf = layoutRich(g, flav, fs, textW);
     h = (o.rules ? lr.h : 0) + (o.flavor ? (o.rules ? 24 : 0) + lf.h : 0);
     if (h <= avail) break;
