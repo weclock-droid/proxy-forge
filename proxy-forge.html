@@ -2865,14 +2865,17 @@ function drawAutoNote(g, o, L) {
   const tw = g.measureText(text).width;
   const x0 = align === 'left' ? x : align === 'center' ? x - tw / 2 : x - tw;
   const behind = statsBehind(g, x0 - 6, y - s - 3, tw + 12, s + 6);
-  if (behind) {
+  if (behind && behind.dev > 18) {
     g.save();
     g.fillStyle = behind.mean > 140 ? 'rgba(255,255,255,.82)' : 'rgba(0,0,0,.64)';
     g.beginPath(); g.roundRect(x0 - 10, y - s - 4, tw + 20, s + 8, (s + 8) / 2); g.fill();
     g.restore();
     g.fillStyle = behind.mean > 140 ? '#1c1a18' : '#f4f1ea';
   } else {
-    g.fillStyle = /^#[0-9a-f]{6}$/i.test(L.color) ? L.color : '#f4f1ea';
+    const ink = /^#[0-9a-f]{6}$/i.test(L.color) ? L.color : '#f4f1ea';
+    g.fillStyle = behind && Math.abs(lum(ink) * 255 - behind.mean) < 95
+      ? behind.mean > 140 ? '#1c1a18' : '#f4f1ea'
+      : ink;
   }
   g.textAlign = align; g.textBaseline = 'alphabetic';
   g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = 3;
@@ -4377,9 +4380,10 @@ function reflowLayers(g, o) {
     if (+A.y + pad < topLine) { const d = topLine - (+A.y + pad); A.y = +A.y + d; if (+A.h > 0) A.h = Math.max(20, +A.h - d); }
     if (+A.h > 0 && +A.y + +A.h - pad > H - sm) A.h = Math.max(20, H - sm + pad - +A.y);
   }
-  const footSz = A => Math.max(+A.size || 20, TEXT_FLOOR[A.src] || 16), backs = [];
+  const footSz = A => Math.max(+A.size || 20, TEXT_FLOOR[A.src] || 16), backs = [], footerBoxes = [];
   for (const C of layers) {
     if (!FOOT_SRC.includes(C.src) || +C.rot) continue;
+    if (C.id === 'auto-note') continue;
     const sz = footSz(C), pad = +C.pad || 0;
     C.y = Math.min(+C.y, H - 24 - sz * 1.2 - pad * 2);
     if (+C.x < 34) { C.w = +C.w - (34 - +C.x); C.x = 34; }
@@ -4426,6 +4430,7 @@ function reflowLayers(g, o) {
       }
     }
     C.y = t - pad;
+    if (C.src === 'credit' || C.src === 'illus') footerBoxes.push({ left: x0, right: x1, top: t, bottom: t + th });
     const top = +C.y - 6, bottom = +C.y + sz * 1.3 + pad * 2;
     for (const A of layers) {
       if (A === C || FOOT_SRC.includes(A.src) || A.src === 'art' || +A.rot || A.vert) continue;
@@ -4448,6 +4453,68 @@ function reflowLayers(g, o) {
         A.h = top - aTop;
       }
       else A.y = top - ah;                                       // a badge or a line: lift it above the strip
+    }
+  }
+  const autoNote = layers.find(L => L.id === 'auto-note');
+  if (autoNote) {
+    const credit = layers.find(L => (L.src === 'credit' || L.src === 'illus') && +L.y >= H * .7);
+    const sz = Math.max(15, +autoNote.size || 18);
+    g.font = `600 ${sz}px "IBM Plex Sans", system-ui, sans-serif`;
+    const tw = g.measureText(o.note || '').width, padX = 10, padY = 4;
+    const preferred = credit?.align === 'center' ? 'center' : credit?.align === 'right' ? 'left' : 'right';
+    const aligns = [...new Set([preferred, 'right', 'left', 'center'])];
+    const ptBoxes = layers.filter(L => ['pt', 'ptline', 'loyalty'].includes(L.src)).map(L => {
+      const pad = +L.pad || 0, size = +L.size || 30;
+      let left = +L.x, right = left + +L.w;
+      if ((!L.bg || L.bg === 'none') && o.pt) {
+        g.font = `700 ${size}px "IBM Plex Sans", system-ui, sans-serif`;
+        const pw = Math.min(+L.w, g.measureText(String(o.pt)).width * 1.15 + 2 * pad);
+        if (L.align === 'right') left = right - pw;
+        else if (L.align === 'center') { left += (+L.w - pw) / 2; right = left + pw; }
+        else right = left + pw;
+      }
+      const height = +L.h > 0 ? +L.h : size * 1.3 + 2 * pad;
+      const cx = (+L.x + +L.w / 2), cy = (+L.y + height / 2), rad = +L.rot * Math.PI / 180;
+      const corners = [[left, +L.y], [right, +L.y], [right, +L.y + height], [left, +L.y + height]].map(([x, y]) => [
+        cx + (x - cx) * Math.cos(rad) - (y - cy) * Math.sin(rad),
+        cy + (x - cx) * Math.sin(rad) + (y - cy) * Math.cos(rad),
+      ]);
+      return {
+        left: Math.min(...corners.map(P => P[0])) - 3, right: Math.max(...corners.map(P => P[0])) + 3,
+        top: Math.min(...corners.map(P => P[1])) - 3, bottom: Math.max(...corners.map(P => P[1])) + 3,
+      };
+    });
+    const occupied = [...footerBoxes, ...ptBoxes];
+    const preferredTop = credit
+      ? (credit.align === 'center'
+        ? Math.min(...footerBoxes.filter(B => B.top >= +credit.y).map(B => B.bottom), +credit.y + sz * 1.3) + 10
+        : H - sz - 12)
+      : H - sz - 12;
+    const tops = [...new Set([
+      preferredTop, H - sz - 12,
+      ...footerBoxes.flatMap(B => [B.bottom + 10, B.top - sz * 1.3 - 10]),
+      ...ptBoxes.flatMap(B => [B.bottom + 10, B.top - sz * 1.3 - 10]),
+      ...Array.from({ length: 126 }, (_, i) => H - sz - 12 - i * 8),
+    ])];
+    let placed = false;
+    for (const top of tops) {
+      if (top < 4 || top + sz * 1.3 + 8 > H) continue;
+      for (const align of aligns) {
+        const anchor = align === 'left' ? 34 : align === 'center' ? W / 2 : W - 34;
+        const textLeft = align === 'left' ? anchor : align === 'center' ? anchor - tw / 2 : anchor - tw;
+        const left = textLeft - padX;
+        const right = left + tw + 2 * padX;
+        if (left < 0 || right > W) continue;
+        const box = { left, right, top: top - padY, bottom: top + sz * 1.3 + padY };
+        if (occupied.some(B => box.left < B.right && box.right > B.left && box.top < B.bottom && box.bottom > B.top)) continue;
+        autoNote.align = align;
+        autoNote.x = align === 'center' ? 34 : 34;
+        autoNote.w = W - 68;
+        autoNote.y = top + padY;
+        placed = true;
+        break;
+      }
+      if (placed) break;
     }
   }
   for (const [A, back] of backs) layers.splice(layers.indexOf(A), 0, back);

@@ -496,7 +496,7 @@ describe('safety margin guide', () => {
 });
 
 describe('playtest footer note', () => {
-  test('prints the note exactly once across every style, and nowhere with the field empty', async () => {
+  test('prints one note per style, clear of footer text, P/T and card edges', async () => {
     const { page, context } = await newPage();
     const result = await page.evaluate(async () => {
       const art = document.createElement('canvas'); art.width = 750; art.height = 1050;
@@ -504,18 +504,33 @@ describe('playtest footer note', () => {
       const img = new Image(); img.src = art.toDataURL(); await img.decode();
       const p = CanvasRenderingContext2D.prototype;
       const fillText = p.fillText;
-      const counts = [], empty = [];
+      const measurements = [], empty = [];
+      const noteTexts = ['Playtest card — not for sale', 'Proxy — not for sale'];
+      const bounds = (g, text, x, y) => {
+        const m = g.measureText(text), a = g.getTransform();
+        const left = x - (g.textAlign === 'center' ? m.width / 2 : g.textAlign === 'right' || g.textAlign === 'end' ? m.width : 0);
+        const top = y - (m.actualBoundingBoxAscent || parseFloat(g.font) || 18);
+        const right = left + m.width, bottom = y + (m.actualBoundingBoxDescent || 0);
+        const points = [[left, top], [right, top], [right, bottom], [left, bottom]].map(([px, py]) => [
+          a.a * px + a.c * py + a.e, a.b * px + a.d * py + a.f,
+        ]);
+        return {
+          left: Math.min(...points.map(q => q[0])), right: Math.max(...points.map(q => q[0])),
+          top: Math.min(...points.map(q => q[1])), bottom: Math.max(...points.map(q => q[1])),
+        };
+      };
       p.fillText = function (text, x, y, ...rest) {
         if (this.canvas.width === 750 && this.canvas.height === 1050) {
-          const s = String(text);
-          if (s === 'Playtest card — not for sale') counts.push(s);
-          if (s === 'Proxy — not for sale') counts.push(s);
+          const s = String(text), box = bounds(this, s, x, y);
+          if (noteTexts.includes(s)) measurements.push({ kind: 'note', box });
+          if (/Painter|Illustrated by|001|PRX|EN/.test(s)) measurements.push({ kind: 'credit', box, text: s });
+          if (s === '4/4') measurements.push({ kind: 'pt', box });
         }
         return fillText.call(this, text, x, y, ...rest);
       };
       try {
         for (const sty of __pf.styles()) {
-          counts.length = 0;
+          measurements.length = 0;
           const form = {
             name: 'Test Golem', cost: '{3}{G}', type: 'Artifact Creature — Golem', rules: 'Trample',
             flavor: '', pt: '4/4', artist: 'A. Painter', info: '001 · PRX · EN',
@@ -526,15 +541,26 @@ describe('playtest footer note', () => {
             label: 'design', layout: sty.f.layout, layers: sty.layers, ...sty.f,
           };
           __pf.cardCanvas({ kind: 'made', form, img, zoom: 1, ox: 0, oy: 0 }, 1);
-          if (counts.length !== 1) empty.push({ id: sty.id, count: counts.length, why: 'nonempty' });
+          const drawn = [...measurements], notes = drawn.filter(m => m.kind === 'note');
+          if (notes.length !== 1) empty.push({ id: sty.id, count: notes.length, why: 'nonempty' });
+          for (const { box } of notes) {
+            const note = { left: box.left - 10, right: box.right + 10, top: box.top - 4, bottom: box.bottom + 4 };
+            if (note.left < 0 || note.top < 0 || note.right > 750 || note.bottom > 1050)
+              empty.push({ id: sty.id, why: 'note outside card', box: note });
+            for (const other of drawn.filter(m => m.kind === 'credit' || m.kind === 'pt')) {
+              if (note.left < other.box.right && note.right > other.box.left &&
+                  note.top < other.box.bottom && note.bottom > other.box.top)
+                empty.push({ id: sty.id, why: `note overlaps ${other.kind}`, text: other.text, note, other: other.box });
+            }
+          }
 
-          counts.length = 0;
+          measurements.length = 0;
           __pf.cardCanvas({ kind: 'made', form: { ...form, note: '', label: 'design' }, img, zoom: 1, ox: 0, oy: 0 }, 1);
-          if (counts.length !== 0) empty.push({ id: sty.id, count: counts.length, why: 'empty' });
+          if (measurements.some(m => m.kind === 'note')) empty.push({ id: sty.id, why: 'empty', count: measurements.filter(m => m.kind === 'note').length });
 
-          counts.length = 0;
+          measurements.length = 0;
           __pf.cardCanvas({ kind: 'made', form: { ...form, label: 'proxy' }, img, zoom: 1, ox: 0, oy: 0 }, 1);
-          if (counts.length !== 1) empty.push({ id: sty.id, count: counts.length, why: 'proxy-label' });
+          if (measurements.filter(m => m.kind === 'note').length !== 1) empty.push({ id: sty.id, why: 'proxy-label', count: measurements.filter(m => m.kind === 'note').length });
         }
       } finally {
         p.fillText = fillText;
