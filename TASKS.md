@@ -67,13 +67,13 @@ custom-layout drawing code in `proxy-forge.html`, so they go to the same agent, 
 |---|---|---|---|---|---|
 | 1 | Only publish the site when the checks pass | Copilot | — | S | Done (PR #1) |
 | 2 | Agent instructions file | Copilot | — | S | Done (PR #1) |
-| 3 | Loyalty and defense shields in custom styles | Gemini | — | M | In review |
-| 4 | Flaky IndexedDB cache test | Nemo | — | S | Open |
-| 5 | Flaky safety-guide test | Nemo | — | S | Open |
+| 3 | Loyalty and defense shields in custom styles | Gemini | — | M | Done (PR #2) |
+| 4 | Flaky IndexedDB cache test | Nemo | — | S | Changes requested (PR #6) |
+| 5 | Flaky safety-guide test | Nemo | — | S | Changes requested (PR #6) |
 | 6 | GitHub Actions on Node 24 | Copilot | 1 | XS | Done (PR #1) |
-| 7 | Battles printed sideways | Gemini | 3, 8 | L | Later |
-| 8 | "Playtest card — not for sale" on every style | Gemini | 3 | M | Open |
-| 9 | Fantasy album shows no P/T, loyalty or defense | Gemini | 3 | XS | Open |
+| 7 | Battles printed sideways | Gemini | 3, 8 | L | Ready to start (design first) |
+| 8 | "Playtest card — not for sale" on every style | Gemini | 3 | M | Done (PR #3) |
+| 9 | Fantasy album shows no P/T, loyalty or defense | Gemini | 3 | XS | In review (PR #7) |
 | H1 | Purge the old leaked commit from GitHub | Maintainer | — | — | Open |
 | H2 | Protect the `main` branch | Maintainer | 1 | — | Open |
 
@@ -130,7 +130,7 @@ Creatures must render exactly as they do now.
 - `npm run verify`, `npm run real-cards` and `npm run safe-area` pass.
 - The shield stays inside the safety line on every style.
 
-**Status:** In review. Fantasy album has no P/T layer at all, so it shows no number for any card (see task 9).
+**Status:** Done (PR #2). Fantasy album had no P/T layer at all (see task 9).
 
 ---
 
@@ -149,7 +149,7 @@ really in the page, and explain why in the PR.
 for i in $(seq 10); do npm test || break; done
 ```
 
-**Status:** Open
+**Status:** Changes requested (PR #6): the reload still doesn't wait for the IndexedDB write.
 
 ---
 
@@ -162,7 +162,7 @@ load, then passed when run alone and in later full runs.
 
 **Done when.** Same ten-in-a-row run as task 4.
 
-**Status:** Open
+**Status:** Changes requested (PR #6): the cause isn't identified yet; the fix only adds waits.
 
 ---
 
@@ -184,10 +184,10 @@ needs otherwise.
 
 **Problem.** Real battle cards are printed in landscape. The tool draws them upright like any other card.
 
-**Do.** Not yet. Wait until tasks 3 and 8 are merged, then propose a design in the PR description first
+**Do.** Tasks 3 and 8 are merged, so this can start: propose a design in the PR description first
 (which layouts get a landscape version, and how the print sheet handles a sideways card) before writing it.
 
-**Status:** Later
+**Status:** Ready to start (design first)
 
 ---
 
@@ -237,7 +237,7 @@ name band and the credit, inside the safety line). Task 3's shield then applies 
 
 **Done when.** Album prints a creature's P/T and Jace's loyalty shield, and the three checks pass.
 
-**Status:** Open
+**Status:** In review (PR #7)
 
 ---
 
