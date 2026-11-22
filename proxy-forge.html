@@ -5699,6 +5699,7 @@ async function applyLookup(withArt = $('lookupArt').checked) {
   const t = cardText(card, +$('lookupFace').value || 0);
   const { art, artist, ...fields } = t;
   writeForm(fields);
+  st.edits++; // a lookup is an edit: a first-visit remix still in flight must not overwrite it
   if ($('artist').value === 'Sample art') $('artist').value = '';
   $('status').textContent = `Filled in “${t.name}”.`;
   if (withArt && art) {
