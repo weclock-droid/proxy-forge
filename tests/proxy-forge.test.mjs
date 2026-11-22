@@ -103,7 +103,10 @@ async function newPage(opts = {}) {
     if (url.includes('/cards/named')) return json(SCRYFALL_CARD);
     if (url.includes('/cards/autocomplete')) return json({ object: 'catalog', data: ['Test Golem'] });
     if (url.includes('/cards/search')) return json({ object: 'list', total_cards: 1, has_more: false, data: [SCRYFALL_CARD] });
-    if (url.includes('/cards/random')) return json(SCRYFALL_CARD);
+    if (url.includes('/cards/random')) {
+      if (opts.url?.includes('delayRandom=1')) await new Promise(r => setTimeout(r, 500));
+      return json(SCRYFALL_CARD);
+    }
     if (url.includes('/sets/')) return json({ object: 'set', icon_svg_uri: 'https://scryfall.test/set.svg' });
     return json({ object: 'list', data: [SCRYFALL_CARD], not_found: [] });
   });
@@ -220,13 +223,12 @@ describe('Scryfall response cache', () => {
     const { page, context, scryfallHits } = await newPage();
     const count = () => scryfallHits.filter(u => u.includes('/cards/named')).length;
 
-    // Wait for the example card's async boot (remix) to finish so its "Sample art" artist
-    // doesn't race with the form clearing below.
-    await page.waitForFunction(() => !window.remixing);
+    // Wait for the first-visit remix to finish (it disables #remixAll while running).
+    await page.waitForFunction(() => !document.getElementById('remixAll').disabled);
 
-    // Clear the example card's fields so the lookup's effect is isolated (the page boots with an
-    // example card that has "Sample art" in the artist field, which the lookup deliberately
-    // does not overwrite).
+    // Clear the example card's fields so the lookup's effect is isolated. The boot remix
+    // leaves 'Sample art' in the artist field; the lookup deliberately doesn't fill artist
+    // (only clears 'Sample art'), so we must start from a clean form to assert on it.
     await page.evaluate(() => {
       document.getElementById('name').value = '';
       document.getElementById('cost').value = '';
@@ -269,6 +271,28 @@ describe('Scryfall response cache', () => {
     const stored = await page.evaluate(async () => (await __pf.idb.apiAll()).map(r => r.k));
     assert.ok(stored.some(k => k.startsWith('sf:/cards/named')), 'the reply should be in the "api" store');
     assert.ok(!stored.some(k => k.includes('random')), 'random cards must never be cached');
+    await context.close();
+  });
+
+  test('a lookup made during the boot remix is not overwritten', async () => {
+    const { page, context, scryfallHits } = await newPage({ url: base + '?delayRandom=1' });
+    const count = () => scryfallHits.filter(u => u.includes('/cards/named')).length;
+
+    // Clear the form's name field so we can detect when the lookup fills it.
+    await page.evaluate(() => { document.getElementById('name').value = ''; });
+
+    // Start a lookup immediately, before the boot remix's /cards/random resolves.
+    await page.fill('#lookupName', 'Test Golem');
+    await page.click('#lookupGo');
+    await page.waitForFunction(() => document.getElementById('name').value === 'Test Golem');
+    assert.equal(await page.inputValue('#name'), 'Test Golem', 'lookup filled the name');
+
+    // Wait for the delayed /cards/random to resolve (the remix should bail out due to st.edits).
+    await page.waitForFunction(() => !document.getElementById('remixAll').disabled);
+
+    // The lookup's card should still be there, not replaced by the remix's random card.
+    assert.equal(await page.inputValue('#name'), 'Test Golem', 'boot remix did not overwrite the lookup');
+    assert.equal(count(), 1, 'only the lookup hit Scryfall');
     await context.close();
   });
 
