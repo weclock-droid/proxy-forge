@@ -463,6 +463,7 @@ h3.sub { margin: 4px 0 0; font-family: var(--f-display); font-size: 14px; font-w
           </select>
         </label>
         <label class="inline"><input type="checkbox" id="gloss"> Plastic case glare (like a tape in its clamshell case)</label>
+        <label class="inline" id="battleLandRow" hidden title="Real battles are printed sideways. The card file stays upright, so it prints and sleeves like any other card."><input type="checkbox" id="battleLand" checked> Print this battle sideways, like the real card (full-art layouts)</label>
         <div class="row">
           <label for="layout">Layout
             <select id="layout">
@@ -855,7 +856,7 @@ const W = 750, H = 1050, BLEED = 37.5, RES = 2;
 const SAFE = BLEED;
 const $ = id => document.getElementById(id);
 const canvas = $('card'), ctx = canvas.getContext('2d');
-const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label','aiArt','aiModel','setCode'];
+const FIELDS = ['name','cost','type','rules','flavor','pt','artist','info','note','battleLand','layout','border','color','titleFont','shade','size','bleed','round','pipStyle','pipColor','rarity','setTint','artFx','fxDark','fxLight','fxAmt','wear','wearSeed','gloss','misprint','label','aiArt','aiModel','setCode'];
 const TEXT_KEYS = ['name','cost','type','rules','flavor','pt','artist','info','note'];
 
 const SAMPLE = {
@@ -1405,6 +1406,11 @@ function drawChapter(g, num, x, y, w, h, color) {
 // different JSON keys. The tool carries all three in the one `pt` field, so drafts, print-sheet cards and
 // saved styles keep working — which means what the number *means* has to come from the type line, the one
 // place that says which of the three this card prints.
+// Real battles are printed sideways. On the full-art layouts a battle is drawn in a landscape frame
+// (H wide, W tall) turned onto the usual upright card, top edge to the left as on the printed card, so
+// every file, the print sheet and the cut lines stay one portrait size. The other layouts place things
+// in fixed portrait positions, so they keep battles upright (with the defense shield).
+const isLandscape = o => numberKind(o) === 'defense' && (o.layout === 'fade' || o.layout === 'panel') && o.battleLand !== false;
 function numberKind(o) {
   const t = String(o.type_line ?? o.type ?? '');
   if (/\bPlaneswalker\b/i.test(t)) return 'loyalty';
@@ -1465,6 +1471,7 @@ function syncNumberField() {
   const k = numberKind({ type: $('type')?.value || '' });
   const lab = $('ptLabel'); if (lab) lab.textContent = NUMBER_LABEL[k];
   $('pt').placeholder = NUMBER_HINT[k];
+  const row = $('battleLandRow'); if (row) row.hidden = k !== 'defense';
   return k;
 }
 // A loyalty ability's cost — +1, −3, 0, −X — is a cost, not the first words of a sentence, so it is drawn in
@@ -1616,13 +1623,13 @@ function lum(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 
 
 // Art that reaches an edge of the card is sized to cover the 1/8" bleed past that edge too, so a print-shop
 // file has real art all the way out (the preview and the print match: the extra is just cut off on screen).
-function bleedRect(r) {
+function bleedRect(r, fw = W, fh = H) {
   const l = r.x <= .5 ? -BLEED : r.x, t = r.y <= .5 ? -BLEED : r.y;
-  const rt = r.x + r.w >= W - .5 ? W + BLEED : r.x + r.w, b = r.y + r.h >= H - .5 ? H + BLEED : r.y + r.h;
+  const rt = r.x + r.w >= fw - .5 ? fw + BLEED : r.x + r.w, b = r.y + r.h >= fh - .5 ? fh + BLEED : r.y + r.h;
   return { x: l, y: t, w: rt - l, h: b - t };
 }
-function drawArt(g, rect, img) {
-  rect = bleedRect(rect);
+function drawArt(g, rect, img, fw = W, fh = H) {
+  rect = bleedRect(rect, fw, fh);
   if (!img || !img.naturalWidth) { g.fillStyle = '#222'; g.fillRect(rect.x, rect.y, rect.w, rect.h); return; }
   const src = fxImage(img, curFx);
   const base = Math.max(rect.w / img.naturalWidth, rect.h / img.naturalHeight);
@@ -2132,6 +2139,7 @@ function render(g, o, bleed) {
   else if (o.layout === 'console') renderConsole(g, o, size);
   else if (o.layout === 'wrist') renderWrist(g, o);
   else if (o.layout === 'custom') renderCustom(g, o, bleed);
+  else if (isLandscape(o)) renderBattle(g, o, shade, size, bleed);
   else renderFullArt(g, o, shade, size, bleed);
   drawMisprint(g, o, bleed);
   drawWear(g, o);
@@ -2520,21 +2528,24 @@ function wearMarks(g, R, lv) {
 }
 const pick2 = (R, a) => a[Math.floor(R() * a.length)];
 
-function renderFullArt(g, o, shade, size, bleed) {
-  const borderless = o.border === 'none';
-  const ar = artRect(o);
+// fw x fh is the frame being drawn in: the card itself, or the landscape frame of a battle (renderBattle).
+function renderFullArt(g, o, shade, size, bleed, fw = W, fh = H) {
+  const borderless = o.border === 'none', land = fw !== W;
+  const ar = !land ? artRect(o) : borderless ? { x: 0, y: 0, w: fw, h: fh } : { x: 30, y: 30, w: fw - 60, h: fh - 60 };
   g.save();
   if (borderless) {
-    const r = bleed ? { x: -BLEED, y: -BLEED, w: W + BLEED * 2, h: H + BLEED * 2 } : ar;
+    const r = bleed ? { x: -BLEED, y: -BLEED, w: fw + BLEED * 2, h: fh + BLEED * 2 } : ar;
     // keep art framing identical to non-bleed: draw relative to ar, but don't clip to it
-    drawArt(g, ar, st.img);
+    drawArt(g, ar, st.img, fw, fh);
     if (bleed) { g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#0b0b0c'; g.fillRect(r.x, r.y, r.w, r.h); g.globalCompositeOperation = 'source-over'; }
   } else {
     g.beginPath(); g.roundRect(ar.x, ar.y, ar.w, ar.h, 14); g.clip();
-    drawArt(g, ar, st.img);
+    drawArt(g, ar, st.img, fw, fh);
   }
 
-  const L = 48, R = W - 48, innerW = R - L;
+  // Sideways, the upright footer (credit, collector line, note) runs along the card's bottom edge, which is
+  // the frame's left end, so the name band and the text box start after it.
+  const L = land ? 110 : 48, R = fw - 48, innerW = R - L;
   // ---- title ----
   const cost = parseCost(o.cost), costD = 38;
   const titleTop = 46, titleBase = 92, costMid = 79;
@@ -2548,7 +2559,7 @@ function renderFullArt(g, o, shade, size, bleed) {
   } else {
     const gr = g.createLinearGradient(0, 0, 0, titleTop + 144);
     gr.addColorStop(0, `rgba(0,0,0,${shade})`); gr.addColorStop(.55, `rgba(0,0,0,${shade * .55})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = gr; g.fillRect(-BLEED, -BLEED, W + BLEED * 2, titleTop + 144 + BLEED);
+    g.fillStyle = gr; g.fillRect(-BLEED, -BLEED, fw + BLEED * 2, titleTop + 144 + BLEED);
   }
   const costLeft = cost.length ? drawCostRight(g, cost, costRight, costMid, costPip) : costRight;
   if (o.name) {
@@ -2561,7 +2572,7 @@ function renderFullArt(g, o, shade, size, bleed) {
 
   // ---- text box ----
   const padX = 22, boxL = L - 6, boxW = innerW + 12, textW = boxW - padX * 2;
-  const bottom = 975, maxH = 520, minH = 250;
+  const bottom = fh - 75, maxH = Math.min(520, fh - 420), minH = 250;
   const rules = parseRules(o, o.rules, false), flav = parseRich(o.flavor, true);
   const typeH = o.type ? 50 : 0;
   let fs = size, lr, lf, contentH;
@@ -2583,8 +2594,8 @@ function renderFullArt(g, o, shade, size, bleed) {
   } else {
     const gr = g.createLinearGradient(0, top - 140, 0, top + 40);
     gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, `rgba(0,0,0,${shade})`);
-    g.fillStyle = gr; g.fillRect(-BLEED, top - 140, W + BLEED * 2, 180);
-    g.fillStyle = `rgba(0,0,0,${shade})`; g.fillRect(-BLEED, top + 39, W + BLEED * 2, H - top + BLEED);
+    g.fillStyle = gr; g.fillRect(-BLEED, top - 140, fw + BLEED * 2, 180);
+    g.fillStyle = `rgba(0,0,0,${shade})`; g.fillRect(-BLEED, top + 39, fw + BLEED * 2, fh - top + BLEED);
   }
 
   let y = top + 18;
@@ -2612,7 +2623,15 @@ function renderFullArt(g, o, shade, size, bleed) {
   }
   g.shadowBlur = 0;
   g.restore();
+  // Recorded now, drawn by render() at the end in the card's own frame: upright along the bottom, as on a
+  // printed battle.
   drawFooter(g, o, '#e8e4de', 1005);
+}
+function renderBattle(g, o, shade, size, bleed) {
+  g.save();
+  g.translate(0, H); g.rotate(-Math.PI / 2);
+  renderFullArt(g, o, shade, size, bleed, H, W);
+  g.restore();
 }
 
 // ---------- starship console layout ----------
@@ -4971,12 +4990,17 @@ canvas.addEventListener('pointermove', e => {
     const p = pinchState();
     st.zoom = Math.min(4, Math.max(.3, drag.zoom * p.d / drag.d));
     $('zoom').value = st.zoom;
-    st.ox = drag.ox + (p.x - drag.x) * k; st.oy = drag.oy + (p.y - drag.y) * k;
+    panArt((p.x - drag.x) * k, (p.y - drag.y) * k);
   } else {
-    st.ox = drag.ox + (e.clientX - drag.x) * k; st.oy = drag.oy + (e.clientY - drag.y) * k;
+    panArt((e.clientX - drag.x) * k, (e.clientY - drag.y) * k);
   }
   draw();
 });
+// On a sideways battle the art is drawn in the turned frame, so a drag on screen turns with it.
+function panArt(dx, dy) {
+  if (isLandscape(readForm())) { st.ox = drag.ox - dy; st.oy = drag.oy + dx; }
+  else { st.ox = drag.ox + dx; st.oy = drag.oy + dy; }
+}
 const endDrag = e => {
   pts.delete(e.pointerId);
   if (!pts.size) { if (drag && drag.layer) saveDraft(); hit = null; st.snapped = false; }
