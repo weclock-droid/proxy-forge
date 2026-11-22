@@ -103,7 +103,10 @@ async function newPage(opts = {}) {
     if (url.includes('/cards/named')) return json(SCRYFALL_CARD);
     if (url.includes('/cards/autocomplete')) return json({ object: 'catalog', data: ['Test Golem'] });
     if (url.includes('/cards/search')) return json({ object: 'list', total_cards: 1, has_more: false, data: [SCRYFALL_CARD] });
-    if (url.includes('/cards/random')) return json(SCRYFALL_CARD);
+    if (url.includes('/cards/random')) {
+      if (opts.holdRandom) await opts.holdRandom; // lets a test keep the first-visit remix in flight
+      return json(opts.randomCard || SCRYFALL_CARD);
+    }
     if (url.includes('/sets/')) return json({ object: 'set', icon_svg_uri: 'https://scryfall.test/set.svg' });
     return json({ object: 'list', data: [SCRYFALL_CARD], not_found: [] });
   });
@@ -220,9 +223,15 @@ describe('Scryfall response cache', () => {
     const { page, context, scryfallHits } = await newPage();
     const count = () => scryfallHits.filter(u => u.includes('/cards/named')).length;
 
+    // The first visit remixes in a random example card in the background (the buttons are disabled
+    // while it runs). Let it finish first, so this test is about the cache and nothing else.
+    await page.waitForFunction(() => !document.getElementById('remixAll').disabled);
+
+    // The fake random card *is* Test Golem, so the name is already filled in by the remix and can't
+    // tell us the lookup has finished. The lookup's own status line can.
     await page.fill('#lookupName', 'Test Golem');
     await page.click('#lookupGo');
-    await page.waitForFunction(() => document.getElementById('name').value === 'Test Golem');
+    await page.waitForFunction(() => /Filled in “Test Golem”/.test(document.getElementById('status').textContent));
     assert.equal(await page.inputValue('#type'), 'Artifact Creature — Golem');
     assert.equal(await page.inputValue('#pt'), '4/4');
     assert.ok(await until(() => count() === 1), `the lookup should have asked Scryfall once, saw ${count()}`);
@@ -230,19 +239,42 @@ describe('Scryfall response cache', () => {
     // reminder to credit the art you actually chose still fires.
     assert.equal(await page.inputValue('#artist'), '');
 
+    // The reply is written to IndexedDB after the form is filled; reloading before that write lands
+    // would lose it, so wait for it.
+    await page.waitForFunction(async () => (await __pf.idb.apiAll()).some(r => r.k.startsWith('sf:/cards/named')));
+
     // Clear the in-memory memo and the form, then look the same card up again: it should not re-request.
     await page.evaluate(() => { document.getElementById('name').value = ''; });
     await page.reload({ waitUntil: 'load' });
     await page.waitForFunction(() => !!window.__pf);
     await page.fill('#lookupName', 'Test Golem');
     await page.click('#lookupGo');
-    await page.waitForFunction(() => document.getElementById('name').value === 'Test Golem');
-    await page.waitForTimeout(400); // give a stray request time to reach Node before asserting it didn't happen
+    await page.waitForFunction(() => /Filled in “Test Golem”/.test(document.getElementById('status').textContent));
+    // No settle needed: a network request is recorded before its reply exists, and the form is only
+    // filled from a reply, so by now any request the lookup made has been counted.
     assert.equal(count(), 1, 'the cached reply should be reused after a reload');
 
     const stored = await page.evaluate(async () => (await __pf.idb.apiAll()).map(r => r.k));
     assert.ok(stored.some(k => k.startsWith('sf:/cards/named')), 'the reply should be in the "api" store');
     assert.ok(!stored.some(k => k.includes('random')), 'random cards must never be cached');
+    await context.close();
+  });
+
+  test('a lookup made while the first-visit remix is still loading is not overwritten by it', async () => {
+    let release;
+    const holdRandom = new Promise(r => { release = r; });
+    const randomCard = { ...SCRYFALL_CARD, id: 'fake-2', name: 'Random Wurm', type_line: 'Creature — Wurm', power: '6', toughness: '6' };
+    const { page, context, scryfallHits } = await newPage({ holdRandom, randomCard });
+    try {
+      assert.ok(await until(() => scryfallHits.some(u => u.includes('/cards/random'))), 'the first-visit remix should ask for a random card');
+      await page.fill('#lookupName', 'Test Golem');
+      await page.click('#lookupGo');
+      await page.waitForFunction(() => document.getElementById('name').value === 'Test Golem');
+    } finally { release(); }
+    await page.waitForFunction(() => !document.getElementById('remixAll').disabled);
+    assert.equal(await page.inputValue('#name'), 'Test Golem', 'the remix must not replace the card that was looked up');
+    assert.equal(await page.inputValue('#type'), 'Artifact Creature — Golem');
+    assert.equal(await page.inputValue('#artist'), '', 'the remix must not put "Sample art" back');
     await context.close();
   });
 
@@ -263,6 +295,12 @@ describe('Scryfall response cache', () => {
 describe('safety margin guide', () => {
   test('draws a line an eighth of an inch inside the cut, and only when asked', async () => {
     const { page, context } = await newPage();
+    // The colour thresholds below are tuned for the fake art (neutral grey) showing through the wash.
+    // A first visit picks a random look, and about one in thirty puts a bright green band along the top
+    // edge (the fake card is green), which the 16% wash leaves as green as the line itself. So wait for
+    // that remix to finish, then pin a full-art layout so the strip outside the margin is the grey art.
+    await page.waitForFunction(() => !document.getElementById('remixAll').disabled);
+    await page.selectOption('#layout', 'fade');
     const sample = () => page.evaluate(() => {
       const g = document.getElementById('card').getContext('2d');
       // The preview draws at 2x card units, so the safety line (37.5 units) lands at y = 75px.
@@ -295,7 +333,9 @@ describe('safety margin guide', () => {
 
     await page.uncheck('#safeGuides');
     await page.waitForFunction(() => !document.getElementById('safeGuides').checked);
-    await page.waitForTimeout(250);
+    // The redraw happens on a later animation frame, which can take well over 250 ms on a loaded
+    // machine; poll for the line to go instead of guessing how long that is.
+    assert.ok(await until(async () => (await sample()).onLine === 0), 'the safety line should go when switched off');
     assert.deepEqual(await sample(), { onLine: 0, outside: 0 }, 'switching it off clears it again');
     await context.close();
   });
