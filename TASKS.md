@@ -71,7 +71,7 @@ custom-layout drawing code in `proxy-forge.html`, so they go to the same agent, 
 | 4 | Flaky IndexedDB cache test | Claude (from Nemo) | — | S | Done (PR #9) |
 | 5 | Flaky safety-guide test | Claude (from Nemo) | — | S | Done (PR #9) |
 | 6 | GitHub Actions on Node 24 | Copilot | 1 | XS | Done (PR #1) |
-| 7 | Battles printed sideways | Claude | 3, 8 | L | Design in review |
+| 7 | Battles printed sideways | Claude | 3, 8 | L | In review |
 | 8 | "Playtest card — not for sale" on every style | Gemini | 3 | M | Done (PR #3) |
 | 9 | Fantasy album shows no P/T, loyalty or defense | Gemini | 3 | XS | Done (PR #7) |
 | H1 | Purge the old leaked commit from GitHub | Maintainer | — | — | Open |
@@ -187,7 +187,7 @@ needs otherwise.
 **Do.** Tasks 3 and 8 are merged, so this can start: propose a design in the PR description first
 (which layouts get a landscape version, and how the print sheet handles a sideways card) before writing it.
 
-**Status:** Design in review. Gemini, Codex and Copilot were each blocked by their account limits (Google free tier, the OpenRouter budget, the Copilot monthly quota), so Claude wrote the design.
+**Status:** In review: built to the design below (defaults accepted), with two corrections from checking a real battle (noted under c and h). Gemini, Codex and Copilot were each blocked by their account limits (Google free tier, the OpenRouter budget, the Copilot monthly quota), so Claude wrote the design.
 
 ### Design
 
@@ -222,11 +222,12 @@ defense shield from task 3:
   fits in 6 lines. Longer text shrinks with the existing fitter, never below `TEXT_FLOOR.rules` (24).
 - Defense shield: `drawNumberShield` at the panel's bottom-right corner, right edge ≤ 1012.5,
   bottom ≤ 712.5.
-- Footer (credit, collector line, playtest note): through the existing `footerPass`, along the bottom
-  edge of the landscape frame. The credit stays visible and is never mirrored into the bleed.
+- Footer (credit, collector line, playtest note): through the existing `footerPass`, **upright** along the
+  card's bottom edge, as on a printed battle (Scryfall's scan of Invasion of Ikoria). That edge is the
+  frame's left end, so the name band and the text box start at x 110 instead of 48. The credit stays
+  visible and is never mirrored into the bleed.
 - Rotation direction: the top of the landscape frame goes to the card's **left** edge
-  (`g.translate(0, H); g.rotate(-Math.PI / 2)`), as on a printed battle. To confirm against a real
-  battle scan before coding.
+  (`g.translate(0, H); g.rotate(-Math.PI / 2)`), confirmed against Scryfall's scan of a real battle.
 
 **d. Save PNG and print-shop export.** Unchanged: portrait files at the usual sizes, content rotated.
 `cardPng` renders through `render()`, so it gets the rotation for free; `bleedSeam`/`addBleed` work on
@@ -256,7 +257,8 @@ is left out of the first version, because it would break click and drag hit-test
 2. `renderBattle(g, o, shade, size, bleed)`: the rotated frame and the art only; `render()` calls it
    instead of `renderFullArt` when `isLandscape(o)`.
 3. Name, cost, type line, rules and the defense shield, using the existing text and fitting helpers.
-4. The footer through `footerPass`, and the playtest note.
+4. The footer and the playtest note: no new code; `footerPass` already draws them in the card's own
+   frame, upright.
 5. Rotate art-pan drag deltas when landscape.
 6. Tests and the safe-area probe card; screenshots in the PR.
 
