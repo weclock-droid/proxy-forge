@@ -68,10 +68,10 @@ custom-layout drawing code in `proxy-forge.html`, so they go to the same agent, 
 | 1 | Only publish the site when the checks pass | Copilot | — | S | Done (PR #1) |
 | 2 | Agent instructions file | Copilot | — | S | Done (PR #1) |
 | 3 | Loyalty and defense shields in custom styles | Gemini | — | M | Done (PR #2) |
-| 4 | Flaky IndexedDB cache test | Claude (from Nemo) | — | S | In review |
-| 5 | Flaky safety-guide test | Claude (from Nemo) | — | S | In review |
+| 4 | Flaky IndexedDB cache test | Claude (from Nemo) | — | S | Done (PR #9) |
+| 5 | Flaky safety-guide test | Claude (from Nemo) | — | S | Done (PR #9) |
 | 6 | GitHub Actions on Node 24 | Copilot | 1 | XS | Done (PR #1) |
-| 7 | Battles printed sideways | Gemini | 3, 8 | L | Ready to start (design first) |
+| 7 | Battles printed sideways | Claude | 3, 8 | L | Design in review |
 | 8 | "Playtest card — not for sale" on every style | Gemini | 3 | M | Done (PR #3) |
 | 9 | Fantasy album shows no P/T, loyalty or defense | Gemini | 3 | XS | Done (PR #7) |
 | H1 | Purge the old leaked commit from GitHub | Maintainer | — | — | Open |
@@ -149,7 +149,7 @@ really in the page, and explain why in the PR.
 for i in $(seq 10); do npm test || break; done
 ```
 
-**Status:** In review. Nemo's PR #6 was closed after two rework rounds. Causes: the fake random card is the same card the test looks up, so waiting for its name didn't wait for the lookup; the reload didn't wait for the IndexedDB write; and a real page bug, where the first-visit remix could overwrite a lookup made while it was still loading.
+**Status:** Done (PR #9). Nemo's PR #6 was closed after two rework rounds. Causes: the fake random card is the same card the test looks up, so waiting for its name didn't wait for the lookup; the reload didn't wait for the IndexedDB write; and a real page bug, where the first-visit remix could overwrite a lookup made while it was still loading.
 
 ---
 
@@ -162,7 +162,7 @@ load, then passed when run alone and in later full runs.
 
 **Done when.** Same ten-in-a-row run as task 4.
 
-**Status:** In review. Two causes: the first visit's random look sometimes puts a bright green band along the top edge, which the guide's green wash makes look like the line (about 1 load in 30); and a fixed 250 ms wait after switching the guide off. The test now pins a full-art layout and polls.
+**Status:** Done (PR #9). Two causes: the first visit's random look sometimes puts a bright green band along the top edge, which the guide's green wash makes look like the line (about 1 load in 30); and a fixed 250 ms wait after switching the guide off. The test now pins a full-art layout and polls.
 
 ---
 
@@ -180,14 +180,89 @@ needs otherwise.
 
 ---
 
-## 7. Battles printed sideways — Gemini (later)
+## 7. Battles printed sideways — Claude
 
 **Problem.** Real battle cards are printed in landscape. The tool draws them upright like any other card.
 
 **Do.** Tasks 3 and 8 are merged, so this can start: propose a design in the PR description first
 (which layouts get a landscape version, and how the print sheet handles a sideways card) before writing it.
 
-**Status:** Ready to start (design first)
+**Status:** Design in review. Gemini, Codex and Copilot were each blocked by their account limits (Google free tier, the OpenRouter budget, the Copilot monthly quota), so Claude wrote the design.
+
+### Design
+
+**Core idea: rotate at draw time, keep every file portrait.** A battle is drawn in a landscape frame
+(1050 × 750 card units) that is rotated 90° onto the usual 750 × 1050 canvas. Nothing downstream changes:
+Save PNG, the print-shop zip, the PDF sheet, the bleed and the cut lines all keep handling one portrait
+card size. That is also what print shops want (every file the same orientation) and how a sleeved battle
+sits among other cards. The checks already measure text through the canvas transform
+(`tools/check-real-cards.mjs` maps each `fillText` box with `getTransform()`), so rotated text is
+measured where it really lands.
+
+**a. Detection.** `numberKind(o) === 'defense'` (type line contains "Battle") on the face being drawn.
+Battles are `transform` cards; `cardText(card, i)` already reads one face at a time. The front
+(Battle — Siege) is drawn sideways; the back face (a creature or enchantment) is not a battle and stays
+upright. All three battle fixtures in `tests/fixtures/cards.json` have this shape.
+
+**b. Which layouts.** One new landscape layout, used when the card is a battle, the layout is `fade` or
+`panel` (full art), and the new form option is on. Everything else stays upright, as now, with the
+defense shield from task 3:
+- `framed`, `console`, `wrist` and the 62 custom styles place everything in absolute portrait
+  coordinates (`artRect`, the presets' `x`/`y`/`w`/`h`), so each would need its own landscape design.
+  That's follow-up work, one style at a time, starting with `framed` if wanted.
+- Swapping `W`/`H` instead of rotating is rejected: they're used ~200 times and `renderFullArt` is
+  mostly literal numbers, so a swap would silently misplace things.
+
+**c. Landscape geometry** (in the rotated frame, 1050 wide × 750 tall; `BLEED` and `SAFE` are the same
+37.5 on every side, so the bleed and the safety line need no change):
+- Art: the whole frame, cropped to 1050 × 750 (the bleed is mirrored as now).
+- Name band: top left, from x 75; mana cost: top right, ending at x 975. Both inside y 37.5–112.
+- Text panel: the bottom 300 units (y 412–712), shaded like `panel`. Type line at its top, rules below.
+  Rules run about 940 wide, about 60 characters a line at size 31; the longest fixture (344 characters)
+  fits in 6 lines. Longer text shrinks with the existing fitter, never below `TEXT_FLOOR.rules` (24).
+- Defense shield: `drawNumberShield` at the panel's bottom-right corner, right edge ≤ 1012.5,
+  bottom ≤ 712.5.
+- Footer (credit, collector line, playtest note): through the existing `footerPass`, along the bottom
+  edge of the landscape frame. The credit stays visible and is never mirrored into the bleed.
+- Rotation direction: the top of the landscape frame goes to the card's **left** edge
+  (`g.translate(0, H); g.rotate(-Math.PI / 2)`), as on a printed battle. To confirm against a real
+  battle scan before coding.
+
+**d. Save PNG and print-shop export.** Unchanged: portrait files at the usual sizes, content rotated.
+`cardPng` renders through `render()`, so it gets the rotation for free; `bleedSeam`/`addBleed` work on
+the portrait image as now.
+
+**e. Print sheet and PDF.** Unchanged. A battle is a portrait card with rotated content, so it fits the
+3 × 3 grid and the shared cut lines like any other card. Thumbnails come from `cardCanvas` and show it
+as it will print.
+
+**f. Preview and form.** A new checkbox, "Print battles sideways", shown only when the type line is a
+battle, on by default; it's a form field (`FIELDS`), so drafts, saved sheet cards and styles keep it.
+The preview shows the card as it prints (portrait, content rotated). Art panning needs the drag deltas
+rotated to match, or the art moves at right angles to the mouse. A "view sideways" turn of the preview
+is left out of the first version, because it would break click and drag hit-testing.
+
+**g. Testing.**
+- `npm run real-cards` already renders the three battle fixtures through `fade` and `panel`; with the
+  option on by default those renders are landscape, and its safety and size checks apply unchanged.
+- `npm run safe-area`: add one battle to its probe cards.
+- New browser test: a battle in `fade` draws its name with a rotated transform (`getTransform().b` ≠ 0),
+  the back face and a creature don't, and with the option off a battle draws upright.
+- Screenshots of the three fixtures front and back, in `fade` and `panel`.
+
+**h. Changes, in order** (one commit each):
+1. `isLandscape(o)` (battle + full-art layout + option on) and the checkbox, hidden unless it applies.
+   No drawing change yet.
+2. `renderBattle(g, o, shade, size, bleed)`: the rotated frame and the art only; `render()` calls it
+   instead of `renderFullArt` when `isLandscape(o)`.
+3. Name, cost, type line, rules and the defense shield, using the existing text and fitting helpers.
+4. The footer through `footerPass`, and the playtest note.
+5. Rotate art-pan drag deltas when landscape.
+6. Tests and the safe-area probe card; screenshots in the PR.
+
+**Risks.** Art panning (step 5) is the most likely to go wrong. Mirrored bleed on rotated art needs
+checking by eye. A custom style that names `fade` as its base must not be caught by `isLandscape`.
+Fonts can't be checked by the tests (they're stubbed), so the screenshots are the check for fit.
 
 ---
 
