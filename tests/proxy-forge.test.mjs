@@ -670,6 +670,59 @@ describe('fantasy album layout', () => {
   });
 });
 
+describe('battles printed sideways', () => {
+  test('a battle on a full-art layout is drawn sideways; its back face, other layouts and the opt-out stay upright', async () => {
+    const fixtures = JSON.parse(await readFile(join(ROOT, 'tests', 'fixtures', 'cards.json'), 'utf8'));
+    const battle = fixtures.find(c => (c.card_faces || []).some(f => /\bBattle\b/.test(f.type_line || '')));
+    assert.ok(battle, 'a battle fixture is present');
+    const { page, context } = await newPage();
+    const seen = await page.evaluate(async card => {
+      const art = document.createElement('canvas'); art.width = 300; art.height = 200;
+      art.getContext('2d').fillStyle = '#777'; art.getContext('2d').fillRect(0, 0, 300, 200);
+      const img = new Image(); img.src = art.toDataURL(); await img.decode();
+      const base = { flavor: '', info: '190 · MOM · EN', note: 'Playtest card — not for sale', border: 'none', color: 'G',
+        titleFont: 'Spectral', shade: '0.78', size: '31', bleed: false, round: true, pipStyle: 'classic', pipColor: '#ffffff',
+        rarity: 'R', setTint: true, artFx: 'none', wear: 'none', misprint: 'none', gloss: false, aiArt: false, aiModel: '',
+        setCode: 'MOM', label: 'design', layers: [], artist: 'A. Painter' };
+      const face = i => { const f = card.card_faces[i]; return { name: f.name, cost: f.mana_cost || '', type: f.type_line, rules: f.oracle_text || '',
+        pt: f.defense || (f.power ? `${f.power}/${f.toughness}` : '') }; };
+      // For each case: is the card's name drawn turned (a quarter turn has a ≈ 0), and is the credit upright?
+      const probe = form => {
+        const p = CanvasRenderingContext2D.prototype, fillText = p.fillText, out = {};
+        p.fillText = function (text, ...rest) {
+          if (this.canvas.width === 750) {
+            const t = this.getTransform();
+            if (text === form.name) out.nameTurned = Math.abs(t.a) < 0.01 && Math.abs(Math.abs(t.b) - 1) < 0.01;
+            if (String(text).includes('A. Painter')) out.creditUpright = Math.abs(t.b) < 0.01;
+          }
+          return fillText.call(this, text, ...rest);
+        };
+        try { __pf.cardCanvas({ kind: 'made', form: { ...base, ...form }, img, zoom: 1, ox: 0, oy: 0 }, 1); } finally { p.fillText = fillText; }
+        return out;
+      };
+      return {
+        fade: probe({ ...face(0), layout: 'fade', battleLand: true }),
+        panel: probe({ ...face(0), layout: 'panel', battleLand: true }),
+        optedOut: probe({ ...face(0), layout: 'fade', battleLand: false }),
+        framed: probe({ ...face(0), layout: 'framed', battleLand: true }),
+        backFace: probe({ ...face(1), layout: 'fade', battleLand: true }),
+      };
+    }, battle);
+    assert.deepEqual(seen.fade, { nameTurned: true, creditUpright: true }, 'fade: sideways, with the credit upright along the bottom');
+    assert.deepEqual(seen.panel, { nameTurned: true, creditUpright: true }, 'panel: sideways');
+    assert.equal(seen.optedOut.nameTurned, false, 'unticking the option keeps the battle upright');
+    assert.equal(seen.framed.nameTurned, false, 'layouts without a landscape version keep battles upright');
+    assert.equal(seen.backFace.nameTurned, false, 'the back face is not a battle, so it stays upright');
+
+    // The option only appears for a battle.
+    await page.fill('#type', 'Battle — Siege');
+    assert.equal(await page.isVisible('#battleLand'), true, 'shown for a battle');
+    await page.fill('#type', 'Creature — Golem');
+    assert.equal(await page.isVisible('#battleLand'), false, 'hidden for anything else');
+    await context.close();
+  });
+});
+
 describe('reference panel', () => {
   test('is hidden on the published page, which has no reference data', async () => {
     const { page, context } = await newPage();
